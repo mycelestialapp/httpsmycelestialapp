@@ -263,7 +263,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
                     ))}
                   </div>
                   <div className="pt-3 flex items-center justify-between" style={{ borderTop: '1px solid hsla(var(--gold) / 0.1)' }}>
-                    <span className="text-[9px] text-muted-foreground tracking-wider">✦ celestial.app</span>
+                    <span className="text-[9px] text-muted-foreground tracking-wider">✦ mycelestial.app</span>
                     <span className="text-[9px] text-muted-foreground">✦ {new Date().getFullYear()}</span>
                   </div>
                 </div>
