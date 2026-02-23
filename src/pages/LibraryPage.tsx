@@ -6,7 +6,7 @@ const LibraryPage = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-md mx-auto space-y-6 pt-2 animate-fade-in">
+    <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-serif)', color: 'hsl(var(--gold))', textShadow: '0 0 24px hsla(var(--gold) / 0.3)' }}>
           {t('library.title')}
