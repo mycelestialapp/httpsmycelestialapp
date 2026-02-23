@@ -49,17 +49,6 @@ const mbtiArchetypes: Record<string, { title: string; vibe: string }> = {
   ESFP: { title: 'The Entertainer', vibe: 'Transforming the ordinary into pure enchantment.' },
 };
 
-const freqMap: Record<string, string> = {
-  wood: '528 Hz · Growth & Renewal',
-  fire: '741 Hz · Passion & Transformation',
-  earth: '396 Hz · Stability & Wisdom',
-  metal: '852 Hz · Clarity & Insight',
-  water: '432 Hz · Flow & Intuition',
-};
-
-const ELS = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
-
-// Five-element generating cycle insights
 const cycleInsights: Record<string, string> = {
   wood: 'Wood feeds Fire — your creative energy ignites transformation.',
   fire: 'Fire enriches Earth — your passion crystallizes into lasting wisdom.',
@@ -67,6 +56,18 @@ const cycleInsights: Record<string, string> = {
   metal: 'Metal collects Water — your discipline channels deep intuition.',
   water: 'Water nourishes Wood — your flow sparks infinite growth.',
 };
+
+const ELS = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
+
+// Pentagon radar: generate SVG points for a regular pentagon
+function pentagonPoint(cx: number, cy: number, r: number, i: number): [number, number] {
+  const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+  return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+}
+
+function polygonPoints(cx: number, cy: number, r: number): string {
+  return ELS.map((_, i) => pentagonPoint(cx, cy, r, i).join(',')).join(' ');
+}
 
 const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
   ({ profile, appUrl, refCode }, ref) => {
@@ -79,7 +80,7 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
 
     useEffect(() => {
       QRCode.toDataURL(shareUrl, {
-        width: 140, margin: 1,
+        width: 120, margin: 1,
         color: { dark: '#c8b88acc', light: '#00000000' },
         errorCorrectionLevel: 'M',
       }).then(setQrDataUrl).catch(() => {});
@@ -89,7 +90,6 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
       (profile.wood + profile.fire + profile.earth + profile.metal + profile.water) / 5 * 0.85 + 12
     ));
 
-    // Seeded stars
     const stars = Array.from({ length: 70 }, (_, i) => {
       const s = (i * 7919 + 104729) % 100000;
       const r = (n: number) => ((s * n) % 1000) / 1000;
@@ -98,20 +98,25 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
 
     const W = 1080;
     const H = 1920;
+    const radarCx = 280;
+    const radarCy = 280;
+    const radarR = 220;
+
+    const vals = ELS.map(el => profile[el]);
+    const dataPoints = ELS.map((_, i) => {
+      const v = vals[i] / 100;
+      const [x, y] = pentagonPoint(radarCx, radarCy, radarR * v, i);
+      return `${x},${y}`;
+    }).join(' ');
 
     return (
       <div ref={ref} style={{
         position: 'fixed', left: -9999, top: 0, width: W, height: H,
         fontFamily: "'Playfair Display', Georgia, serif",
-        background: '#0d0d1a',
-        backgroundImage: 'linear-gradient(170deg, #1a1a2e 0%, #13112b 30%, #0d0d1a 65%, #080818 100%)',
+        background: '#0a0a18',
+        backgroundImage: 'linear-gradient(170deg, #151530 0%, #0f0d28 30%, #0a0a18 65%, #060612 100%)',
         color: '#e8e4de', overflow: 'hidden',
       }}>
-        {/* Nebula orbs */}
-        <div style={{ position: 'absolute', width: 650, height: 650, borderRadius: '50%', background: `radial-gradient(circle, hsla(${domGlow}, 0.14), transparent 70%)`, left: -120, top: -80, filter: 'blur(50px)' }} />
-        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, hsla(280,50%,45%,0.07), transparent 70%)', right: -80, top: 350, filter: 'blur(60px)' }} />
-        <div style={{ position: 'absolute', width: 450, height: 450, borderRadius: '50%', background: `radial-gradient(circle, hsla(${domGlow}, 0.06), transparent 70%)`, left: 200, bottom: 200, filter: 'blur(70px)' }} />
-
         {/* Stars */}
         {stars.map((s, i) => (
           <div key={i} style={{
@@ -122,55 +127,156 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
           }} />
         ))}
 
+        {/* Nebula orbs behind radar */}
+        <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', background: `radial-gradient(circle, hsla(${domGlow}, 0.12), transparent 65%)`, left: '50%', top: '38%', transform: 'translate(-50%, -50%)', filter: 'blur(60px)' }} />
+        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, hsla(270,55%,40%,0.1), transparent 65%)', left: '30%', top: '32%', transform: 'translate(-50%, -50%)', filter: 'blur(50px)' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, hsla(220,60%,35%,0.08), transparent 65%)', left: '70%', top: '45%', transform: 'translate(-50%, -50%)', filter: 'blur(55px)' }} />
+
+        {/* Astro watermarks */}
+        <div style={{ position: 'absolute', right: 70, top: 280, fontSize: 130, opacity: 0.025, color: '#d4af64', transform: 'rotate(-15deg)', pointerEvents: 'none' }}>♃</div>
+        <div style={{ position: 'absolute', left: 40, bottom: 350, fontSize: 150, opacity: 0.02, color: '#d4af64', transform: 'rotate(12deg)', pointerEvents: 'none' }}>♒</div>
+        <div style={{ position: 'absolute', right: 90, bottom: 200, fontSize: 120, opacity: 0.02, color: '#d4af64', transform: 'rotate(-8deg)', pointerEvents: 'none' }}>✡</div>
+
         {/* Gold border */}
-        <div style={{ position: 'absolute', inset: 20, borderRadius: 36, border: '1px solid rgba(212,175,100,0.2)', boxShadow: 'inset 0 0 0 1px rgba(212,175,100,0.08)' }} />
+        <div style={{ position: 'absolute', inset: 20, borderRadius: 36, border: '1px solid rgba(212,175,100,0.18)', boxShadow: 'inset 0 0 0 1px rgba(212,175,100,0.06)' }} />
 
-        {/* Content — compact layout */}
-        <div style={{ position: 'relative', zIndex: 1, padding: '56px 60px 44px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 1, padding: '50px 60px 40px', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <span style={{ fontSize: 12, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(212,175,100,0.5)' }}>
+          {/* Header with Soul ID */}
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(212,175,100,0.45)' }}>
               ─── ✦ CELESTIAL SOUL CARD ✦ ───
             </span>
           </div>
 
-          {/* Avatar */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+          {/* Name + Avatar */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 18 }}>
             <div style={{
-              width: 120, height: 120, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 48, fontWeight: 700,
+              width: 100, height: 100, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 40, fontWeight: 700,
               background: `radial-gradient(circle at 35% 35%, hsla(${domGlow},0.4), hsla(${domGlow},0.06))`,
               border: `2px solid hsla(${domGlow},0.45)`,
               color: `hsl(${domGlow})`,
-              boxShadow: `0 0 40px hsla(${domGlow},0.25), 0 0 80px hsla(${domGlow},0.1)`,
-              marginBottom: 16,
+              boxShadow: `0 0 35px hsla(${domGlow},0.25), 0 0 70px hsla(${domGlow},0.08)`,
+              marginBottom: 12,
             }}>
               {(profile.display_name || 'S').charAt(0).toUpperCase()}
             </div>
-            <div style={{ fontSize: 38, fontWeight: 800, marginBottom: 6, textShadow: `0 0 24px hsla(${domGlow},0.3)` }}>
+            <div style={{ fontSize: 34, fontWeight: 800, textShadow: `0 0 20px hsla(${domGlow},0.3)` }}>
               {profile.display_name || 'Soul'}
             </div>
           </div>
 
-          {/* ★ HERO SCORE ★ */}
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          {/* ★ PENTAGON RADAR CHART ★ — centered hero */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, position: 'relative' }}>
+            {/* Compass ring decoration behind radar */}
             <div style={{
-              fontSize: 72, fontWeight: 900, lineHeight: 1,
+              position: 'absolute', width: 540, height: 540, borderRadius: '50%',
+              border: '1px solid rgba(212,175,100,0.06)',
+              left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+              boxShadow: 'inset 0 0 60px rgba(212,175,100,0.02)',
+            }} />
+            <div style={{
+              position: 'absolute', width: 600, height: 600, borderRadius: '50%',
+              border: '1px dashed rgba(212,175,100,0.04)',
+              left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+            }} />
+
+            <svg width={radarCx * 2} height={radarCy * 2} viewBox={`0 0 ${radarCx * 2} ${radarCy * 2}`} style={{ overflow: 'visible' }}>
+              <defs>
+                <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor={`hsla(${domGlow},0.35)`} />
+                  <stop offset="100%" stopColor={`hsla(${domGlow},0.08)`} />
+                </radialGradient>
+                <filter id="radarGlow">
+                  <feGaussianBlur stdDeviation="6" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="outerGlow">
+                  <feGaussianBlur stdDeviation="10" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* Grid lines — 3 concentric pentagons */}
+              {[0.33, 0.66, 1].map((scale, si) => (
+                <polygon key={si}
+                  points={polygonPoints(radarCx, radarCy, radarR * scale)}
+                  fill="none" stroke="rgba(212,175,100,0.08)" strokeWidth="1"
+                />
+              ))}
+
+              {/* Axis lines */}
+              {ELS.map((_, i) => {
+                const [x, y] = pentagonPoint(radarCx, radarCy, radarR, i);
+                return <line key={i} x1={radarCx} y1={radarCy} x2={x} y2={y} stroke="rgba(212,175,100,0.06)" strokeWidth="1" />;
+              })}
+
+              {/* Data polygon */}
+              <polygon
+                points={dataPoints}
+                fill="url(#radarFill)"
+                stroke={`hsl(${domGlow})`}
+                strokeWidth="2.5"
+                filter="url(#radarGlow)"
+                opacity="0.9"
+              />
+
+              {/* Data dots */}
+              {ELS.map((el, i) => {
+                const v = profile[el] / 100;
+                const [x, y] = pentagonPoint(radarCx, radarCy, radarR * v, i);
+                const c = elColors[el];
+                return <circle key={el} cx={x} cy={y} r="5" fill={c.from} stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"
+                  style={{ filter: `drop-shadow(0 0 6px ${c.from})` }} />;
+              })}
+
+              {/* Labels at vertices */}
+              {ELS.map((el, i) => {
+                const [x, y] = pentagonPoint(radarCx, radarCy, radarR + 38, i);
+                const c = elColors[el];
+                return (
+                  <g key={`label-${el}`}>
+                    <text x={x} y={y - 10} textAnchor="middle" fill={c.from} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif" style={{ textTransform: 'uppercase' as const }}>
+                      {elEmoji[el]}
+                    </text>
+                    <text x={x} y={y + 6} textAnchor="middle" fill="rgba(200,195,185,0.6)" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif" letterSpacing="0.05em">
+                      {el.toUpperCase()}
+                    </text>
+                    <text x={x} y={y + 22} textAnchor="middle" fill={`hsl(${c.glow})`} fontSize="14" fontWeight="800" fontFamily="Inter, monospace">
+                      {profile[el]}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* ★ HERO SCORE ★ */}
+          <div style={{ textAlign: 'center', marginBottom: 10 }}>
+            <div style={{
+              fontSize: 80, fontWeight: 900, lineHeight: 1,
               background: 'linear-gradient(135deg, #d4af64, #f5e6b8, #d4af64)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 20px rgba(212,175,100,0.45))',
+              filter: 'drop-shadow(0 0 24px rgba(212,175,100,0.5))',
               marginBottom: 4,
             }}>
-              {soulScore}<span style={{ fontSize: 32, fontWeight: 600 }}>/100</span>
+              {soulScore}<span style={{ fontSize: 34, fontWeight: 600 }}>/100</span>
             </div>
-            <div style={{ fontSize: 13, letterSpacing: '0.15em', color: 'rgba(212,175,100,0.55)' }}>
+            <div style={{ fontSize: 12, letterSpacing: '0.2em', color: 'rgba(212,175,100,0.5)' }}>
               ✦ SOUL SCORE ✦
             </div>
           </div>
 
-          {/* Tags */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 10 }}>
+          {/* Tags + Archetype */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
             {profile.mbti && (
               <span style={{
                 fontSize: 15, padding: '5px 18px', borderRadius: 999, fontWeight: 700,
@@ -186,134 +292,66 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
               {elEmoji[dom]} {dom.charAt(0).toUpperCase() + dom.slice(1)}
             </span>
           </div>
-
-          {/* Archetype */}
           {archetype && (
-            <div style={{ textAlign: 'center', marginBottom: 20, fontSize: 20, fontStyle: 'italic', fontWeight: 600, color: 'rgba(212,175,100,0.85)', textShadow: '0 0 16px rgba(212,175,100,0.25)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 14, fontSize: 19, fontStyle: 'italic', fontWeight: 600, color: 'rgba(212,175,100,0.8)', textShadow: '0 0 14px rgba(212,175,100,0.2)' }}>
               ── {archetype.title} ──
             </div>
           )}
 
-          {/* Quote card — frosted glass */}
+          {/* Soul Insight */}
           <div style={{
-            padding: '22px 28px', borderRadius: 18, marginBottom: 24, textAlign: 'center',
-            background: 'rgba(255,255,255,0.03)',
-            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(212,175,100,0.1)',
-            boxShadow: 'inset 0 0 30px rgba(212,175,100,0.02)',
-          }}>
-            <p style={{ fontSize: 17, fontStyle: 'italic', lineHeight: 1.7, color: 'rgba(232,228,222,0.8)', margin: '0 0 10px' }}>
-              "{archetype?.vibe || profile.bio || `A ${dom}-aligned soul, dancing between starlight and shadow.`}"
-            </p>
-            <p style={{ fontSize: 12, color: `hsla(${domGlow},0.5)`, margin: 0, letterSpacing: '0.1em' }}>
-              ∿ {freqMap[dom]}
-            </p>
-          </div>
-
-          {/* ═══ Glowing Element Bars — compressed ═══ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
-            {ELS.map((el) => {
-              const c = elColors[el];
-              const v = profile[el];
-              return (
-                <div key={el} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{elEmoji[el]}</span>
-                  <span style={{ fontSize: 11, width: 50, textTransform: 'uppercase', color: 'rgba(200,195,185,0.55)', fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-                    {el}
-                  </span>
-                  <div style={{
-                    flex: 1, height: 14, borderRadius: 99, overflow: 'hidden',
-                    background: 'rgba(255,255,255,0.04)',
-                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
-                  }}>
-                    <div style={{
-                      width: `${v}%`, height: '100%', borderRadius: 99,
-                      background: `linear-gradient(90deg, ${c.from}, ${c.to})`,
-                      boxShadow: `0 0 12px hsla(${c.glow},0.45), 0 0 3px hsla(${c.glow},0.25), inset 0 1px 0 rgba(255,255,255,0.15)`,
-                    }} />
-                  </div>
-                  <span style={{
-                    fontSize: 14, width: 36, textAlign: 'right', fontFamily: "'Inter', monospace",
-                    fontWeight: 700, color: `hsl(${c.glow})`,
-                    textShadow: `0 0 8px hsla(${c.glow},0.3)`,
-                  }}>
-                    {v}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ═══ Soul Insight ═══ */}
-          <div style={{
-            textAlign: 'center', marginBottom: 16, padding: '14px 24px', borderRadius: 14,
-            background: 'rgba(255,255,255,0.02)',
+            textAlign: 'center', marginBottom: 16, padding: '16px 28px', borderRadius: 16,
+            background: 'rgba(255,255,255,0.025)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
             border: '1px solid rgba(212,175,100,0.08)',
           }}>
-            <div style={{ fontSize: 10, letterSpacing: '0.25em', color: 'rgba(212,175,100,0.45)', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
+            <div style={{ fontSize: 9, letterSpacing: '0.3em', color: 'rgba(212,175,100,0.4)', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
               ✦ SOUL INSIGHT ✦
             </div>
-            <p style={{ fontSize: 14, fontStyle: 'italic', lineHeight: 1.6, color: 'rgba(232,228,222,0.7)', margin: 0 }}>
-              {cycleInsights[dom]}
+            <p style={{ fontSize: 15, fontStyle: 'italic', lineHeight: 1.65, color: 'rgba(232,228,222,0.75)', margin: 0 }}>
+              "{archetype?.vibe || cycleInsights[dom]}"
             </p>
           </div>
 
-          {/* ═══ Astro Watermarks ═══ */}
-          {/* Planet symbol */}
-          <div style={{ position: 'absolute', right: 60, top: 480, fontSize: 120, opacity: 0.03, color: '#d4af64', transform: 'rotate(-15deg)', pointerEvents: 'none' }}>♃</div>
-          {/* Zodiac symbol */}
-          <div style={{ position: 'absolute', left: 50, top: 900, fontSize: 140, opacity: 0.025, color: '#d4af64', transform: 'rotate(12deg)', pointerEvents: 'none' }}>♒</div>
-          {/* Sacred geometry — hexagram */}
-          <div style={{ position: 'absolute', right: 80, bottom: 320, fontSize: 160, opacity: 0.02, color: '#d4af64', transform: 'rotate(-8deg)', pointerEvents: 'none' }}>✡</div>
-
-          {/* Spacer — pushes footer to bottom */}
+          {/* Spacer */}
           <div style={{ flex: 1 }} />
 
           {/* Footer */}
           <div style={{
-            borderTop: '1px solid rgba(212,175,100,0.08)', paddingTop: 20,
+            borderTop: '1px solid rgba(212,175,100,0.07)', paddingTop: 18,
             display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
           }}>
-            {/* Left: waveform + info */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
-              {/* Waveform decoration */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <svg width="160" height="28" viewBox="0 0 160 28" fill="none" style={{ opacity: 0.5 }}>
-                  {Array.from({ length: 40 }, (_, i) => {
-                    const h = Math.sin(i * 0.35) * 10 + Math.sin(i * 0.7) * 4 + 12;
-                    return <rect key={i} x={i * 4} y={14 - h / 2} width="2" height={h} rx="1" fill={`hsla(${domGlow},0.6)`} />;
-                  })}
-                </svg>
-                <span style={{ fontSize: 9, color: 'rgba(212,175,100,0.4)', fontStyle: 'italic', lineHeight: 1.2 }}>
-                  Vibrating with<br />Universal Love
-                </span>
-              </div>
-
-              <div style={{ fontSize: 11, color: 'rgba(180,170,155,0.6)', letterSpacing: '0.15em', fontFamily: "'Inter', sans-serif" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+              <div style={{ fontSize: 10, color: 'rgba(180,170,155,0.55)', letterSpacing: '0.15em', fontFamily: "'Inter', sans-serif" }}>
                 SOUL ID: #{profile.soul_id}
               </div>
-              <div style={{ fontSize: 14, color: 'rgba(212,175,100,0.55)', letterSpacing: '0.06em' }}>
+              <div style={{ fontSize: 13, color: 'rgba(212,175,100,0.5)', letterSpacing: '0.06em' }}>
                 ✦ {appUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')} ✦
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(200,190,175,0.4)', marginTop: 1 }}>
+              <div style={{ fontSize: 11, color: 'rgba(200,190,175,0.35)', marginTop: 1 }}>
                 Who are you in the Universe? ✨
               </div>
-              <div style={{ fontSize: 9, color: 'rgba(160,150,140,0.3)', marginTop: 4, letterSpacing: '0.12em', fontFamily: "'Inter', sans-serif" }}>
+              <div style={{ fontSize: 8, color: 'rgba(160,150,140,0.25)', marginTop: 3, letterSpacing: '0.12em', fontFamily: "'Inter', sans-serif" }}>
                 Made with Cosmic Energy at Celestial Oracle
               </div>
             </div>
 
-            {/* QR — compact, rounded */}
+            {/* QR — small, elegant */}
             {qrDataUrl && (
-              <div style={{
-                width: 96, height: 96, borderRadius: 14, overflow: 'hidden',
-                background: 'rgba(18,16,36,0.75)',
-                border: '1px solid rgba(212,175,100,0.12)',
-                boxShadow: '0 0 20px rgba(212,175,100,0.04)',
-                padding: 8, flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <img src={qrDataUrl} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.8 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                <div style={{
+                  width: 80, height: 80, borderRadius: 12, overflow: 'hidden',
+                  background: 'rgba(18,16,36,0.7)',
+                  border: '1px solid rgba(212,175,100,0.1)',
+                  boxShadow: '0 0 16px rgba(212,175,100,0.03)',
+                  padding: 6,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <img src={qrDataUrl} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.75 }} />
+                </div>
+                <span style={{ fontSize: 8, color: 'rgba(200,190,175,0.35)', textAlign: 'center', lineHeight: 1.2, fontFamily: "'Inter', sans-serif" }}>
+                  Scan to discover<br />your energy path
+                </span>
               </div>
             )}
           </div>
