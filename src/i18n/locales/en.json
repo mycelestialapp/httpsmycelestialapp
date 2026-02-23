@@ -28,7 +28,15 @@
     "tarot": "Tarot Wisdom",
     "tarotDesc": "Archetypal card guidance",
     "iching": "I-Ching Oracle",
-    "ichingDesc": "Book of Changes consultation"
+    "ichingDesc": "Book of Changes consultation",
+    "dailyWisdom": "Today's Wisdom",
+    "cosmicScore": "Cosmic Score"
+  },
+  "checkin": {
+    "title": "Daily Check-in",
+    "claim": "Claim +10 ✦",
+    "done": "Claimed ✓",
+    "bonusHint": "Tomorrow is Day 7 — double reward!"
   },
   "tribe": {
     "title": "Soul Tribe",

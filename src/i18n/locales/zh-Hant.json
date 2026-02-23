@@ -28,7 +28,15 @@
     "tarot": "塔羅智慧",
     "tarotDesc": "原型牌卡指引",
     "iching": "易經神諭",
-    "ichingDesc": "周易卜筮"
+    "ichingDesc": "周易卜筮",
+    "dailyWisdom": "今日能量氣象",
+    "cosmicScore": "宇宙能量指數"
+  },
+  "checkin": {
+    "title": "每日簽到",
+    "claim": "領取 +10 ✦",
+    "done": "已領取 ✓",
+    "bonusHint": "明天是第 7 天——雙倍獎勵！"
   },
   "tribe": {
     "title": "靈魂族群",

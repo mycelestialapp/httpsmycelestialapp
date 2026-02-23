@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Compass, Star, Layers, BookOpen } from 'lucide-react';
 import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
+import DailyWisdom from '@/components/DailyWisdom';
+import DailyCheckin from '@/components/DailyCheckin';
 
 import { useNavigate } from 'react-router-dom';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
@@ -60,6 +62,12 @@ const OraclePage = () => {
         insight={insight}
         onRequestReading={() => setModalOpen(true)}
       />
+
+      {/* Daily Check-in */}
+      <DailyCheckin />
+
+      {/* Today's Wisdom */}
+      <DailyWisdom />
 
       {/* Tools grid */}
       <div>
