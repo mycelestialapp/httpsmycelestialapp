@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "oracle": "天機",
+    "tribe": "族群",
+    "altar": "祭壇",
+    "library": "典籍"
+  },
+  "oracle": {
+    "title": "天機洞察",
+    "subtitle": "探索你的宇宙能量藍圖",
+    "energyRadar": "生命能量扇區",
+    "wood": "木",
+    "fire": "火",
+    "earth": "土",
+    "metal": "金",
+    "water": "水",
+    "tools": "占卜工具",
+    "bazi": "八字命理",
+    "baziDesc": "八字命運推演",
+    "astrology": "星象占卜",
+    "astrologyDesc": "天體排列解讀",
+    "tarot": "塔羅牌",
+    "tarotDesc": "原型牌卡指引",
+    "iching": "易經",
+    "ichingDesc": "周易卜筮"
+  },
+  "tribe": {
+    "title": "靈魂族群",
+    "subtitle": "與志同道合的靈魂連結",
+    "mbti": "MBTI 配對",
+    "social": "靈魂社交",
+    "love": "情感指引"
+  },
+  "altar": {
+    "title": "神聖祭壇",
+    "subtitle": "每日儀式與祝福",
+    "blessing": "每日祝福",
+    "memorial": "祖先紀念",
+    "fengshui": "風水"
+  },
+  "library": {
+    "title": "智慧典籍",
+    "subtitle": "文章、指南與教義",
+    "articles": "文章",
+    "videos": "影片"
+  },
+  "common": {
+    "comingSoon": "即將推出",
+    "explore": "探索",
+    "disclaimer": "僅供娛樂和自我反思之用。不構成醫療或財務建議。"
+  },
+  "divination": {
+    "name": "姓名",
+    "namePlaceholder": "請輸入姓名",
+    "birthYear": "年",
+    "birthMonth": "月",
+    "birthDay": "日",
+    "birthHour": "時辰",
+    "region": "地區",
+    "solarTime": "真太陽時",
+    "divine": "窺探天機",
+    "loading": "正在連結星辰...",
+    "result": "天機解讀",
+    "again": "重新占卜",
+    "luckLevel": "運勢等級",
+    "fiveElements": "五行",
+    "fateStar": "命主星",
+    "fortuneScore": "運勢分數",
+    "suitable": "宜",
+    "avoid": "忌",
+    "heavenlyMessage": "天機解語"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "oracle": "Oracle",
+    "tribe": "Tribe",
+    "altar": "Altar",
+    "library": "Library"
+  },
+  "oracle": {
+    "title": "Celestial Insights",
+    "subtitle": "Discover your cosmic energy blueprint",
+    "energyRadar": "Life Energy Sectors",
+    "wood": "Wood",
+    "fire": "Fire",
+    "earth": "Earth",
+    "metal": "Metal",
+    "water": "Water",
+    "tools": "Divination Tools",
+    "bazi": "Bazi Analysis",
+    "baziDesc": "Eight Characters destiny mapping",
+    "astrology": "Astrology",
+    "astrologyDesc": "Celestial body alignment reading",
+    "tarot": "Tarot",
+    "tarotDesc": "Archetypal card guidance",
+    "iching": "I-Ching",
+    "ichingDesc": "Book of Changes consultation"
+  },
+  "tribe": {
+    "title": "Soul Tribe",
+    "subtitle": "Connect with kindred spirits",
+    "mbti": "MBTI Matching",
+    "social": "Soul Social",
+    "love": "Love Guidance"
+  },
+  "altar": {
+    "title": "Sacred Altar",
+    "subtitle": "Daily rituals and blessings",
+    "blessing": "Daily Blessing",
+    "memorial": "Ancestral Memorials",
+    "fengshui": "Feng Shui"
+  },
+  "library": {
+    "title": "Wisdom Library",
+    "subtitle": "Articles, guides, and teachings",
+    "articles": "Articles",
+    "videos": "Videos"
+  },
+  "common": {
+    "comingSoon": "Coming Soon",
+    "explore": "Explore",
+    "disclaimer": "For entertainment and self-reflection purposes only. Not medical or financial advice."
+  },
+  "divination": {
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "birthYear": "Year",
+    "birthMonth": "Month",
+    "birthDay": "Day",
+    "birthHour": "Hour",
+    "region": "Region",
+    "solarTime": "True Solar Time",
+    "divine": "Reveal Celestial Insights",
+    "loading": "Connecting to the stars...",
+    "result": "Celestial Reading",
+    "again": "New Reading",
+    "luckLevel": "Fortune Level",
+    "fiveElements": "Five Elements",
+    "fateStar": "Fate Star",
+    "fortuneScore": "Fortune Score",
+    "suitable": "Favorable",
+    "avoid": "Unfavorable",
+    "heavenlyMessage": "Celestial Message"
+  }
+}

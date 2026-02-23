@@ -1,54 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 270 50% 5%;
-    --foreground: 45 80% 90%;
+    --background: 232 45% 10%;
+    --foreground: 40 30% 90%;
 
-    --card: 270 40% 10%;
-    --card-foreground: 45 80% 90%;
+    --card: 232 40% 13%;
+    --card-foreground: 40 30% 90%;
 
-    --popover: 270 40% 10%;
-    --popover-foreground: 45 80% 90%;
+    --popover: 232 40% 13%;
+    --popover-foreground: 40 30% 90%;
 
-    --primary: 45 90% 60%;
-    --primary-foreground: 270 50% 5%;
+    --primary: 43 72% 52%;
+    --primary-foreground: 232 45% 8%;
 
-    --secondary: 270 60% 30%;
-    --secondary-foreground: 45 80% 90%;
+    --secondary: 232 35% 22%;
+    --secondary-foreground: 40 30% 90%;
 
-    --muted: 270 30% 15%;
-    --muted-foreground: 270 20% 60%;
+    --muted: 232 25% 18%;
+    --muted-foreground: 232 15% 55%;
 
-    --accent: 280 80% 65%;
-    --accent-foreground: 45 80% 95%;
+    --accent: 270 50% 55%;
+    --accent-foreground: 40 30% 95%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 270 40% 20%;
-    --input: 270 40% 15%;
-    --ring: 45 90% 60%;
+    --border: 43 40% 25%;
+    --input: 232 30% 18%;
+    --ring: 43 72% 52%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --neon-purple: 280 80% 65%;
-    --neon-gold: 45 90% 60%;
-    --glass-bg: 270 40% 12%;
-    --glass-border: 270 30% 25%;
+    --gold: 43 72% 52%;
+    --gold-dim: 43 50% 35%;
+    --midnight: 232 45% 10%;
+    --deep-space: 232 55% 6%;
 
-    --sidebar-background: 270 50% 5%;
-    --sidebar-foreground: 45 80% 90%;
-    --sidebar-primary: 45 90% 60%;
-    --sidebar-primary-foreground: 270 50% 5%;
-    --sidebar-accent: 270 60% 30%;
-    --sidebar-accent-foreground: 45 80% 90%;
-    --sidebar-border: 270 40% 20%;
-    --sidebar-ring: 45 90% 60%;
+    --sidebar-background: 232 45% 10%;
+    --sidebar-foreground: 40 30% 90%;
+    --sidebar-primary: 43 72% 52%;
+    --sidebar-primary-foreground: 232 45% 8%;
+    --sidebar-accent: 232 35% 22%;
+    --sidebar-accent-foreground: 40 30% 90%;
+    --sidebar-border: 43 40% 25%;
+    --sidebar-ring: 43 72% 52%;
+
+    --font-serif: 'Playfair Display', 'Noto Serif SC', serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -59,121 +60,92 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Noto Serif SC', serif;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
   }
 }
 
 @layer components {
+  /* Glass card */
   .glass-card {
-    @apply relative rounded-2xl border p-6;
-    background: hsla(var(--glass-bg) / 0.4);
-    border-color: hsla(var(--glass-border) / 0.3);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow:
-      0 0 30px hsla(var(--neon-purple) / 0.15),
-      inset 0 0 30px hsla(var(--neon-purple) / 0.05);
+    @apply relative rounded-2xl p-6;
+    background: hsla(var(--card) / 0.45);
+    border: 1px solid hsla(var(--gold) / 0.2);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
-  .neon-text-gold {
-    color: hsl(var(--neon-gold));
-    text-shadow:
-      0 0 10px hsla(var(--neon-gold) / 0.6),
-      0 0 30px hsla(var(--neon-gold) / 0.3),
-      0 0 60px hsla(var(--neon-gold) / 0.15);
+  .glass-card-highlight {
+    @apply glass-card;
+    border-color: hsla(var(--gold) / 0.3);
+    box-shadow: 0 0 40px hsla(var(--gold) / 0.06), inset 0 1px 0 hsla(var(--gold) / 0.1);
   }
 
-  .neon-text-purple {
-    color: hsl(var(--neon-purple));
-    text-shadow:
-      0 0 10px hsla(var(--neon-purple) / 0.6),
-      0 0 30px hsla(var(--neon-purple) / 0.3);
+  /* Gold accent text */
+  .text-gold-glow {
+    color: hsl(var(--gold));
+    text-shadow: 0 0 12px hsla(var(--gold) / 0.4);
   }
 
-  .neon-border {
-    border-color: hsla(var(--neon-purple) / 0.4);
-    box-shadow:
-      0 0 15px hsla(var(--neon-purple) / 0.2),
-      inset 0 0 15px hsla(var(--neon-purple) / 0.05);
-  }
-
-  .orb-button {
-    @apply relative flex items-center justify-center rounded-full cursor-pointer transition-all duration-500;
-    background: radial-gradient(
-      circle at 30% 30%,
-      hsla(var(--neon-purple) / 0.6),
-      hsla(270, 50%, 15% / 0.8),
-      hsla(var(--neon-gold) / 0.2)
-    );
-    box-shadow:
-      0 0 40px hsla(var(--neon-purple) / 0.4),
-      0 0 80px hsla(var(--neon-purple) / 0.2),
-      inset 0 0 30px hsla(var(--neon-gold) / 0.1);
-  }
-
-  .orb-button:hover {
-    transform: scale(1.05);
-    box-shadow:
-      0 0 60px hsla(var(--neon-purple) / 0.5),
-      0 0 120px hsla(var(--neon-purple) / 0.3),
-      inset 0 0 40px hsla(var(--neon-gold) / 0.2);
-  }
-
-  .orb-button:active {
-    transform: scale(0.98);
-  }
-
-  .input-label {
-    @apply block text-xs mb-1.5 tracking-widest font-bold;
-    color: hsla(var(--neon-gold) / 0.8);
-  }
-
+  /* Glass inputs */
   .glass-input {
     @apply w-full rounded-lg border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all;
-    background: hsla(var(--glass-bg) / 0.3);
-    border-color: hsla(var(--glass-border) / 0.3);
-    backdrop-filter: blur(10px);
+    background: hsla(var(--input) / 0.5);
+    border-color: hsla(var(--gold) / 0.15);
+    backdrop-filter: blur(8px);
   }
 
   .glass-input:focus {
-    border-color: hsla(var(--neon-gold) / 0.5);
-    box-shadow: 0 0 20px hsla(var(--neon-gold) / 0.15);
+    border-color: hsla(var(--gold) / 0.4);
+    box-shadow: 0 0 16px hsla(var(--gold) / 0.1);
   }
 
   .glass-select {
     @apply w-full rounded-lg border px-3 py-3 text-sm text-foreground outline-none transition-all appearance-none cursor-pointer;
-    background: hsla(var(--glass-bg) / 0.3);
-    border-color: hsla(var(--glass-border) / 0.3);
-    backdrop-filter: blur(10px);
+    background: hsla(var(--input) / 0.5);
+    border-color: hsla(var(--gold) / 0.15);
+    backdrop-filter: blur(8px);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a227' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
   }
 
   .glass-select:focus {
-    border-color: hsla(var(--neon-gold) / 0.5);
-    box-shadow: 0 0 20px hsla(var(--neon-gold) / 0.15);
+    border-color: hsla(var(--gold) / 0.4);
+    box-shadow: 0 0 16px hsla(var(--gold) / 0.1);
   }
 
   .glass-select option {
-    background: hsl(270 40% 10%);
+    background: hsl(var(--card));
     color: hsl(var(--foreground));
   }
 
+  .input-label {
+    @apply block text-xs mb-1.5 tracking-widest font-semibold uppercase;
+    color: hsla(var(--gold) / 0.7);
+    font-family: var(--font-sans);
+  }
+
+  /* Toggle */
   .glass-toggle-row {
     @apply rounded-lg border px-4 py-3 transition-all;
-    background: hsla(var(--glass-bg) / 0.2);
-    border-color: hsla(var(--glass-border) / 0.2);
+    background: hsla(var(--card) / 0.3);
+    border-color: hsla(var(--gold) / 0.1);
   }
 
   .toggle-switch {
     @apply relative w-11 h-6 rounded-full transition-all flex-shrink-0;
-    background: hsla(var(--glass-border) / 0.4);
+    background: hsla(var(--muted) / 0.6);
   }
 
   .toggle-switch.active {
-    background: hsla(var(--neon-gold) / 0.5);
-    box-shadow: 0 0 12px hsla(var(--neon-gold) / 0.3);
+    background: hsla(var(--gold) / 0.4);
+    box-shadow: 0 0 10px hsla(var(--gold) / 0.2);
   }
 
   .toggle-knob {
@@ -183,34 +155,59 @@
 
   .toggle-switch.active .toggle-knob {
     transform: translateX(20px);
-    background: hsl(var(--neon-gold));
+    background: hsl(var(--gold));
   }
 
-  /* Result Page Styles */
+  /* Orb button */
+  .orb-button {
+    @apply relative flex items-center justify-center rounded-full cursor-pointer transition-all duration-500;
+    background: radial-gradient(
+      circle at 30% 30%,
+      hsla(var(--accent) / 0.5),
+      hsla(var(--midnight) / 0.8),
+      hsla(var(--gold) / 0.15)
+    );
+    box-shadow:
+      0 0 40px hsla(var(--accent) / 0.25),
+      0 0 80px hsla(var(--accent) / 0.1),
+      inset 0 0 30px hsla(var(--gold) / 0.08);
+  }
+
+  .orb-button:hover {
+    transform: scale(1.05);
+    box-shadow:
+      0 0 60px hsla(var(--accent) / 0.35),
+      0 0 120px hsla(var(--accent) / 0.15),
+      inset 0 0 40px hsla(var(--gold) / 0.15);
+  }
+
+  .orb-button:active {
+    transform: scale(0.98);
+  }
+
+  /* Result badges */
   .luck-badge {
     @apply flex flex-col items-center px-8 py-4 rounded-2xl border;
   }
 
   .luck-gold {
-    background: hsla(var(--neon-gold) / 0.1);
-    border-color: hsla(var(--neon-gold) / 0.4);
-    box-shadow: 0 0 30px hsla(var(--neon-gold) / 0.15);
-    color: hsl(var(--neon-gold));
-    text-shadow: 0 0 10px hsla(var(--neon-gold) / 0.5);
+    background: hsla(var(--gold) / 0.08);
+    border-color: hsla(var(--gold) / 0.3);
+    box-shadow: 0 0 24px hsla(var(--gold) / 0.1);
+    color: hsl(var(--gold));
   }
 
   .luck-purple {
-    background: hsla(var(--neon-purple) / 0.1);
-    border-color: hsla(var(--neon-purple) / 0.4);
-    box-shadow: 0 0 30px hsla(var(--neon-purple) / 0.15);
-    color: hsl(var(--neon-purple));
-    text-shadow: 0 0 10px hsla(var(--neon-purple) / 0.5);
+    background: hsla(var(--accent) / 0.08);
+    border-color: hsla(var(--accent) / 0.3);
+    box-shadow: 0 0 24px hsla(var(--accent) / 0.1);
+    color: hsl(var(--accent));
   }
 
   .stat-cell {
     @apply flex flex-col items-center rounded-lg py-3 border;
-    background: hsla(var(--glass-bg) / 0.3);
-    border-color: hsla(var(--glass-border) / 0.2);
+    background: hsla(var(--card) / 0.3);
+    border-color: hsla(var(--gold) / 0.1);
   }
 
   .stat-label {
@@ -223,16 +220,16 @@
 
   .yi-tag {
     @apply text-xs px-3 py-1 rounded-full border;
-    background: hsla(var(--neon-gold) / 0.08);
-    border-color: hsla(var(--neon-gold) / 0.25);
-    color: hsl(var(--neon-gold));
+    background: hsla(var(--gold) / 0.06);
+    border-color: hsla(var(--gold) / 0.2);
+    color: hsl(var(--gold));
   }
 
   .ji-tag {
     @apply text-xs px-3 py-1 rounded-full border;
-    background: hsla(var(--neon-purple) / 0.08);
-    border-color: hsla(var(--neon-purple) / 0.25);
-    color: hsl(var(--neon-purple));
+    background: hsla(var(--accent) / 0.06);
+    border-color: hsla(var(--accent) / 0.2);
+    color: hsl(var(--accent));
   }
 
   /* Star field */
@@ -241,7 +238,7 @@
     inset: 0;
     overflow: hidden;
     z-index: 0;
-    background: radial-gradient(ellipse at 50% 0%, hsl(270 60% 12%), hsl(270 50% 5%) 50%, hsl(0 0% 2%));
+    background: radial-gradient(ellipse at 50% 0%, hsl(232 50% 14%), hsl(232 45% 10%) 50%, hsl(232 55% 6%));
   }
 
   .star {
@@ -252,8 +249,8 @@
   }
 
   @keyframes twinkle {
-    0% { opacity: 0.2; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1.2); }
+    0% { opacity: 0.15; transform: scale(0.8); }
+    100% { opacity: 0.9; transform: scale(1.2); }
   }
 
   @keyframes spin-slow {
@@ -268,7 +265,7 @@
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
   }
 
   .animate-spin-slow {
@@ -281,5 +278,30 @@
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around;
+    background: hsla(var(--deep-space) / 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid hsla(var(--gold) / 0.12);
+    padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-lg transition-all text-muted-foreground;
+    font-family: var(--font-sans);
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+  }
+
+  .bottom-nav-item.active {
+    color: hsl(var(--gold));
+  }
+
+  .bottom-nav-item.active svg {
+    filter: drop-shadow(0 0 6px hsla(var(--gold) / 0.4));
   }
 }
