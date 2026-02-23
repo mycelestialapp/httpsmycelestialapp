@@ -35,7 +35,11 @@
     "subtitle": "Connect with kindred spirits",
     "mbti": "MBTI Matching",
     "social": "Soul Social",
-    "love": "Love Guidance"
+    "love": "Love Guidance",
+    "findTribe": "Find Your Soul Tribe",
+    "searching": "Scanning the cosmic network...",
+    "noMatches": "No soul matches found yet",
+    "noMatchesHint": "More souls will join the network soon"
   },
   "altar": {
     "title": "Sacred Altar",
@@ -54,6 +58,22 @@
     "comingSoon": "Coming Soon",
     "explore": "Explore",
     "disclaimer": "For entertainment and self-reflection purposes only. Not medical or financial advice."
+  },
+  "auth": {
+    "signInTitle": "Welcome Back",
+    "signInSubtitle": "Sign in to access your soul profile",
+    "signUpTitle": "Join the Cosmos",
+    "signUpSubtitle": "Create your celestial identity",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "displayName": "Soul Name",
+    "displayNamePlaceholder": "Your cosmic name",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "hasAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "checkEmail": "Check your email for the confirmation link!"
   },
   "divination": {
     "name": "Name",

@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          bio: string | null
+          birthday: string | null
+          created_at: string
+          display_name: string | null
+          dominant_element: string | null
+          earth: number
+          fire: number
+          id: string
+          mbti: string | null
+          metal: number
+          soul_id: string
+          star_dust: number
+          updated_at: string
+          water: number
+          wood: number
+        }
+        Insert: {
+          bio?: string | null
+          birthday?: string | null
+          created_at?: string
+          display_name?: string | null
+          dominant_element?: string | null
+          earth?: number
+          fire?: number
+          id: string
+          mbti?: string | null
+          metal?: number
+          soul_id?: string
+          star_dust?: number
+          updated_at?: string
+          water?: number
+          wood?: number
+        }
+        Update: {
+          bio?: string | null
+          birthday?: string | null
+          created_at?: string
+          display_name?: string | null
+          dominant_element?: string | null
+          earth?: number
+          fire?: number
+          id?: string
+          mbti?: string | null
+          metal?: number
+          soul_id?: string
+          star_dust?: number
+          updated_at?: string
+          water?: number
+          wood?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
