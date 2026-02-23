@@ -45,6 +45,7 @@ interface Profile {
   metal: number;
   water: number;
   dominant_element: string | null;
+  ref_code?: string;
 }
 
 const TribePage = () => {

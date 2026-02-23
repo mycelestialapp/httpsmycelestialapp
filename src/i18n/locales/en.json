@@ -166,5 +166,10 @@
     "topup": {
       "title": "Star Dust Top-Up"
     }
+  },
+  "cta": {
+    "createCardTitle": "Discover Your Cosmic Identity",
+    "createCardDesc": "Unlock your Five-Element energy blueprint and generate your unique Celestial Soul Card.",
+    "createCardButton": "Create My Soul Card"
   }
 }

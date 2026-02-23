@@ -166,5 +166,10 @@
     "topup": {
       "title": "Recharge de Poussière d'Étoiles"
     }
+  },
+  "cta": {
+    "createCardTitle": "Découvrez Votre Identité Cosmique",
+    "createCardDesc": "Révélez votre empreinte énergétique des Cinq Éléments et créez votre Carte d'Âme unique.",
+    "createCardButton": "Créer Ma Carte d'Âme"
   }
 }

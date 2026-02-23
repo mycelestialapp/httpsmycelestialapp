@@ -53,6 +53,7 @@ export type Database = {
           id: string
           mbti: string | null
           metal: number
+          ref_code: string | null
           soul_id: string
           star_dust: number
           updated_at: string
@@ -70,6 +71,7 @@ export type Database = {
           id: string
           mbti?: string | null
           metal?: number
+          ref_code?: string | null
           soul_id?: string
           star_dust?: number
           updated_at?: string
@@ -87,11 +89,36 @@ export type Database = {
           id?: string
           mbti?: string | null
           metal?: number
+          ref_code?: string | null
           soul_id?: string
           star_dust?: number
           updated_at?: string
           water?: number
           wood?: number
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          rewarded: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          rewarded?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          rewarded?: boolean
         }
         Relationships: []
       }

@@ -25,10 +25,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Process referral on first sign-in
+      if (event === 'SIGNED_IN' && session?.user) {
+        const refCode = localStorage.getItem('celestial_ref');
+        if (refCode) {
+          localStorage.removeItem('celestial_ref');
+          // Fire and forget — don't block auth flow
+          supabase.functions.invoke('process-referral', {
+            body: { ref_code: refCode },
+          }).catch(() => {});
+        }
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {

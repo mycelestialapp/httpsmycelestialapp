@@ -5,6 +5,7 @@ import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
 import DailyWisdom from '@/components/DailyWisdom';
 import DailyCheckin from '@/components/DailyCheckin';
+import CreateCardCTA from '@/components/CreateCardCTA';
 
 import { useNavigate } from 'react-router-dom';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
@@ -65,6 +66,9 @@ const OraclePage = () => {
 
       {/* Daily Check-in */}
       <DailyCheckin />
+
+      {/* CTA for new users */}
+      <CreateCardCTA />
 
       {/* Today's Wisdom */}
       <DailyWisdom />
