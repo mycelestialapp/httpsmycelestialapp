@@ -59,6 +59,15 @@ const freqMap: Record<string, string> = {
 
 const ELS = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 
+// Five-element generating cycle insights
+const cycleInsights: Record<string, string> = {
+  wood: 'Wood feeds Fire — your creative energy ignites transformation.',
+  fire: 'Fire enriches Earth — your passion crystallizes into lasting wisdom.',
+  earth: 'Earth bears Metal — your stability forges clarity and precision.',
+  metal: 'Metal collects Water — your discipline channels deep intuition.',
+  water: 'Water nourishes Wood — your flow sparks infinite growth.',
+};
+
 const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
   ({ profile, appUrl, refCode }, ref) => {
     const dom = profile.dominant_element || 'earth';
@@ -201,19 +210,19 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
             </p>
           </div>
 
-          {/* ═══ Glowing Element Bars ═══ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
+          {/* ═══ Glowing Element Bars — compressed ═══ */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
             {ELS.map((el) => {
               const c = elColors[el];
               const v = profile[el];
               return (
-                <div key={el} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 22, width: 32, textAlign: 'center' }}>{elEmoji[el]}</span>
-                  <span style={{ fontSize: 12, width: 54, textTransform: 'uppercase', color: 'rgba(200,195,185,0.55)', fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
+                <div key={el} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{elEmoji[el]}</span>
+                  <span style={{ fontSize: 11, width: 50, textTransform: 'uppercase', color: 'rgba(200,195,185,0.55)', fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
                     {el}
                   </span>
                   <div style={{
-                    flex: 1, height: 16, borderRadius: 99, overflow: 'hidden',
+                    flex: 1, height: 14, borderRadius: 99, overflow: 'hidden',
                     background: 'rgba(255,255,255,0.04)',
                     boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
                   }}>
@@ -224,7 +233,7 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
                     }} />
                   </div>
                   <span style={{
-                    fontSize: 15, width: 38, textAlign: 'right', fontFamily: "'Inter', monospace",
+                    fontSize: 14, width: 36, textAlign: 'right', fontFamily: "'Inter', monospace",
                     fontWeight: 700, color: `hsl(${c.glow})`,
                     textShadow: `0 0 8px hsla(${c.glow},0.3)`,
                   }}>
@@ -235,6 +244,28 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
             })}
           </div>
 
+          {/* ═══ Soul Insight ═══ */}
+          <div style={{
+            textAlign: 'center', marginBottom: 16, padding: '14px 24px', borderRadius: 14,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(212,175,100,0.08)',
+          }}>
+            <div style={{ fontSize: 10, letterSpacing: '0.25em', color: 'rgba(212,175,100,0.45)', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
+              ✦ SOUL INSIGHT ✦
+            </div>
+            <p style={{ fontSize: 14, fontStyle: 'italic', lineHeight: 1.6, color: 'rgba(232,228,222,0.7)', margin: 0 }}>
+              {cycleInsights[dom]}
+            </p>
+          </div>
+
+          {/* ═══ Astro Watermarks ═══ */}
+          {/* Planet symbol */}
+          <div style={{ position: 'absolute', right: 60, top: 480, fontSize: 120, opacity: 0.03, color: '#d4af64', transform: 'rotate(-15deg)', pointerEvents: 'none' }}>♃</div>
+          {/* Zodiac symbol */}
+          <div style={{ position: 'absolute', left: 50, top: 900, fontSize: 140, opacity: 0.025, color: '#d4af64', transform: 'rotate(12deg)', pointerEvents: 'none' }}>♒</div>
+          {/* Sacred geometry — hexagram */}
+          <div style={{ position: 'absolute', right: 80, bottom: 320, fontSize: 160, opacity: 0.02, color: '#d4af64', transform: 'rotate(-8deg)', pointerEvents: 'none' }}>✡</div>
+
           {/* Spacer — pushes footer to bottom */}
           <div style={{ flex: 1 }} />
 
@@ -243,7 +274,21 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
             borderTop: '1px solid rgba(212,175,100,0.08)', paddingTop: 20,
             display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
           }}>
+            {/* Left: waveform + info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
+              {/* Waveform decoration */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <svg width="160" height="28" viewBox="0 0 160 28" fill="none" style={{ opacity: 0.5 }}>
+                  {Array.from({ length: 40 }, (_, i) => {
+                    const h = Math.sin(i * 0.35) * 10 + Math.sin(i * 0.7) * 4 + 12;
+                    return <rect key={i} x={i * 4} y={14 - h / 2} width="2" height={h} rx="1" fill={`hsla(${domGlow},0.6)`} />;
+                  })}
+                </svg>
+                <span style={{ fontSize: 9, color: 'rgba(212,175,100,0.4)', fontStyle: 'italic', lineHeight: 1.2 }}>
+                  Vibrating with<br />Universal Love
+                </span>
+              </div>
+
               <div style={{ fontSize: 11, color: 'rgba(180,170,155,0.6)', letterSpacing: '0.15em', fontFamily: "'Inter', sans-serif" }}>
                 SOUL ID: #{profile.soul_id}
               </div>
