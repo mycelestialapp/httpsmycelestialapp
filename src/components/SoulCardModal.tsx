@@ -125,7 +125,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
       link.href = url;
       link.click();
       URL.revokeObjectURL(url);
-      toast({ title: '✦ Card saved!', description: 'High-res 1080×1920 Soul Card downloaded.' });
+      toast({ title: '✦ Card saved!', description: 'High-res 1080×1920 Soul Card downloaded.', duration: 3000 });
     } catch {
       toast({ title: '⚠ Download failed', description: 'Please try again.' });
     } finally {
