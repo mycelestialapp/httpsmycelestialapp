@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Compass, Star, Layers, BookOpen } from 'lucide-react';
 import EnergyRadar from '@/components/EnergyRadar';
@@ -27,6 +27,16 @@ const OraclePage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [energy, setEnergy] = useState<ElementEnergy | null>(null);
   const [insight, setInsight] = useState('');
+  const [compareSoul, setCompareSoul] = useState<string | null>(null);
+
+  // Check for comparison challenge from shared link
+  useEffect(() => {
+    const soul = localStorage.getItem('celestial_compare_soul');
+    if (soul) {
+      setCompareSoul(soul);
+      localStorage.removeItem('celestial_compare_soul');
+    }
+  }, []);
 
   const handleBirthSubmit = async (year: number, month: number, day: number) => {
     const profile: CelestialProfile = calculateElementEnergy(year, month, day);
@@ -49,6 +59,38 @@ const OraclePage = () => {
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
+      {/* Challenge Banner */}
+      {compareSoul && (
+        <div
+          className="rounded-2xl p-3 flex items-center gap-3 animate-in slide-in-from-top-4 duration-500"
+          style={{
+            background: 'linear-gradient(135deg, hsla(var(--gold) / 0.12), hsla(var(--accent) / 0.08))',
+            border: '1px solid hsla(var(--gold) / 0.25)',
+          }}
+        >
+          <span className="text-lg">⚔️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>
+              {t('oracle.challengeTitle')}
+            </p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              {t('oracle.challengeDesc', { soulId: compareSoul })}
+            </p>
+          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="text-[10px] px-3 py-1.5 rounded-full font-semibold whitespace-nowrap"
+            style={{
+              background: 'hsla(var(--gold) / 0.2)',
+              border: '1px solid hsla(var(--gold) / 0.3)',
+              color: 'hsl(var(--gold))',
+            }}
+          >
+            {t('oracle.startReading')}
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-serif)', color: 'hsl(var(--gold))', textShadow: '0 0 24px hsla(var(--gold) / 0.3)' }}>

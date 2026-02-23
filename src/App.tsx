@@ -17,15 +17,21 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-/** Capture ?ref= param from URL and store in localStorage */
+/** Capture ?ref= and ?soul= params from URL and store in localStorage */
 const RefCapture = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
+    const soul = params.get('soul');
     if (ref) {
       localStorage.setItem('celestial_ref', ref);
-      // Clean the URL
+    }
+    if (soul) {
+      localStorage.setItem('celestial_compare_soul', soul);
+    }
+    if (ref || soul) {
       params.delete('ref');
+      params.delete('soul');
       const clean = params.toString();
       window.history.replaceState({}, '', window.location.pathname + (clean ? `?${clean}` : ''));
     }

@@ -55,12 +55,12 @@ const mbtiArchetypes: Record<string, { title: string; vibe: string }> = {
   ESFP: { title: 'The Entertainer', vibe: 'A luminous performer transforming the ordinary into pure enchantment.' },
 };
 
-const vibrationFrequencies: Record<string, string> = {
-  wood: 'Vibrating at 528 Hz — the frequency of growth, renewal, and infinite potential.',
-  fire: 'Vibrating at 741 Hz — the frequency of passion, transformation, and creative ignition.',
-  earth: 'Vibrating at 396 Hz — the frequency of stability, nurture, and grounded wisdom.',
-  metal: 'Vibrating at 852 Hz — the frequency of clarity, precision, and transcendent insight.',
-  water: 'Vibrating at 432 Hz — the frequency of flow, intuition, and deep cosmic memory.',
+const vibrationFrequencies: Record<string, { hz: number; label: string }> = {
+  wood: { hz: 528, label: 'Vibrating at 528 Hz — the frequency of growth, renewal, and infinite potential.' },
+  fire: { hz: 741, label: 'Vibrating at 741 Hz — the frequency of passion, transformation, and creative ignition.' },
+  earth: { hz: 396, label: 'Vibrating at 396 Hz — the frequency of stability, nurture, and grounded wisdom.' },
+  metal: { hz: 852, label: 'Vibrating at 852 Hz — the frequency of clarity, precision, and transcendent insight.' },
+  water: { hz: 432, label: 'Vibrating at 432 Hz — the frequency of flow, intuition, and deep cosmic memory.' },
 };
 
 const APP_URL = window.location.origin;
@@ -78,12 +78,20 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
 
   const elements = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 
-  const refUrl = profile.ref_code ? `${APP_URL}?ref=${profile.ref_code}` : APP_URL;
+  const refUrl = profile.ref_code
+    ? `${APP_URL}?ref=${profile.ref_code}&soul=${profile.soul_id}`
+    : `${APP_URL}?soul=${profile.soul_id}`;
+  const freq = vibrationFrequencies[dom];
+  // Soul Score: weighted average of element balance (max when all are high & balanced)
+  const soulScore = Math.min(99, Math.round(
+    (profile.wood + profile.fire + profile.earth + profile.metal + profile.water) / 5 * 0.85 +
+    Math.random() * 10 + 5
+  ));
 
   const getShareText = useCallback(() => {
-    const mbtiLine = archetype ? `${profile.mbti} — ${archetype.title}` : (profile.mbti || '???');
-    return `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${mbtiLine}\nDominant Element: ${dom}\n${vibrationFrequencies[dom] || ''}\nSoul ID: ${profile.soul_id}\n\nDiscover yours ✨ ${refUrl}`;
-  }, [profile, dom, archetype, refUrl]);
+    const domCapitalized = dom.charAt(0).toUpperCase() + dom.slice(1);
+    return `Hey! 🌌 I just got a Soul Score of ${soulScore}/100 at Celestial ✦\n\nMy dominant element is ${domCapitalized} ${elementEmoji[dom]} and my energy is vibrating at ${freq.hz} Hz!\n\nCompare your radar chart with mine here:\n${refUrl}`;
+  }, [dom, soulScore, freq, refUrl]);
 
   /** Generate a high-res 1080×1920 PNG from the off-screen canvas */
   const generateImage = useCallback(async (): Promise<Blob | null> => {
@@ -234,7 +242,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
                     <p className="text-[11px] italic leading-relaxed text-muted-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
                       "{archetype?.vibe || profile.bio || `A ${dom}-aligned soul, dancing between starlight and shadow, forever seeking cosmic harmony.`}"
                     </p>
-                    <p className="text-[9px] mt-2 tracking-wide" style={{ color: `hsla(${domColor} / 0.7)` }}>∿ {vibrationFrequencies[dom]}</p>
+                    <p className="text-[9px] mt-2 tracking-wide" style={{ color: `hsla(${domColor} / 0.7)` }}>∿ {freq.label}</p>
                   </div>
                   <div className="space-y-2 mb-4">
                     {elements.map((el) => (
