@@ -62,7 +62,7 @@ const vibrationFrequencies: Record<string, string> = {
 
 const socialPlatforms = [
   // Global Messaging
-  { name: 'WhatsApp', emoji: '💬', bg: '142, 70%, 49%', getUrl: (t: string) => `https://wa.me/?text=${encodeURIComponent(t)}` },
+  { name: 'WhatsApp', emoji: '💬', bg: '142, 70%, 49%', getUrl: (t: string) => `https://web.whatsapp.com/send?text=${encodeURIComponent(t)}` },
   { name: 'Telegram', emoji: '✈️', bg: '200, 80%, 50%', getUrl: (t: string) => `https://t.me/share/url?text=${encodeURIComponent(t)}` },
   { name: 'Messenger', emoji: '💭', bg: '214, 89%, 52%', getUrl: (t: string) => `https://www.facebook.com/dialog/send?link=${encodeURIComponent('https://celestial.app')}&app_id=0&redirect_uri=${encodeURIComponent('https://celestial.app')}&quote=${encodeURIComponent(t)}` },
   // Social Media
@@ -74,6 +74,7 @@ const socialPlatforms = [
   // Asia
   { name: '微信', emoji: '🟢', bg: '120, 50%, 45%', getUrl: (_t: string) => `weixin://` },
   { name: '微博', emoji: '🔴', bg: '2, 80%, 56%', getUrl: (t: string) => `https://service.weibo.com/share/share.php?title=${encodeURIComponent(t)}` },
+  { name: '小红书', emoji: '📕', bg: '0, 75%, 50%', getUrl: (_t: string) => `https://www.xiaohongshu.com/` },
   { name: 'LINE', emoji: '🟩', bg: '145, 65%, 45%', getUrl: (t: string) => `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(t)}` },
   { name: 'KakaoTalk', emoji: '💛', bg: '47, 85%, 55%', getUrl: (t: string) => `https://story.kakao.com/share?url=${encodeURIComponent('https://celestial.app')}&text=${encodeURIComponent(t)}` },
   // Professional & Other
