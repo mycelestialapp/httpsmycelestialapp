@@ -35,7 +35,11 @@
     "subtitle": "Connectez-vous avec des esprits proches",
     "mbti": "Compatibilité MBTI",
     "social": "Social Spirituel",
-    "love": "Guidance Amoureuse"
+    "love": "Guidance Amoureuse",
+    "findTribe": "Trouvez Votre Tribu d'Âmes",
+    "searching": "Exploration du réseau cosmique...",
+    "noMatches": "Aucune âme correspondante trouvée",
+    "noMatchesHint": "D'autres âmes rejoindront bientôt le réseau"
   },
   "altar": {
     "title": "Autel Sacré",
@@ -54,6 +58,22 @@
     "comingSoon": "Bientôt Disponible",
     "explore": "Explorer",
     "disclaimer": "À des fins de divertissement et de réflexion uniquement. Ne constitue pas un avis médical ou financier."
+  },
+  "auth": {
+    "signInTitle": "Bon Retour",
+    "signInSubtitle": "Connectez-vous pour accéder à votre profil",
+    "signUpTitle": "Rejoignez le Cosmos",
+    "signUpSubtitle": "Créez votre identité céleste",
+    "email": "E-mail",
+    "emailPlaceholder": "votre@email.com",
+    "password": "Mot de passe",
+    "displayName": "Nom Cosmique",
+    "displayNamePlaceholder": "Votre nom cosmique",
+    "signIn": "Se Connecter",
+    "signUp": "S'inscrire",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "noAccount": "Pas encore de compte ?",
+    "checkEmail": "Vérifiez votre e-mail pour le lien de confirmation !"
   },
   "divination": {
     "name": "Nom",

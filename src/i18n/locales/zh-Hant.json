@@ -35,7 +35,11 @@
     "subtitle": "與志同道合的靈魂連結",
     "mbti": "MBTI 配對",
     "social": "靈魂社交",
-    "love": "情感指引"
+    "love": "情感指引",
+    "findTribe": "尋找你的靈魂族群",
+    "searching": "正在掃描宇宙網絡...",
+    "noMatches": "尚未找到匹配的靈魂",
+    "noMatchesHint": "更多靈魂將加入網絡"
   },
   "altar": {
     "title": "神聖祭壇",
@@ -54,6 +58,22 @@
     "comingSoon": "即將推出",
     "explore": "探索",
     "disclaimer": "僅供娛樂和自我反思之用。不構成醫療或財務建議。"
+  },
+  "auth": {
+    "signInTitle": "歡迎回來",
+    "signInSubtitle": "登入以存取你的靈魂檔案",
+    "signUpTitle": "加入宇宙",
+    "signUpSubtitle": "創建你的天體身份",
+    "email": "電子郵件",
+    "emailPlaceholder": "your@email.com",
+    "password": "密碼",
+    "displayName": "靈魂名稱",
+    "displayNamePlaceholder": "你的宇宙名稱",
+    "signIn": "登入",
+    "signUp": "註冊",
+    "hasAccount": "已有帳號？",
+    "noAccount": "還沒有帳號？",
+    "checkEmail": "請查看你的電子郵件以確認！"
   },
   "divination": {
     "name": "姓名",

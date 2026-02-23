@@ -6,7 +6,9 @@ import BirthInputModal from '@/components/BirthInputModal';
 import Disclaimer from '@/components/Disclaimer';
 import { useNavigate } from 'react-router-dom';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
-import type { ElementEnergy } from '@/lib/fiveElements';
+import type { ElementEnergy, CelestialProfile } from '@/lib/fiveElements';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const tools = [
   { key: 'bazi', icon: Compass, path: '/oracle/bazi' },
@@ -18,14 +20,28 @@ const tools = [
 const OraclePage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [energy, setEnergy] = useState<ElementEnergy | null>(null);
   const [insight, setInsight] = useState('');
 
-  const handleBirthSubmit = (year: number, month: number, day: number) => {
-    const profile = calculateElementEnergy(year, month, day);
+  const handleBirthSubmit = async (year: number, month: number, day: number) => {
+    const profile: CelestialProfile = calculateElementEnergy(year, month, day);
     setEnergy(profile.energy);
     setInsight(generateInsight(profile, i18n.language));
+
+    // Save to profile if logged in
+    if (user) {
+      await supabase.from('profiles').update({
+        birthday: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        wood: profile.energy.wood,
+        fire: profile.energy.fire,
+        earth: profile.energy.earth,
+        metal: profile.energy.metal,
+        water: profile.energy.water,
+        dominant_element: profile.dominantElement,
+      }).eq('id', user.id);
+    }
   };
 
   return (
