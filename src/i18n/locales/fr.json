@@ -28,7 +28,15 @@
     "tarot": "Sagesse du Tarot",
     "tarotDesc": "Guidance par les archétypes",
     "iching": "Oracle du Yi-King",
-    "ichingDesc": "Consultation du Livre des Changements"
+    "ichingDesc": "Consultation du Livre des Changements",
+    "dailyWisdom": "Sagesse du Jour",
+    "cosmicScore": "Score Cosmique"
+  },
+  "checkin": {
+    "title": "Connexion Quotidienne",
+    "claim": "Réclamer +10 ✦",
+    "done": "Réclamé ✓",
+    "bonusHint": "Demain c'est le 7ᵉ jour — récompense doublée !"
   },
   "tribe": {
     "title": "Tribu d'Âmes",

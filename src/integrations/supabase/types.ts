@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkins: {
+        Row: {
+          checked_at: string
+          created_at: string
+          id: string
+          reward: number
+          streak: number
+          user_id: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          id?: string
+          reward?: number
+          streak?: number
+          user_id: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          id?: string
+          reward?: number
+          streak?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -73,7 +100,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_star_dust: {
+        Args: { amount: number; uid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
