@@ -46,13 +46,33 @@
     "subtitle": "每日儀式與祝福",
     "blessing": "每日祝福",
     "memorial": "祖先紀念",
-    "fengshui": "風水"
+    "memorialDesc": "以神聖的供奉儀式緬懷先祖",
+    "fengshui": "風水",
+    "lightOffering": "點一盞蓮花燈",
+    "chooseIntention": "選擇你的心願",
+    "lightAnother": "再點一盞燈",
+    "ancestralSpace": "先祖空間",
+    "makeOffering": "進行供奉 ✦",
+    "offeringActive": "供奉進行中...",
+    "ambientSound": "氛圍音效",
+    "intention": {
+      "peace": "內心平靜",
+      "success": "事業有成",
+      "health": "身體健康",
+      "love": "愛情美滿"
+    }
   },
   "library": {
     "title": "智慧典籍",
-    "subtitle": "文章、指南與教義",
+    "subtitle": "占星、八字、MBTI 與風水洞見",
     "articles": "文章",
-    "videos": "影片"
+    "videos": "影片",
+    "filter": {
+      "all": "全部",
+      "article": "文章",
+      "video": "影片",
+      "prompt": "金句"
+    }
   },
   "common": {
     "comingSoon": "即將推出",
