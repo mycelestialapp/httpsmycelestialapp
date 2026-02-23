@@ -50,7 +50,12 @@
     "noMatchesHint": "More souls will join the network soon",
     "generateCard": "Generate Soul Card",
     "downloadCard": "Download",
-    "shareCard": "Share"
+    "shareCard": "Share",
+    "compatibility": "match",
+    "viewMore": "Discover More Souls",
+    "setMbti": "Set your MBTI type",
+    "insufficientDust": "Star Dust Insufficient",
+    "insufficientDustHint": "Earn more through daily check-ins or invite friends to join."
   },
   "altar": {
     "title": "Sacred Altar",

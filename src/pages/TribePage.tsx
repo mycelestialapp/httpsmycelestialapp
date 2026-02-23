@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Share2, Plus, Users, Search, CreditCard } from 'lucide-react';
+import { Star, Share2, Plus, Users, Search, CreditCard, Lock } from 'lucide-react';
 import { findTopMatches, type MatchResult } from '@/lib/matchingEngine';
 import type { ElementEnergy } from '@/lib/fiveElements';
 import Disclaimer from '@/components/Disclaimer';
 import SoulCardModal from '@/components/SoulCardModal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MBTI_TYPES = [
   'INTJ', 'INTP', 'ENTJ', 'ENTP',
@@ -15,6 +16,13 @@ const MBTI_TYPES = [
   'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
   'ISTP', 'ISFP', 'ESTP', 'ESFP',
 ];
+
+const mbtiArchetypes: Record<string, string> = {
+  INTJ: 'The Architect', INTP: 'The Thinker', ENTJ: 'The Commander', ENTP: 'The Debater',
+  INFJ: 'The Advocate', INFP: 'The Mediator', ENFJ: 'The Protagonist', ENFP: 'The Campaigner',
+  ISTJ: 'The Logistician', ISFJ: 'The Defender', ESTJ: 'The Executive', ESFJ: 'The Consul',
+  ISTP: 'The Virtuoso', ISFP: 'The Adventurer', ESTP: 'The Entrepreneur', ESFP: 'The Entertainer',
+};
 
 const elementColors: Record<string, string> = {
   wood: '120, 60%, 40%',
@@ -48,42 +56,26 @@ const TribePage = () => {
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [editingMbti, setEditingMbti] = useState(false);
   const [showSoulCard, setShowSoulCard] = useState(false);
+  const [showInsufficientDust, setShowInsufficientDust] = useState(false);
 
-  // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
+    if (!authLoading && !user) navigate('/auth');
   }, [user, authLoading, navigate]);
 
-  // Fetch profile
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     if (data) setProfile(data as Profile);
   }, [user]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
-  // Find matches
   const findMatches = useCallback(async () => {
     if (!profile) return;
     setLoadingMatches(true);
-    const { data: candidates } = await supabase
-      .from('profiles')
-      .select('*')
-      .neq('id', profile.id)
-      .limit(50);
-
+    const { data: candidates } = await supabase.from('profiles').select('*').neq('id', profile.id).limit(50);
     if (candidates && candidates.length > 0) {
-      const userEnergy: ElementEnergy = {
-        wood: profile.wood, fire: profile.fire, earth: profile.earth,
-        metal: profile.metal, water: profile.water,
-      };
+      const userEnergy: ElementEnergy = { wood: profile.wood, fire: profile.fire, earth: profile.earth, metal: profile.metal, water: profile.water };
       const results = findTopMatches(userEnergy, profile.mbti || '', profile.id, candidates as any[], 3);
       setMatches(results);
     }
@@ -92,7 +84,6 @@ const TribePage = () => {
 
   useEffect(() => { if (profile) findMatches(); }, [profile, findMatches]);
 
-  // Update MBTI
   const updateMbti = async (mbti: string) => {
     if (!user) return;
     await supabase.from('profiles').update({ mbti }).eq('id', user.id);
@@ -100,10 +91,24 @@ const TribePage = () => {
     setEditingMbti(false);
   };
 
+  // Spend star dust for more matches
+  const handleViewMoreMatches = async () => {
+    if (!profile || !user) return;
+    if (profile.star_dust < 5) {
+      setShowInsufficientDust(true);
+      return;
+    }
+    await supabase.rpc('increment_star_dust', { uid: user.id, amount: -5 });
+    setProfile(p => p ? { ...p, star_dust: p.star_dust - 5 } : p);
+    // Refresh matches
+    findMatches();
+  };
+
   if (authLoading || !user) return null;
 
   const domElement = profile?.dominant_element || 'earth';
   const domColor = elementColors[domElement] || elementColors.earth;
+  const archetype = profile?.mbti ? mbtiArchetypes[profile.mbti.toUpperCase()] : null;
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
@@ -115,16 +120,13 @@ const TribePage = () => {
           </h2>
           <p className="text-sm text-muted-foreground">{t('tribe.subtitle')}</p>
         </div>
-        {/* Star Dust badge */}
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{
-          background: 'hsla(var(--gold) / 0.1)',
-          border: '1px solid hsla(var(--gold) / 0.25)',
+          background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.25)',
         }}>
           <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
           <span className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>{profile?.star_dust ?? 0}</span>
           <button onClick={() => navigate('/subscribe')} className="ml-1 w-4 h-4 rounded-full flex items-center justify-center" style={{
-            background: 'hsla(var(--gold) / 0.2)',
-            color: 'hsl(var(--gold))',
+            background: 'hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
           }}>
             <Plus size={10} />
           </button>
@@ -134,19 +136,15 @@ const TribePage = () => {
       {/* Soul ID Card */}
       {profile && (
         <div className="glass-card-highlight overflow-hidden">
-          {/* Colored top band */}
           <div className="h-2 -mx-6 -mt-6 mb-4" style={{
-            background: `linear-gradient(90deg, hsl(${domColor}), hsla(${domColor} / 0.3))`,
+            background: `linear-gradient(90deg, hsl(${domColor}), hsla(var(--gold) / 0.4), hsl(${domColor}))`,
           }} />
 
           <div className="flex items-start gap-4">
-            {/* Avatar orb */}
             <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-xl font-bold" style={{
-              background: `radial-gradient(circle, hsla(${domColor} / 0.4), hsla(${domColor} / 0.1))`,
-              border: `2px solid hsla(${domColor} / 0.5)`,
-              color: `hsl(${domColor})`,
-              fontFamily: 'var(--font-serif)',
-              boxShadow: `0 0 20px hsla(${domColor} / 0.2)`,
+              background: `radial-gradient(circle at 35% 35%, hsla(${domColor} / 0.5), hsla(${domColor} / 0.1))`,
+              border: `2px solid hsla(${domColor} / 0.5)`, color: `hsl(${domColor})`,
+              fontFamily: 'var(--font-serif)', boxShadow: `0 0 25px hsla(${domColor} / 0.25)`,
             }}>
               {(profile.display_name || 'S').charAt(0).toUpperCase()}
             </div>
@@ -158,14 +156,18 @@ const TribePage = () => {
                 </h3>
                 {profile.mbti && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
-                    background: 'hsla(var(--accent) / 0.15)',
-                    border: '1px solid hsla(var(--accent) / 0.3)',
-                    color: 'hsl(var(--accent))',
+                    background: 'hsla(var(--accent) / 0.15)', border: '1px solid hsla(var(--accent) / 0.3)', color: 'hsl(var(--accent))',
                   }}>
                     {profile.mbti}
                   </span>
                 )}
               </div>
+              {/* MBTI Archetype */}
+              {archetype && (
+                <p className="text-[10px] font-medium mt-0.5" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                  {archetype}
+                </p>
+              )}
               <p className="text-[10px] text-muted-foreground tracking-wider mt-0.5">
                 SOUL ID: {profile.soul_id}
               </p>
@@ -180,13 +182,9 @@ const TribePage = () => {
             {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
               <div key={el} className="flex flex-col items-center gap-1">
                 <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${profile[el]}%`,
-                      background: `hsl(${elementColors[el]})`,
-                    }}
-                  />
+                  <div className="h-full rounded-full transition-all duration-500" style={{
+                    width: `${profile[el]}%`, background: `hsl(${elementColors[el]})`,
+                  }} />
                 </div>
                 <span className="text-[9px] text-muted-foreground">{t(`oracle.${el}`)}</span>
               </div>
@@ -195,32 +193,19 @@ const TribePage = () => {
 
           {/* MBTI selector */}
           {!profile.mbti && !editingMbti && (
-            <button
-              onClick={() => setEditingMbti(true)}
-              className="mt-3 w-full py-2 rounded-lg text-xs transition-all"
-              style={{
-                background: 'hsla(var(--accent) / 0.1)',
-                border: '1px solid hsla(var(--accent) / 0.2)',
-                color: 'hsl(var(--accent))',
-              }}
-            >
-              + Set your MBTI type
+            <button onClick={() => setEditingMbti(true)} className="mt-3 w-full py-2 rounded-lg text-xs transition-all" style={{
+              background: 'hsla(var(--accent) / 0.1)', border: '1px solid hsla(var(--accent) / 0.2)', color: 'hsl(var(--accent))',
+            }}>
+              + {t('tribe.setMbti')}
             </button>
           )}
 
           {editingMbti && (
             <div className="mt-3 grid grid-cols-4 gap-1.5">
               {MBTI_TYPES.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => updateMbti(type)}
-                  className="py-1.5 rounded text-[10px] font-semibold transition-all hover:scale-105"
-                  style={{
-                    background: 'hsla(var(--card) / 0.5)',
-                    border: '1px solid hsla(var(--gold) / 0.15)',
-                    color: 'hsl(var(--foreground))',
-                  }}
-                >
+                <button key={type} onClick={() => updateMbti(type)} className="py-1.5 rounded text-[10px] font-semibold transition-all hover:scale-105" style={{
+                  background: 'hsla(var(--card) / 0.5)', border: '1px solid hsla(var(--gold) / 0.15)', color: 'hsl(var(--foreground))',
+                }}>
                   {type}
                 </button>
               ))}
@@ -229,26 +214,14 @@ const TribePage = () => {
 
           {/* Actions */}
           <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setShowSoulCard(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02]"
-              style={{
-                background: 'hsla(var(--gold) / 0.1)',
-                border: '1px solid hsla(var(--gold) / 0.2)',
-                color: 'hsl(var(--gold))',
-              }}
-            >
+            <button onClick={() => setShowSoulCard(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]" style={{
+              background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
+            }}>
               <Share2 size={12} /> {t('tribe.generateCard')}
             </button>
-            <button
-              onClick={() => navigate('/subscribe')}
-              className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs transition-all hover:scale-[1.02]"
-              style={{
-                background: 'hsla(var(--accent) / 0.1)',
-                border: '1px solid hsla(var(--accent) / 0.2)',
-                color: 'hsl(var(--accent))',
-              }}
-            >
+            <button onClick={() => navigate('/subscribe')} className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs transition-all hover:scale-[1.02]" style={{
+              background: 'hsla(var(--accent) / 0.1)', border: '1px solid hsla(var(--accent) / 0.2)', color: 'hsl(var(--accent))',
+            }}>
               <CreditCard size={12} /> VIP
             </button>
           </div>
@@ -282,17 +255,22 @@ const TribePage = () => {
 
         {matches.length > 0 && (
           <div className="space-y-3">
-            {matches.map((match) => {
+            {matches.map((match, idx) => {
               const mDom = match.profile.dominant_element || 'earth';
               const mColor = elementColors[mDom] || elementColors.earth;
+              const mArchetype = match.profile.mbti ? mbtiArchetypes[match.profile.mbti.toUpperCase()] : null;
               return (
-                <div key={match.profile.id} className="glass-card p-4">
+                <motion.div
+                  key={match.profile.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="glass-card p-4"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold" style={{
                       background: `radial-gradient(circle, hsla(${mColor} / 0.4), hsla(${mColor} / 0.1))`,
-                      border: `1px solid hsla(${mColor} / 0.4)`,
-                      color: `hsl(${mColor})`,
-                      fontFamily: 'var(--font-serif)',
+                      border: `1px solid hsla(${mColor} / 0.4)`, color: `hsl(${mColor})`, fontFamily: 'var(--font-serif)',
                     }}>
                       {(match.profile.display_name || 'S').charAt(0).toUpperCase()}
                     </div>
@@ -301,25 +279,40 @@ const TribePage = () => {
                         <span className="text-sm font-semibold truncate">{match.profile.display_name || 'Soul'}</span>
                         {match.profile.mbti && (
                           <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{
-                            background: 'hsla(var(--accent) / 0.1)',
-                            color: 'hsl(var(--accent))',
+                            background: 'hsla(var(--accent) / 0.1)', color: 'hsl(var(--accent))',
                           }}>
                             {match.profile.mbti}
                           </span>
                         )}
                       </div>
+                      {mArchetype && (
+                        <p className="text-[9px] mt-0.5" style={{ color: 'hsla(var(--gold) / 0.6)' }}>{mArchetype}</p>
+                      )}
                       <p className="text-xs text-muted-foreground italic mt-0.5">{match.reason}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-lg font-bold" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
                         {match.compatibility}%
                       </div>
-                      <div className="text-[9px] text-muted-foreground">match</div>
+                      <div className="text-[9px] text-muted-foreground">{t('tribe.compatibility')}</div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
+
+            {/* View More — costs Star Dust */}
+            <button
+              onClick={handleViewMoreMatches}
+              className="w-full py-2.5 rounded-xl text-xs font-medium transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+              style={{
+                background: 'hsla(var(--gold) / 0.06)',
+                border: '1px solid hsla(var(--gold) / 0.15)',
+                color: 'hsla(var(--gold) / 0.7)',
+              }}
+            >
+              <Star size={12} /> {t('tribe.viewMore')} (5 ✦)
+            </button>
           </div>
         )}
       </div>
@@ -328,12 +321,46 @@ const TribePage = () => {
 
       {/* Soul Card Modal */}
       {profile && (
-        <SoulCardModal
-          open={showSoulCard}
-          onClose={() => setShowSoulCard(false)}
-          profile={profile}
-        />
+        <SoulCardModal open={showSoulCard} onClose={() => setShowSoulCard(false)} profile={profile} />
       )}
+
+      {/* Insufficient Star Dust Modal */}
+      <AnimatePresence>
+        {showInsufficientDust && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowInsufficientDust(false)} />
+            <motion.div
+              className="relative glass-card-highlight text-center max-w-xs p-6"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <Lock size={28} className="mx-auto mb-3" style={{ color: 'hsl(var(--gold))' }} />
+              <h3 className="text-base font-bold mb-2" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                {t('tribe.insufficientDust')}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t('tribe.insufficientDustHint')}
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowInsufficientDust(false); navigate('/'); }} className="flex-1 py-2 rounded-lg text-xs" style={{
+                  background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
+                }}>
+                  {t('checkin.title')}
+                </button>
+                <button onClick={() => setShowInsufficientDust(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground" style={{
+                  background: 'hsla(var(--muted) / 0.2)', border: '1px solid hsla(var(--muted) / 0.3)',
+                }}>
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

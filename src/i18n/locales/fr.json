@@ -50,7 +50,12 @@
     "noMatchesHint": "D'autres âmes rejoindront bientôt le réseau",
     "generateCard": "Générer la Carte d'Âme",
     "downloadCard": "Télécharger",
-    "shareCard": "Partager"
+    "shareCard": "Partager",
+    "compatibility": "affinité",
+    "viewMore": "Découvrir Plus d'Âmes",
+    "setMbti": "Définir votre type MBTI",
+    "insufficientDust": "Poussière d'Étoiles Insuffisante",
+    "insufficientDustHint": "Gagnez-en grâce à la connexion quotidienne ou en invitant des amis."
   },
   "altar": {
     "title": "Autel Sacré",
