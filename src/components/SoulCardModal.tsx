@@ -89,9 +89,8 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
   ));
 
   const getShareText = useCallback(() => {
-    const domCapitalized = dom.charAt(0).toUpperCase() + dom.slice(1);
-    return `Hey! 🌌 I just got a Soul Score of ${soulScore}/100 at Celestial ✦\n\nMy dominant element is ${domCapitalized} ${elementEmoji[dom]} and my energy is vibrating at ${freq.hz} Hz!\n\nCompare your radar chart with mine here:\n${refUrl}`;
-  }, [dom, soulScore, freq, refUrl]);
+    return `✦ Soul Score: ${soulScore}/100! 🌌\n\nCan you vibrate higher?\n\nCompare our radar charts here:\n${refUrl}`;
+  }, [soulScore, refUrl]);
 
   /** Generate a high-res 1080×1920 PNG from the off-screen canvas */
   const generateImage = useCallback(async (): Promise<Blob | null> => {

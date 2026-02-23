@@ -71,10 +71,10 @@ const OraclePage = () => {
           <span className="text-lg">⚔️</span>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>
-              {t('oracle.challengeTitle')}
+              ⚡ Comparing your soul with Soul #{compareSoul.slice(0, 8)}...
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
-              {t('oracle.challengeDesc', { soulId: compareSoul })}
+              Begin your reading to see who vibrates higher!
             </p>
           </div>
           <button
