@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { DivinationInfo } from "./InputCard";
 
 interface ResultCardProps {
@@ -40,6 +41,7 @@ function pick<T>(arr: T[], n: number): T[] {
 }
 
 const ResultCard = ({ info, onReset }: ResultCardProps) => {
+  const { t } = useTranslation();
   const result = useMemo(() => ({
     fortune: fortunes[Math.floor(Math.random() * fortunes.length)],
     luck: jixiong[Math.floor(Math.random() * jixiong.length)],
@@ -54,64 +56,61 @@ const ResultCard = ({ info, onReset }: ResultCardProps) => {
 
   return (
     <div className="animate-fade-in flex flex-col items-center gap-5">
-      {/* Header */}
       <div className="relative text-center">
-        <div className="absolute -inset-10 rounded-full bg-accent/5 blur-3xl" />
+        <div className="absolute -inset-10 rounded-full blur-3xl" style={{ background: 'hsla(var(--accent) / 0.05)' }} />
         <div className="relative">
-          <div className="text-xs neon-text-purple tracking-[0.5em] mb-2">
-            ━━ DIVINATION RESULT ━━
+          <div className="text-xs tracking-[0.5em] mb-2" style={{ color: 'hsl(var(--accent))' }}>
+            ━━ {t('divination.result').toUpperCase()} ━━
           </div>
-          <h2 className="text-3xl font-black neon-text-gold tracking-widest">
-            ◈ 天机解语 ◈
+          <h2 className="text-3xl font-bold tracking-widest text-gold-glow" style={{ fontFamily: 'var(--font-serif)' }}>
+            ◈ {t('divination.heavenlyMessage')} ◈
           </h2>
         </div>
       </div>
 
-      {/* Profile Card */}
+      {/* Profile */}
       <div className="glass-card w-full">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-full orb-button flex-shrink-0 flex items-center justify-center text-xl neon-text-gold font-black">
+          <div className="w-14 h-14 rounded-full orb-button flex-shrink-0 flex items-center justify-center text-xl text-gold-glow font-bold" style={{ fontFamily: 'var(--font-serif)' }}>
             {info.name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-lg font-bold text-foreground truncate">{info.name}</p>
             <p className="text-xs text-muted-foreground">{birthStr} {info.hour && `· ${info.hour.split(" ")[0]}`}</p>
             <p className="text-xs text-muted-foreground">
-              {info.region && `${info.region} · `}{info.useSolarTime ? "真太阳时" : "标准时"}
+              {info.region && `${info.region} · `}{info.useSolarTime ? t('divination.solarTime') : "标准时"}
             </p>
           </div>
         </div>
 
-        {/* Luck Badge */}
         <div className="flex justify-center my-4">
           <div className={`luck-badge ${result.luck.color === "gold" ? "luck-gold" : "luck-purple"}`}>
-            <span className="text-3xl font-black tracking-widest">{result.luck.text}</span>
+            <span className="text-3xl font-bold tracking-widest" style={{ fontFamily: 'var(--font-serif)' }}>{result.luck.text}</span>
             <span className="text-xs mt-1 opacity-80">{result.luck.desc}</span>
           </div>
         </div>
 
-        {/* Stats Row */}
         <div className="grid grid-cols-3 gap-2 my-4">
           <div className="stat-cell">
-            <span className="stat-label">命主星</span>
-            <span className="stat-value neon-text-gold">{result.star}</span>
+            <span className="stat-label">{t('divination.fateStar')}</span>
+            <span className="stat-value text-gold-glow">{result.star}</span>
           </div>
           <div className="stat-cell">
-            <span className="stat-label">五行属</span>
-            <span className="stat-value neon-text-purple">{result.element}</span>
+            <span className="stat-label">{t('divination.fiveElements')}</span>
+            <span className="stat-value" style={{ color: 'hsl(var(--accent))' }}>{result.element}</span>
           </div>
           <div className="stat-cell">
-            <span className="stat-label">运势值</span>
-            <span className="stat-value neon-text-gold">{result.score}</span>
+            <span className="stat-label">{t('divination.fortuneScore')}</span>
+            <span className="stat-value text-gold-glow">{result.score}</span>
           </div>
         </div>
       </div>
 
-      {/* Fortune Text */}
+      {/* Fortune */}
       <div className="glass-card w-full">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-primary">✦</span>
-          <span className="text-xs neon-text-gold tracking-[0.3em] font-bold">天机谕示</span>
+          <span className="text-xs tracking-[0.3em] font-bold input-label">{t('divination.heavenlyMessage')}</span>
           <span className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
         </div>
         <p className="text-foreground leading-relaxed text-center text-sm sm:text-base py-2">
@@ -125,34 +124,30 @@ const ResultCard = ({ info, onReset }: ResultCardProps) => {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-primary">▸</span>
-              <span className="text-xs neon-text-gold tracking-[0.3em] font-bold">今日宜</span>
+              <span className="text-xs tracking-[0.3em] font-bold input-label">{t('divination.suitable')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {result.good.map((item) => (
-                <span key={item} className="yi-tag">{item}</span>
-              ))}
+              {result.good.map((item) => <span key={item} className="yi-tag">{item}</span>)}
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-accent">▸</span>
-              <span className="text-xs neon-text-purple tracking-[0.3em] font-bold">今日忌</span>
+              <span style={{ color: 'hsl(var(--accent))' }}>▸</span>
+              <span className="text-xs tracking-[0.3em] font-bold" style={{ color: 'hsla(var(--accent) / 0.7)' }}>{t('divination.avoid')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {result.bad.map((item) => (
-                <span key={item} className="ji-tag">{item}</span>
-              ))}
+              {result.bad.map((item) => <span key={item} className="ji-tag">{item}</span>)}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Reset Button */}
       <button
         onClick={onReset}
-        className="glass-card px-8 py-3 text-sm neon-text-purple tracking-widest hover:scale-105 transition-transform cursor-pointer mt-2 mb-4"
+        className="glass-card px-8 py-3 text-sm tracking-widest hover:scale-105 transition-transform cursor-pointer mt-2 mb-4"
+        style={{ color: 'hsl(var(--accent))' }}
       >
-        ◈ 再算一卦 ◈
+        ◈ {t('divination.again')} ◈
       </button>
     </div>
   );
