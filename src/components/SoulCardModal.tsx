@@ -20,6 +20,7 @@ interface SoulCardModalProps {
     earth: number;
     metal: number;
     water: number;
+    ref_code?: string;
   };
 }
 
@@ -77,10 +78,12 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
 
   const elements = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 
+  const refUrl = profile.ref_code ? `${APP_URL}?ref=${profile.ref_code}` : APP_URL;
+
   const getShareText = useCallback(() => {
     const mbtiLine = archetype ? `${profile.mbti} — ${archetype.title}` : (profile.mbti || '???');
-    return `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${mbtiLine}\nDominant Element: ${dom}\n${vibrationFrequencies[dom] || ''}\nSoul ID: ${profile.soul_id}\n\nDiscover yours ✨ ${APP_URL}`;
-  }, [profile, dom, archetype]);
+    return `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${mbtiLine}\nDominant Element: ${dom}\n${vibrationFrequencies[dom] || ''}\nSoul ID: ${profile.soul_id}\n\nDiscover yours ✨ ${refUrl}`;
+  }, [profile, dom, archetype, refUrl]);
 
   /** Generate a high-res 1080×1920 PNG from the off-screen canvas */
   const generateImage = useCallback(async (): Promise<Blob | null> => {
@@ -166,8 +169,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
 
   return (
     <>
-      {/* Off-screen 9:16 canvas for image generation */}
-      {open && <ShareCardCanvas ref={canvasRef} profile={profile} appUrl={APP_URL} />}
+      {open && <ShareCardCanvas ref={canvasRef} profile={profile} appUrl={APP_URL} refCode={profile.ref_code} />}
 
       <AnimatePresence>
         {open && (

@@ -1,4 +1,5 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 
 interface ShareCardCanvasProps {
   profile: {
@@ -14,6 +15,7 @@ interface ShareCardCanvasProps {
     water: number;
   };
   appUrl: string;
+  refCode?: string;
 }
 
 const elementColors: Record<string, string> = {
@@ -57,15 +59,37 @@ const vibrationFrequencies: Record<string, string> = {
 
 const elements = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 
-/**
- * Off-screen 1080×1920 (9:16) card template for image export.
- * Rendered with absolute positioning off-screen; captured via html-to-image.
- */
 const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
-  ({ profile, appUrl }, ref) => {
+  ({ profile, appUrl, refCode }, ref) => {
     const dom = profile.dominant_element || 'earth';
     const domColor = elementColors[dom] || elementColors.earth;
     const archetype = profile.mbti ? mbtiArchetypes[profile.mbti.toUpperCase()] : null;
+    const [qrDataUrl, setQrDataUrl] = useState<string>('');
+
+    const shareUrl = refCode ? `${appUrl}?ref=${refCode}` : appUrl;
+
+    useEffect(() => {
+      QRCode.toDataURL(shareUrl, {
+        width: 160,
+        margin: 1,
+        color: { dark: '#d4c9a8', light: '#00000000' },
+        errorCorrectionLevel: 'M',
+      }).then(setQrDataUrl).catch(() => {});
+    }, [shareUrl]);
+
+    // Seeded random for consistent starfield
+    const stars = Array.from({ length: 60 }, (_, i) => {
+      const seed = (i * 7919 + 104729) % 100000;
+      const r = (n: number) => ((seed * n) % 1000) / 1000;
+      return {
+        w: r(13) * 3 + 1,
+        h: r(17) * 3 + 1,
+        hue: r(23) * 60 + 200,
+        opacity: r(29) * 0.5 + 0.2,
+        left: r(31) * 100,
+        top: r(37) * 100,
+      };
+    });
 
     return (
       <div
@@ -82,18 +106,17 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
           overflow: 'hidden',
         }}
       >
-        {/* Starfield dots */}
-        {Array.from({ length: 60 }).map((_, i) => (
+        {/* Starfield dots — seeded for consistency */}
+        {stars.map((s, i) => (
           <div
             key={i}
             style={{
               position: 'absolute',
-              width: Math.random() * 3 + 1,
-              height: Math.random() * 3 + 1,
+              width: s.w, height: s.h,
               borderRadius: '50%',
-              background: `hsla(${Math.random() * 60 + 200}, 60%, 80%, ${Math.random() * 0.5 + 0.2})`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              background: `hsla(${s.hue}, 60%, 80%, ${s.opacity})`,
+              left: `${s.left}%`,
+              top: `${s.top}%`,
             }}
           />
         ))}
@@ -111,7 +134,7 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
         }} />
 
         {/* Content */}
-        <div style={{ position: 'relative', zIndex: 1, padding: '80px 60px 60px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'relative', zIndex: 1, padding: '80px 60px 50px', height: '100%', display: 'flex', flexDirection: 'column' }}>
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 50 }}>
             <div style={{ fontSize: 14, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'hsla(45, 80%, 65%, 0.7)', marginBottom: 16 }}>
@@ -173,7 +196,7 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
           </div>
 
           {/* Element bars */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 40, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32, flex: 1 }}>
             {elements.map((el) => (
               <div key={el} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 24, width: 36, textAlign: 'center' }}>{elementEmoji[el]}</span>
@@ -196,20 +219,35 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
             ))}
           </div>
 
-          {/* Footer */}
+          {/* Footer with QR Code */}
           <div style={{
-            borderTop: '1px solid hsla(45, 80%, 65%, 0.1)', paddingTop: 28,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+            borderTop: '1px solid hsla(45, 80%, 65%, 0.1)', paddingTop: 24,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <div style={{ fontSize: 13, color: 'hsla(0,0%,60%,0.8)', letterSpacing: '0.15em' }}>
-              SOUL ID: #{profile.soul_id}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ fontSize: 13, color: 'hsla(0,0%,60%,0.8)', letterSpacing: '0.15em' }}>
+                SOUL ID: #{profile.soul_id}
+              </div>
+              <div style={{ fontSize: 16, color: 'hsla(45, 80%, 65%, 0.7)', letterSpacing: '0.1em' }}>
+                ✦ {appUrl.replace(/^https?:\/\//, '')} ✦
+              </div>
+              <div style={{ fontSize: 14, color: 'hsla(0,0%,50%,0.6)', marginTop: 2 }}>
+                Who are you in the Universe? ✨
+              </div>
             </div>
-            <div style={{ fontSize: 16, color: 'hsla(45, 80%, 65%, 0.7)', letterSpacing: '0.1em' }}>
-              ✦ {appUrl.replace(/^https?:\/\//, '')} ✦
-            </div>
-            <div style={{ fontSize: 14, color: 'hsla(0,0%,50%,0.6)', marginTop: 4 }}>
-              Who are you in the Universe? ✨
-            </div>
+            {/* QR Code */}
+            {qrDataUrl && (
+              <div style={{
+                width: 120, height: 120, borderRadius: 12, overflow: 'hidden',
+                background: 'hsla(232, 40%, 15%, 0.8)',
+                border: '1px solid hsla(45, 80%, 65%, 0.15)',
+                padding: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <img src={qrDataUrl} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+            )}
           </div>
         </div>
       </div>

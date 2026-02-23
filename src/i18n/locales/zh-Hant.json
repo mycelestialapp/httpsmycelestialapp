@@ -166,5 +166,10 @@
     "topup": {
       "title": "星塵充值"
     }
+  },
+  "cta": {
+    "createCardTitle": "探索你的宇宙身份",
+    "createCardDesc": "解鎖五行能量藍圖，生成專屬的天機靈魂名片。",
+    "createCardButton": "創建我的靈魂名片"
   }
 }
