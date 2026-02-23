@@ -1,7 +1,8 @@
 import { useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { X, Download, Share2, Sparkles } from 'lucide-react';
+import { X, Download, Share2, Sparkles, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface SoulCardModalProps {
   open: boolean;
@@ -66,7 +67,27 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
   const domColor = elementColors[dom] || elementColors.earth;
   const archetype = profile.mbti ? mbtiArchetypes[profile.mbti.toUpperCase()] : null;
 
+  const { toast } = useToast();
+
   const elements = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback for iframe restrictions
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return true;
+    }
+  };
 
   const handleDownload = useCallback(async () => {
     if (!cardRef.current) return;
@@ -81,22 +102,27 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
       link.download = `soul-card-${profile.soul_id}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
+      toast({ title: '✦ Card saved!', description: 'Your Soul Card has been downloaded.' });
     } catch {
       const text = `✦ Soul Card — ${profile.display_name || 'Soul'} | ${profile.mbti || '???'} | ${dom} ✦`;
-      navigator.clipboard.writeText(text);
+      await copyToClipboard(text);
+      toast({ title: '✦ Copied!', description: 'Card info copied to clipboard.' });
     }
-  }, [profile, dom]);
+  }, [profile, dom, toast]);
 
   const handleShare = useCallback(async () => {
     const mbtiLine = archetype ? `${profile.mbti} — ${archetype.title}` : (profile.mbti || '???');
     const text = `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${mbtiLine}\nDominant Element: ${dom}\n${vibrationFrequencies[dom] || ''}\nSoul ID: ${profile.soul_id}\n\nDiscover yours at Celestial ✨`;
-    if (navigator.share) {
-      try {
+    
+    try {
+      if (navigator.share) {
         await navigator.share({ title: 'My Soul Card', text });
-      } catch { /* cancelled */ }
-    } else {
-      navigator.clipboard.writeText(text);
-    }
+        return;
+      }
+    } catch { /* share cancelled or unavailable */ }
+    
+    await copyToClipboard(text);
+    toast({ title: '✦ Copied!', description: 'Soul Card info copied to clipboard. Paste it anywhere to share!' });
   }, [profile, dom, archetype]);
 
   return (
