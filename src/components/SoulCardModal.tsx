@@ -102,6 +102,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
         height: 1920,
         pixelRatio: 1,
         cacheBust: true,
+        skipFonts: true,
       });
       const res = await fetch(dataUrl);
       return await res.blob();
