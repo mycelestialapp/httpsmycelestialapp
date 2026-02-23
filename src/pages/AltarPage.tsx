@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Landmark, Compass, Volume2, VolumeX } from 'lucide-react';
 import LotusLamp from '@/components/LotusLamp';
 import GoldParticles from '@/components/GoldParticles';
-import Disclaimer from '@/components/Disclaimer';
+
 
 const AltarPage = () => {
   const { t } = useTranslation();
@@ -93,7 +93,7 @@ const AltarPage = () => {
         </div>
       </section>
 
-      <Disclaimer />
+      
     </div>
   );
 };

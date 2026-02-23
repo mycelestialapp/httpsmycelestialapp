@@ -335,4 +335,29 @@
       transform: translateY(0);
     }
   }
+
+  /* Button press feedback */
+  .btn-press {
+    @apply transition-all duration-150 active:scale-[0.96];
+  }
+
+  .btn-press:active {
+    box-shadow: 0 0 16px hsla(var(--gold) / 0.2);
+  }
+
+  /* Brand footer */
+  .brand-footer {
+    @apply text-center py-6 px-4;
+  }
+
+  .brand-footer p {
+    @apply text-xs text-muted-foreground leading-relaxed;
+    font-family: var(--font-sans);
+  }
+
+  .brand-footer .brand-sig {
+    @apply mt-2 text-xs tracking-[0.3em] uppercase;
+    color: hsla(var(--gold) / 0.35);
+    font-family: var(--font-serif);
+  }
 }
