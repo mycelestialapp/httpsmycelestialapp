@@ -62,7 +62,7 @@ const vibrationFrequencies: Record<string, string> = {
 
 const socialPlatforms = [
   // Global Messaging
-  { name: 'WhatsApp', emoji: '💬', bg: '142, 70%, 49%', getUrl: (t: string) => `https://web.whatsapp.com/send?text=${encodeURIComponent(t)}` },
+  { name: 'WhatsApp', emoji: '💬', bg: '142, 70%, 49%', getUrl: (t: string) => `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}` },
   { name: 'Telegram', emoji: '✈️', bg: '200, 80%, 50%', getUrl: (t: string) => `https://t.me/share/url?text=${encodeURIComponent(t)}` },
   { name: 'Messenger', emoji: '💭', bg: '214, 89%, 52%', getUrl: (t: string) => `https://www.facebook.com/dialog/send?link=${encodeURIComponent('https://celestial.app')}&app_id=0&redirect_uri=${encodeURIComponent('https://celestial.app')}&quote=${encodeURIComponent(t)}` },
   // Social Media
