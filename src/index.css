@@ -304,4 +304,35 @@
   .bottom-nav-item.active svg {
     filter: drop-shadow(0 0 6px hsla(var(--gold) / 0.4));
   }
+
+  /* Radar glow animation */
+  .radar-glow-active {
+    border-color: hsla(var(--gold) / 0.5) !important;
+    box-shadow:
+      0 0 40px hsla(var(--gold) / 0.12),
+      0 0 80px hsla(var(--gold) / 0.06),
+      inset 0 0 30px hsla(var(--gold) / 0.04);
+    transition: box-shadow 0.7s ease, border-color 0.7s ease;
+  }
+
+  @keyframes radar-shimmer {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  /* Page transition */
+  .page-transition {
+    animation: page-enter 0.4s ease-out both;
+  }
+
+  @keyframes page-enter {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }

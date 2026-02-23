@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Compass, Star, Layers, BookOpen } from 'lucide-react';
 import EnergyRadar from '@/components/EnergyRadar';
+import BirthInputModal from '@/components/BirthInputModal';
 import Disclaimer from '@/components/Disclaimer';
 import { useNavigate } from 'react-router-dom';
+import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
+import type { ElementEnergy } from '@/lib/fiveElements';
 
 const tools = [
   { key: 'bazi', icon: Compass, path: '/oracle/bazi' },
@@ -12,11 +16,20 @@ const tools = [
 ] as const;
 
 const OraclePage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [energy, setEnergy] = useState<ElementEnergy | null>(null);
+  const [insight, setInsight] = useState('');
+
+  const handleBirthSubmit = (year: number, month: number, day: number) => {
+    const profile = calculateElementEnergy(year, month, day);
+    setEnergy(profile.energy);
+    setInsight(generateInsight(profile, i18n.language));
+  };
 
   return (
-    <div className="max-w-md mx-auto space-y-6 pt-2 animate-fade-in">
+    <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
       {/* Hero */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-serif)', color: 'hsl(var(--gold))', textShadow: '0 0 24px hsla(var(--gold) / 0.3)' }}>
@@ -26,7 +39,11 @@ const OraclePage = () => {
       </div>
 
       {/* Energy Radar */}
-      <EnergyRadar />
+      <EnergyRadar
+        energy={energy}
+        insight={insight}
+        onRequestReading={() => setModalOpen(true)}
+      />
 
       {/* Tools grid */}
       <div>
@@ -53,6 +70,13 @@ const OraclePage = () => {
       </div>
 
       <Disclaimer />
+
+      {/* Modal */}
+      <BirthInputModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleBirthSubmit}
+      />
     </div>
   );
 };
