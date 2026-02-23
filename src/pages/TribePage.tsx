@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Share2, Plus, Users, Search, CreditCard, Lock } from 'lucide-react';
+import { Star, Share2, Plus, Users, Search, CreditCard, Lock, Eye } from 'lucide-react';
 import { findTopMatches, type MatchResult } from '@/lib/matchingEngine';
 import type { ElementEnergy } from '@/lib/fiveElements';
 import Disclaimer from '@/components/Disclaimer';
@@ -58,6 +58,9 @@ const TribePage = () => {
   const [editingMbti, setEditingMbti] = useState(false);
   const [showSoulCard, setShowSoulCard] = useState(false);
   const [showInsufficientDust, setShowInsufficientDust] = useState(false);
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
+  const [unlockTargetId, setUnlockTargetId] = useState<string | null>(null);
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -74,10 +77,16 @@ const TribePage = () => {
   const findMatches = useCallback(async () => {
     if (!profile) return;
     setLoadingMatches(true);
-    const { data: candidates } = await supabase.from('profiles').select('*').neq('id', profile.id).limit(50);
+    // Smart query: prioritize users with same generating-cycle element or compatible MBTI
+    const { data: candidates } = await supabase
+      .from('profiles')
+      .select('*')
+      .neq('id', profile.id)
+      .limit(50);
+
     if (candidates && candidates.length > 0) {
       const userEnergy: ElementEnergy = { wood: profile.wood, fire: profile.fire, earth: profile.earth, metal: profile.metal, water: profile.water };
-      const results = findTopMatches(userEnergy, profile.mbti || '', profile.id, candidates as any[], 3);
+      const results = findTopMatches(userEnergy, profile.mbti || '', profile.id, candidates as any[], 5);
       setMatches(results);
     }
     setLoadingMatches(false);
@@ -101,8 +110,27 @@ const TribePage = () => {
     }
     await supabase.rpc('increment_star_dust', { uid: user.id, amount: -5 });
     setProfile(p => p ? { ...p, star_dust: p.star_dust - 5 } : p);
-    // Refresh matches
     findMatches();
+  };
+
+  // Unlock detailed profile view — costs 10 Star Dust
+  const handleUnlockProfile = (matchId: string) => {
+    if (unlockedIds.has(matchId)) return; // already unlocked
+    setUnlockTargetId(matchId);
+    setShowUnlockPrompt(true);
+  };
+
+  const confirmUnlock = async () => {
+    if (!profile || !user || !unlockTargetId) return;
+    if (profile.star_dust < 10) {
+      setShowUnlockPrompt(false);
+      setShowInsufficientDust(true);
+      return;
+    }
+    await supabase.rpc('increment_star_dust', { uid: user.id, amount: -10 });
+    setProfile(p => p ? { ...p, star_dust: p.star_dust - 10 } : p);
+    setUnlockedIds(prev => new Set(prev).add(unlockTargetId));
+    setShowUnlockPrompt(false);
   };
 
   if (authLoading || !user) return null;
@@ -163,7 +191,6 @@ const TribePage = () => {
                   </span>
                 )}
               </div>
-              {/* MBTI Archetype */}
               {archetype && (
                 <p className="text-[10px] font-medium mt-0.5" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
                   {archetype}
@@ -260,6 +287,7 @@ const TribePage = () => {
               const mDom = match.profile.dominant_element || 'earth';
               const mColor = elementColors[mDom] || elementColors.earth;
               const mArchetype = match.profile.mbti ? mbtiArchetypes[match.profile.mbti.toUpperCase()] : null;
+              const isUnlocked = unlockedIds.has(match.profile.id);
               return (
                 <motion.div
                   key={match.profile.id}
@@ -298,6 +326,40 @@ const TribePage = () => {
                       <div className="text-[9px] text-muted-foreground">{t('tribe.compatibility')}</div>
                     </div>
                   </div>
+
+                  {/* Unlock / View Details button */}
+                  {isUnlocked ? (
+                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid hsla(var(--gold) / 0.08)' }}>
+                      <div className="grid grid-cols-5 gap-1">
+                        {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
+                          <div key={el} className="flex flex-col items-center gap-0.5">
+                            <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                              <div className="h-full rounded-full" style={{
+                                width: `${match.profile[el as keyof typeof match.profile] ?? 50}%`,
+                                background: `hsl(${elementColors[el]})`,
+                              }} />
+                            </div>
+                            <span className="text-[8px] text-muted-foreground">{el}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic mt-2 text-center">
+                        {match.profile.bio || `A ${mDom}-aligned soul seeking cosmic harmony.`}
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleUnlockProfile(match.profile.id)}
+                      className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99]"
+                      style={{
+                        background: 'hsla(var(--gold) / 0.06)',
+                        border: '1px solid hsla(var(--gold) / 0.12)',
+                        color: 'hsla(var(--gold) / 0.7)',
+                      }}
+                    >
+                      <Eye size={12} /> View Full Profile (10 ✦)
+                    </button>
+                  )}
                 </motion.div>
               );
             })}
@@ -324,6 +386,59 @@ const TribePage = () => {
       {profile && (
         <SoulCardModal open={showSoulCard} onClose={() => setShowSoulCard(false)} profile={profile} />
       )}
+
+      {/* ═══ Unlock Profile Prompt ═══ */}
+      <AnimatePresence>
+        {showUnlockPrompt && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowUnlockPrompt(false)} />
+            <motion.div
+              className="relative glass-card-highlight text-center max-w-xs p-6"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{
+                background: 'hsla(var(--gold) / 0.1)',
+                border: '2px solid hsla(var(--gold) / 0.3)',
+                boxShadow: '0 0 30px hsla(var(--gold) / 0.15)',
+              }}>
+                <Eye size={24} style={{ color: 'hsl(var(--gold))' }} />
+              </div>
+              <h3 className="text-base font-bold mb-1" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                Unlock Soul Profile
+              </h3>
+              <p className="text-xs text-muted-foreground mb-1">
+                View their full energy radar, bio & cosmic insights.
+              </p>
+              <div className="flex items-center justify-center gap-1 mb-4">
+                <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
+                <span className="text-sm font-bold" style={{ color: 'hsl(var(--gold))' }}>10 Star Dust</span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={confirmUnlock} className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]" style={{
+                  background: 'linear-gradient(135deg, hsla(var(--gold) / 0.2), hsla(var(--gold) / 0.1))',
+                  border: '1px solid hsla(var(--gold) / 0.3)',
+                  color: 'hsl(var(--gold))',
+                }}>
+                  ✦ Unlock Now
+                </button>
+                <button onClick={() => setShowUnlockPrompt(false)} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground" style={{
+                  background: 'hsla(var(--muted) / 0.15)', border: '1px solid hsla(var(--muted) / 0.25)',
+                }}>
+                  Cancel
+                </button>
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-3">
+                Balance: {profile?.star_dust ?? 0} ✦
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Insufficient Star Dust Modal */}
       <AnimatePresence>
