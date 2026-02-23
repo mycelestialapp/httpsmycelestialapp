@@ -55,6 +55,8 @@
     "nativeShare": "打開系統分享",
     "copyText": "複製名片文字",
     "copied": "已複製！",
+    "generating": "生成中...",
+    "shareHint": "分享會自動生成一張 1080×1920 高清靈魂名片圖片",
     "compatibility": "契合度",
     "viewMore": "探索更多靈魂",
     "setMbti": "設定你的 MBTI 類型",

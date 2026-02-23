@@ -55,6 +55,8 @@
     "nativeShare": "Ouvrir le partage système",
     "copyText": "Copier le texte",
     "copied": "Copié !",
+    "generating": "Génération...",
+    "shareHint": "Le partage génère une image HD 1080×1920 de votre Carte d'Âme",
     "compatibility": "affinité",
     "viewMore": "Découvrir Plus d'Âmes",
     "setMbti": "Définir votre type MBTI",
