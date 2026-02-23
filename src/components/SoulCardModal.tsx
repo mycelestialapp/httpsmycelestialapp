@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { X, Download, Share2, Sparkles, Link2, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { toPng } from 'html-to-image';
+import { domToPng } from 'modern-screenshot';
 import ShareCardCanvas from './ShareCardCanvas';
 
 interface SoulCardModalProps {
@@ -97,16 +97,20 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
   const generateImage = useCallback(async (): Promise<Blob | null> => {
     if (!canvasRef.current) return null;
     try {
-      const dataUrl = await toPng(canvasRef.current, {
+      const dataUrl = await domToPng(canvasRef.current, {
         width: 1080,
         height: 1920,
-        pixelRatio: 1,
-        cacheBust: true,
-        skipFonts: true,
+        scale: 1,
+        backgroundColor: '#0a0a1a',
+        style: {
+          position: 'static',
+          left: '0',
+        },
       });
       const res = await fetch(dataUrl);
       return await res.blob();
-    } catch {
+    } catch (e) {
+      console.error('Image generation failed:', e);
       return null;
     }
   }, []);

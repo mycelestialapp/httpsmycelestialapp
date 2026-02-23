@@ -101,7 +101,8 @@ const ShareCardCanvas = forwardRef<HTMLDivElement, ShareCardCanvasProps>(
           width: 1080,
           height: 1920,
           fontFamily: "'Playfair Display', 'Noto Serif SC', serif",
-          background: `linear-gradient(170deg, hsl(232 45% 10%) 0%, hsl(260 40% 6%) 40%, hsl(232 55% 4%) 100%)`,
+          background: '#0a0a1a',
+          backgroundImage: `linear-gradient(170deg, hsl(232 45% 10%) 0%, hsl(260 40% 6%) 40%, hsl(232 55% 4%) 100%)`,
           color: '#e8e4de',
           overflow: 'hidden',
         }}
