@@ -1,7 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { X, Download, Share2 } from 'lucide-react';
+import { X, Download, Share2, Sparkles } from 'lucide-react';
 
 interface SoulCardModalProps {
   open: boolean;
@@ -32,11 +32,39 @@ const elementEmoji: Record<string, string> = {
   wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚔️', water: '🌊',
 };
 
+const mbtiArchetypes: Record<string, { title: string; vibe: string }> = {
+  INTJ: { title: 'The Architect', vibe: 'A visionary strategist channeling cosmic precision into every blueprint of reality.' },
+  INTP: { title: 'The Thinker', vibe: 'A boundless mind exploring the infinite corridors of universal knowledge.' },
+  ENTJ: { title: 'The Commander', vibe: 'A born leader whose willpower bends the arc of destiny itself.' },
+  ENTP: { title: 'The Debater', vibe: 'A spark of intellectual lightning, igniting new paradigms wherever they land.' },
+  INFJ: { title: 'The Advocate', vibe: 'A rare soul whose empathy resonates across dimensions of human experience.' },
+  INFP: { title: 'The Mediator', vibe: 'A dreamer weaving tapestries of meaning from the threads of starlight.' },
+  ENFJ: { title: 'The Protagonist', vibe: 'A radiant beacon guiding kindred spirits toward collective awakening.' },
+  ENFP: { title: 'The Campaigner', vibe: 'A free spirit whose enthusiasm turns every moment into cosmic celebration.' },
+  ISTJ: { title: 'The Logistician', vibe: 'A pillar of unwavering integrity, grounding chaos into sacred order.' },
+  ISFJ: { title: 'The Defender', vibe: 'A gentle guardian whose quiet devotion sustains the fabric of connection.' },
+  ESTJ: { title: 'The Executive', vibe: 'A force of structured brilliance orchestrating harmony from complexity.' },
+  ESFJ: { title: 'The Consul', vibe: 'A warm-hearted catalyst creating sanctuary wherever community gathers.' },
+  ISTP: { title: 'The Virtuoso', vibe: 'A masterful artisan decoding the mechanics of the universe through touch.' },
+  ISFP: { title: 'The Adventurer', vibe: 'A sensitive explorer painting life with bold strokes of authentic beauty.' },
+  ESTP: { title: 'The Entrepreneur', vibe: 'A dynamic risk-taker riding the electric pulse of the present moment.' },
+  ESFP: { title: 'The Entertainer', vibe: 'A luminous performer transforming the ordinary into pure enchantment.' },
+};
+
+const vibrationFrequencies: Record<string, string> = {
+  wood: 'Vibrating at 528 Hz — the frequency of growth, renewal, and infinite potential.',
+  fire: 'Vibrating at 741 Hz — the frequency of passion, transformation, and creative ignition.',
+  earth: 'Vibrating at 396 Hz — the frequency of stability, nurture, and grounded wisdom.',
+  metal: 'Vibrating at 852 Hz — the frequency of clarity, precision, and transcendent insight.',
+  water: 'Vibrating at 432 Hz — the frequency of flow, intuition, and deep cosmic memory.',
+};
+
 const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
   const { t } = useTranslation();
   const cardRef = useRef<HTMLDivElement>(null);
   const dom = profile.dominant_element || 'earth';
   const domColor = elementColors[dom] || elementColors.earth;
+  const archetype = profile.mbti ? mbtiArchetypes[profile.mbti.toUpperCase()] : null;
 
   const elements = ['wood', 'fire', 'earth', 'metal', 'water'] as const;
 
@@ -46,7 +74,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
       const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale: 2,
+        scale: 3,
         useCORS: true,
       });
       const link = document.createElement('a');
@@ -54,14 +82,14 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch {
-      // Fallback: copy text
       const text = `✦ Soul Card — ${profile.display_name || 'Soul'} | ${profile.mbti || '???'} | ${dom} ✦`;
       navigator.clipboard.writeText(text);
     }
   }, [profile, dom]);
 
   const handleShare = useCallback(async () => {
-    const text = `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${profile.mbti || '???'}\nDominant Element: ${dom}\nSoul ID: ${profile.soul_id}\n\nDiscover yours at Celestial ✨`;
+    const mbtiLine = archetype ? `${profile.mbti} — ${archetype.title}` : (profile.mbti || '???');
+    const text = `✦ My Celestial Soul Card ✦\n${profile.display_name || 'Soul'} | ${mbtiLine}\nDominant Element: ${dom}\n${vibrationFrequencies[dom] || ''}\nSoul ID: ${profile.soul_id}\n\nDiscover yours at Celestial ✨`;
     if (navigator.share) {
       try {
         await navigator.share({ title: 'My Soul Card', text });
@@ -69,7 +97,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
     } else {
       navigator.clipboard.writeText(text);
     }
-  }, [profile, dom]);
+  }, [profile, dom, archetype]);
 
   return (
     <AnimatePresence>
@@ -81,14 +109,14 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
           exit={{ opacity: 0 }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
           <motion.div
             className="relative w-full max-w-sm"
-            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+            initial={{ scale: 0.8, opacity: 0, y: 40 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 30 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            exit={{ scale: 0.8, opacity: 0, y: 40 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
           >
             {/* Close */}
             <button onClick={onClose} className="absolute -top-10 right-0 text-muted-foreground hover:text-foreground transition-colors z-10">
@@ -98,89 +126,112 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
             {/* The Card */}
             <div
               ref={cardRef}
-              className="rounded-3xl overflow-hidden p-6"
+              className="rounded-3xl overflow-hidden"
               style={{
-                background: `linear-gradient(160deg, hsl(232 45% 12%), hsl(232 55% 8%))`,
-                border: `1px solid hsla(${domColor} / 0.3)`,
-                boxShadow: `0 0 60px hsla(${domColor} / 0.15), inset 0 1px 0 hsla(${domColor} / 0.1)`,
+                background: `linear-gradient(160deg, hsl(232 45% 14%), hsl(232 55% 6%))`,
+                border: `1px solid hsla(${domColor} / 0.35)`,
+                boxShadow: `0 0 80px hsla(${domColor} / 0.2), 0 0 30px hsla(${domColor} / 0.1), inset 0 1px 0 hsla(${domColor} / 0.15)`,
               }}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] tracking-[0.2em] uppercase font-semibold" style={{ color: 'hsla(var(--gold) / 0.5)' }}>
-                  ✦ Celestial Soul Card
-                </span>
-                <span className="text-[9px] tracking-wider text-muted-foreground">#{profile.soul_id}</span>
-              </div>
+              {/* Gradient top band */}
+              <div className="h-1.5" style={{
+                background: `linear-gradient(90deg, hsl(${domColor}), hsla(var(--gold) / 0.6), hsl(${domColor}))`,
+              }} />
 
-              {/* Avatar + Info */}
-              <div className="flex items-center gap-4 mb-5">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold"
-                  style={{
-                    background: `radial-gradient(circle, hsla(${domColor} / 0.4), hsla(${domColor} / 0.08))`,
-                    border: `2px solid hsla(${domColor} / 0.5)`,
-                    color: `hsl(${domColor})`,
-                    fontFamily: 'var(--font-serif)',
-                    boxShadow: `0 0 30px hsla(${domColor} / 0.25)`,
-                  }}
-                >
-                  {(profile.display_name || 'S').charAt(0).toUpperCase()}
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <span className="text-[10px] tracking-[0.2em] uppercase font-semibold flex items-center gap-1.5" style={{ color: 'hsla(var(--gold) / 0.6)' }}>
+                    <Sparkles size={10} /> Celestial Soul Card
+                  </span>
+                  <span className="text-[9px] tracking-wider text-muted-foreground font-mono">#{profile.soul_id}</span>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
-                    {profile.display_name || 'Soul'}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    {profile.mbti && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
-                        background: 'hsla(var(--accent) / 0.15)',
-                        border: '1px solid hsla(var(--accent) / 0.3)',
-                        color: 'hsl(var(--accent))',
-                      }}>
-                        {profile.mbti}
-                      </span>
-                    )}
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
-                      background: `hsla(${domColor} / 0.12)`,
-                      border: `1px solid hsla(${domColor} / 0.25)`,
+
+                {/* Avatar + Info */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div
+                    className="w-18 h-18 rounded-full flex-shrink-0 flex items-center justify-center text-2xl font-bold"
+                    style={{
+                      width: 72,
+                      height: 72,
+                      background: `radial-gradient(circle at 35% 35%, hsla(${domColor} / 0.5), hsla(${domColor} / 0.1))`,
+                      border: `2px solid hsla(${domColor} / 0.5)`,
                       color: `hsl(${domColor})`,
-                    }}>
-                      {elementEmoji[dom]} {dom.charAt(0).toUpperCase() + dom.slice(1)}
-                    </span>
+                      fontFamily: 'var(--font-serif)',
+                      boxShadow: `0 0 40px hsla(${domColor} / 0.3), inset 0 0 20px hsla(${domColor} / 0.1)`,
+                    }}
+                  >
+                    {(profile.display_name || 'S').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-serif)' }}>
+                      {profile.display_name || 'Soul'}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                      {profile.mbti && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
+                          background: 'hsla(var(--accent) / 0.15)',
+                          border: '1px solid hsla(var(--accent) / 0.3)',
+                          color: 'hsl(var(--accent))',
+                        }}>
+                          {profile.mbti}
+                        </span>
+                      )}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
+                        background: `hsla(${domColor} / 0.12)`,
+                        border: `1px solid hsla(${domColor} / 0.25)`,
+                        color: `hsl(${domColor})`,
+                      }}>
+                        {elementEmoji[dom]} {dom.charAt(0).toUpperCase() + dom.slice(1)}
+                      </span>
+                    </div>
+                    {/* MBTI Archetype Title */}
+                    {archetype && (
+                      <p className="text-[11px] mt-1.5 font-medium" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                        {archetype.title}
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Bio */}
-              <p className="text-xs italic text-muted-foreground leading-relaxed mb-5" style={{ fontFamily: 'var(--font-serif)' }}>
-                "{profile.bio || `A ${dom}-aligned soul, dancing between starlight and shadow, forever seeking cosmic harmony.`}"
-              </p>
+                {/* Soul Vibration Description */}
+                <div className="rounded-xl p-3 mb-4" style={{
+                  background: `linear-gradient(135deg, hsla(${domColor} / 0.08), hsla(var(--gold) / 0.04))`,
+                  border: `1px solid hsla(${domColor} / 0.12)`,
+                }}>
+                  <p className="text-[11px] italic leading-relaxed text-muted-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
+                    "{archetype?.vibe || profile.bio || `A ${dom}-aligned soul, dancing between starlight and shadow, forever seeking cosmic harmony.`}"
+                  </p>
+                  <p className="text-[9px] mt-2 tracking-wide" style={{ color: `hsla(${domColor} / 0.7)` }}>
+                    ∿ {vibrationFrequencies[dom]}
+                  </p>
+                </div>
 
-              {/* Energy Radar — Bar style */}
-              <div className="space-y-2 mb-4">
-                {elements.map((el) => (
-                  <div key={el} className="flex items-center gap-2">
-                    <span className="text-sm w-5 text-center">{elementEmoji[el]}</span>
-                    <span className="text-[9px] w-10 text-muted-foreground uppercase">{t(`oracle.${el}`)}</span>
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
-                      <motion.div
-                        className="h-full rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${profile[el]}%` }}
-                        transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
-                        style={{ background: `hsl(${elementColors[el]})` }}
-                      />
+                {/* Energy Radar — Bar style */}
+                <div className="space-y-2 mb-4">
+                  {elements.map((el) => (
+                    <div key={el} className="flex items-center gap-2">
+                      <span className="text-sm w-5 text-center">{elementEmoji[el]}</span>
+                      <span className="text-[9px] w-10 text-muted-foreground uppercase">{t(`oracle.${el}`)}</span>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                        <motion.div
+                          className="h-full rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${profile[el]}%` }}
+                          transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
+                          style={{ background: `linear-gradient(90deg, hsl(${elementColors[el]}), hsla(${elementColors[el]} / 0.6))` }}
+                        />
+                      </div>
+                      <span className="text-[10px] w-7 text-right text-muted-foreground font-mono">{profile[el]}</span>
                     </div>
-                    <span className="text-[10px] w-7 text-right text-muted-foreground">{profile[el]}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Footer */}
-              <div className="pt-3 flex items-center justify-between" style={{ borderTop: '1px solid hsla(var(--gold) / 0.1)' }}>
-                <span className="text-[9px] text-muted-foreground tracking-wider">celestial.app</span>
-                <span className="text-[9px] text-muted-foreground">✦ {new Date().getFullYear()}</span>
+                {/* Footer */}
+                <div className="pt-3 flex items-center justify-between" style={{ borderTop: '1px solid hsla(var(--gold) / 0.1)' }}>
+                  <span className="text-[9px] text-muted-foreground tracking-wider">✦ celestial.app</span>
+                  <span className="text-[9px] text-muted-foreground">✦ {new Date().getFullYear()}</span>
+                </div>
               </div>
             </div>
 
@@ -188,7 +239,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={handleDownload}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all active:scale-[0.98]"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all active:scale-[0.97] hover:scale-[1.02]"
                 style={{
                   background: 'hsla(var(--gold) / 0.12)',
                   border: '1px solid hsla(var(--gold) / 0.25)',
@@ -199,7 +250,7 @@ const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
               </button>
               <button
                 onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all active:scale-[0.98]"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-medium transition-all active:scale-[0.97] hover:scale-[1.02]"
                 style={{
                   background: 'hsla(var(--accent) / 0.12)',
                   border: '1px solid hsla(var(--accent) / 0.25)',

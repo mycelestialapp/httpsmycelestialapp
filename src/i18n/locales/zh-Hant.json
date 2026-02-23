@@ -50,7 +50,12 @@
     "noMatchesHint": "更多靈魂將加入網絡",
     "generateCard": "生成靈魂名片",
     "downloadCard": "下載",
-    "shareCard": "分享"
+    "shareCard": "分享",
+    "compatibility": "契合度",
+    "viewMore": "探索更多靈魂",
+    "setMbti": "設定你的 MBTI 類型",
+    "insufficientDust": "星塵不足",
+    "insufficientDustHint": "透過每日簽到或邀請好友來獲取更多星塵。"
   },
   "altar": {
     "title": "神聖祭壇",
