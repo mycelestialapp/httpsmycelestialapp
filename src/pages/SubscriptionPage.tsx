@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Star, Sparkles, Crown, Zap, Check, ArrowLeft, Download } from 'lucide-react';
+import { Star, Sparkles, Crown, Zap, Check, ArrowLeft, Download, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const PLANS = [
   {
@@ -25,9 +27,9 @@ const PLANS = [
 ] as const;
 
 const TOPUPS = [
-  { dust: 50, price: '$1.99' },
-  { dust: 150, price: '$4.99' },
-  { dust: 500, price: '$14.99' },
+  { dust: 50, price: '$1.99', pkg: 'dust_50' },
+  { dust: 150, price: '$4.99', pkg: 'dust_150' },
+  { dust: 500, price: '$14.99', pkg: 'dust_500' },
 ] as const;
 
 const SubscriptionPage = () => {
@@ -35,6 +37,29 @@ const SubscriptionPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [loadingPkg, setLoadingPkg] = useState<string | null>(null);
+
+  const handleTopUp = async (pkg: string) => {
+    if (!user) {
+      toast({ title: 'Please sign in first', description: 'You need an account to purchase Star Dust.' });
+      navigate('/auth');
+      return;
+    }
+    setLoadingPkg(pkg);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { package: pkg },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err: any) {
+      toast({ title: 'Payment error', description: err.message || 'Something went wrong' });
+    } finally {
+      setLoadingPkg(null);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
@@ -149,15 +174,21 @@ const SubscriptionPage = () => {
           <span className="flex-1 h-px" style={{ background: 'linear-gradient(to right, hsla(var(--gold) / 0.3), transparent)' }} />
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {TOPUPS.map(({ dust, price }) => (
+          {TOPUPS.map(({ dust, price, pkg }) => (
             <button
               key={dust}
-              className="glass-card flex flex-col items-center gap-2 py-4 transition-all hover:scale-[1.03] active:scale-[0.98]"
+              onClick={() => handleTopUp(pkg)}
+              disabled={loadingPkg === pkg}
+              className="glass-card flex flex-col items-center gap-2 py-4 transition-all hover:scale-[1.03] active:scale-[0.98] disabled:opacity-60"
             >
-              <div className="flex items-center gap-1">
-                <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
-                <span className="text-base font-bold text-foreground">{dust}</span>
-              </div>
+              {loadingPkg === pkg ? (
+                <Loader2 size={18} className="animate-spin" style={{ color: 'hsl(var(--gold))' }} />
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
+                  <span className="text-base font-bold text-foreground">{dust}</span>
+                </div>
+              )}
               <span className="text-xs font-medium" style={{ color: 'hsl(var(--gold))' }}>{price}</span>
             </button>
           ))}
