@@ -12,6 +12,8 @@
     "radarHint": "Tap below to reveal your elemental energy",
     "insightTitle": "Celestial Insight",
     "startReading": "Begin Energy Reading",
+    "challengeTitle": "⚔️ Soul Energy Challenge!",
+    "challengeDesc": "Comparing your soul energy with User #{{soulId}}...",
     "modalTitle": "Enter Your Birth Date",
     "modalSubtitle": "Your cosmic energy is encoded in your birth moment",
     "revealEnergy": "Reveal My Energy Blueprint",

@@ -12,6 +12,8 @@
     "radarHint": "點擊下方按鈕揭示你的元素能量",
     "insightTitle": "天機解語",
     "startReading": "開始能量解讀",
+    "challengeTitle": "⚔️ 靈魂能量挑戰！",
+    "challengeDesc": "正在與用戶 #{{soulId}} 比較你的靈魂能量...",
     "modalTitle": "輸入出生日期",
     "modalSubtitle": "你的宇宙能量蘊藏在出生的那一刻",
     "revealEnergy": "揭示我的能量藍圖",
