@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Compass, Star, Layers, BookOpen } from 'lucide-react';
 import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
-import Disclaimer from '@/components/Disclaimer';
+
 import { useNavigate } from 'react-router-dom';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
 import type { ElementEnergy, CelestialProfile } from '@/lib/fiveElements';
@@ -85,7 +85,7 @@ const OraclePage = () => {
         </div>
       </div>
 
-      <Disclaimer />
+      
 
       {/* Modal */}
       <BirthInputModal

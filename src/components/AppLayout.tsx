@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Starfield from './Starfield';
 import BottomNav from './BottomNav';
 import LanguageSwitcher from './LanguageSwitcher';
+import Disclaimer from './Disclaimer';
 
 const AppLayout = () => {
   return (
@@ -22,6 +23,7 @@ const AppLayout = () => {
       {/* Main content */}
       <main className="relative z-10 px-4 pb-24 min-h-[calc(100vh-60px)]">
         <Outlet />
+        <Disclaimer />
       </main>
 
       <BottomNav />
