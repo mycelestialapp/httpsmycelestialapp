@@ -46,13 +46,33 @@
     "subtitle": "Rituels et bénédictions quotidiennes",
     "blessing": "Bénédiction du Jour",
     "memorial": "Mémoriaux Ancestraux",
-    "fengshui": "Feng Shui"
+    "memorialDesc": "Honorez vos ancêtres avec une offrande sacrée",
+    "fengshui": "Feng Shui",
+    "lightOffering": "Allumer une Lampe Lotus",
+    "chooseIntention": "Choisissez votre intention",
+    "lightAnother": "Allumer une autre lampe",
+    "ancestralSpace": "Espace Ancestral",
+    "makeOffering": "Faire une Offrande ✦",
+    "offeringActive": "Offrande en cours...",
+    "ambientSound": "Ambiance",
+    "intention": {
+      "peace": "Paix Intérieure",
+      "success": "Succès",
+      "health": "Santé",
+      "love": "Amour"
+    }
   },
   "library": {
     "title": "Bibliothèque de Sagesse",
-    "subtitle": "Articles, guides et enseignements",
+    "subtitle": "Astrologie, Bazi, MBTI et Feng Shui",
     "articles": "Articles",
-    "videos": "Vidéos"
+    "videos": "Vidéos",
+    "filter": {
+      "all": "Tout",
+      "article": "Articles",
+      "video": "Vidéos",
+      "prompt": "Citations"
+    }
   },
   "common": {
     "comingSoon": "Bientôt Disponible",

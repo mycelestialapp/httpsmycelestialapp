@@ -46,13 +46,33 @@
     "subtitle": "Daily rituals and blessings",
     "blessing": "Daily Blessing",
     "memorial": "Ancestral Memorials",
-    "fengshui": "Feng Shui"
+    "memorialDesc": "Honor your ancestors with a sacred offering",
+    "fengshui": "Feng Shui",
+    "lightOffering": "Light a Lotus Lamp",
+    "chooseIntention": "Choose your intention",
+    "lightAnother": "Light another lamp",
+    "ancestralSpace": "Ancestral Space",
+    "makeOffering": "Make an Offering ✦",
+    "offeringActive": "Offering in progress...",
+    "ambientSound": "Ambient",
+    "intention": {
+      "peace": "Inner Peace",
+      "success": "Success",
+      "health": "Health",
+      "love": "Love"
+    }
   },
   "library": {
     "title": "Wisdom Library",
-    "subtitle": "Articles, guides, and teachings",
+    "subtitle": "Astrology, Bazi, MBTI & Feng Shui insights",
     "articles": "Articles",
-    "videos": "Videos"
+    "videos": "Videos",
+    "filter": {
+      "all": "All",
+      "article": "Articles",
+      "video": "Videos",
+      "prompt": "Quotes"
+    }
   },
   "common": {
     "comingSoon": "Coming Soon",
