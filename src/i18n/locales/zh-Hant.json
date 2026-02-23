@@ -39,7 +39,10 @@
     "findTribe": "尋找你的靈魂族群",
     "searching": "正在掃描宇宙網絡...",
     "noMatches": "尚未找到匹配的靈魂",
-    "noMatchesHint": "更多靈魂將加入網絡"
+    "noMatchesHint": "更多靈魂將加入網絡",
+    "generateCard": "生成靈魂名片",
+    "downloadCard": "下載",
+    "shareCard": "分享"
   },
   "altar": {
     "title": "神聖祭壇",
@@ -115,5 +118,34 @@
     "suitable": "宜",
     "avoid": "忌",
     "heavenlyMessage": "天機解語"
+  },
+  "subscription": {
+    "title": "天體會員",
+    "subtitle": "解鎖宇宙的全部力量",
+    "back": "返回",
+    "popular": "最受歡迎",
+    "month": "月",
+    "year": "年",
+    "subscribe": "立即訂閱 ✦",
+    "choosePlan": "選擇方案",
+    "annualReport": "年度命運報告",
+    "annualReportDesc": "20頁個人化 PDF — 年度方案專享",
+    "plan": {
+      "monthly": { "name": "天體月卡" },
+      "annual": { "name": "年度覺醒" }
+    },
+    "feature": {
+      "unlimitedMatching": "無限靈魂匹配",
+      "premiumAltarLamps": "高級祭壇燈火設計",
+      "priorityReading": "優先天機解讀",
+      "noAds": "無廣告體驗",
+      "allMonthly": "包含月卡所有內容",
+      "annualReport": "20頁年度命運報告 PDF",
+      "exclusiveBadge": "專屬宇宙徽章",
+      "earlyAccess": "搶先體驗新功能"
+    },
+    "topup": {
+      "title": "星塵充值"
+    }
   }
 }
