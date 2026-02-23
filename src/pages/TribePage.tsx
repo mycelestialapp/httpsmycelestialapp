@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Share2, Plus, Users, Search } from 'lucide-react';
+import { Star, Share2, Plus, Users, Search, CreditCard } from 'lucide-react';
 import { findTopMatches, type MatchResult } from '@/lib/matchingEngine';
 import type { ElementEnergy } from '@/lib/fiveElements';
 import Disclaimer from '@/components/Disclaimer';
+import SoulCardModal from '@/components/SoulCardModal';
 
 const MBTI_TYPES = [
   'INTJ', 'INTP', 'ENTJ', 'ENTP',
@@ -46,6 +47,7 @@ const TribePage = () => {
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [editingMbti, setEditingMbti] = useState(false);
+  const [showSoulCard, setShowSoulCard] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -120,7 +122,7 @@ const TribePage = () => {
         }}>
           <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
           <span className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>{profile?.star_dust ?? 0}</span>
-          <button className="ml-1 w-4 h-4 rounded-full flex items-center justify-center" style={{
+          <button onClick={() => navigate('/subscribe')} className="ml-1 w-4 h-4 rounded-full flex items-center justify-center" style={{
             background: 'hsla(var(--gold) / 0.2)',
             color: 'hsl(var(--gold))',
           }}>
@@ -227,14 +229,27 @@ const TribePage = () => {
 
           {/* Actions */}
           <div className="mt-4 flex gap-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02]"
+            <button
+              onClick={() => setShowSoulCard(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02]"
               style={{
                 background: 'hsla(var(--gold) / 0.1)',
                 border: '1px solid hsla(var(--gold) / 0.2)',
                 color: 'hsl(var(--gold))',
               }}
             >
-              <Share2 size={12} /> Share Soul Card
+              <Share2 size={12} /> {t('tribe.generateCard')}
+            </button>
+            <button
+              onClick={() => navigate('/subscribe')}
+              className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs transition-all hover:scale-[1.02]"
+              style={{
+                background: 'hsla(var(--accent) / 0.1)',
+                border: '1px solid hsla(var(--accent) / 0.2)',
+                color: 'hsl(var(--accent))',
+              }}
+            >
+              <CreditCard size={12} /> VIP
             </button>
           </div>
         </div>
@@ -310,6 +325,15 @@ const TribePage = () => {
       </div>
 
       <Disclaimer />
+
+      {/* Soul Card Modal */}
+      {profile && (
+        <SoulCardModal
+          open={showSoulCard}
+          onClose={() => setShowSoulCard(false)}
+          profile={profile}
+        />
+      )}
     </div>
   );
 };

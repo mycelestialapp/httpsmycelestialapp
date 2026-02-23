@@ -10,6 +10,7 @@ import BaziPage from "./pages/BaziPage";
 import TribePage from "./pages/TribePage";
 import AltarPage from "./pages/AltarPage";
 import LibraryPage from "./pages/LibraryPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/tribe" element={<TribePage />} />
               <Route path="/altar" element={<AltarPage />} />
               <Route path="/library" element={<LibraryPage />} />
+              <Route path="/subscribe" element={<SubscriptionPage />} />
               <Route path="/auth" element={<AuthPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />

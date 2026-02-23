@@ -39,7 +39,10 @@
     "findTribe": "Trouvez Votre Tribu d'Âmes",
     "searching": "Exploration du réseau cosmique...",
     "noMatches": "Aucune âme correspondante trouvée",
-    "noMatchesHint": "D'autres âmes rejoindront bientôt le réseau"
+    "noMatchesHint": "D'autres âmes rejoindront bientôt le réseau",
+    "generateCard": "Générer la Carte d'Âme",
+    "downloadCard": "Télécharger",
+    "shareCard": "Partager"
   },
   "altar": {
     "title": "Autel Sacré",
@@ -115,5 +118,34 @@
     "suitable": "Favorable",
     "avoid": "Défavorable",
     "heavenlyMessage": "Message Céleste"
+  },
+  "subscription": {
+    "title": "Abonnement Céleste",
+    "subtitle": "Libérez toute la puissance du cosmos",
+    "back": "Retour",
+    "popular": "Le Plus Populaire",
+    "month": "mois",
+    "year": "an",
+    "subscribe": "S'abonner ✦",
+    "choosePlan": "Choisir un Forfait",
+    "annualReport": "Rapport Annuel du Destin",
+    "annualReportDesc": "PDF personnalisé de 20 pages — inclus avec le forfait annuel",
+    "plan": {
+      "monthly": { "name": "Céleste Mensuel" },
+      "annual": { "name": "Éveil Annuel" }
+    },
+    "feature": {
+      "unlimitedMatching": "Correspondances d'âmes illimitées",
+      "premiumAltarLamps": "Designs de lampes d'autel premium",
+      "priorityReading": "Lectures célestes prioritaires",
+      "noAds": "Expérience sans publicité",
+      "allMonthly": "Tout le contenu mensuel inclus",
+      "annualReport": "Rapport PDF annuel de 20 pages",
+      "exclusiveBadge": "Badge cosmique exclusif",
+      "earlyAccess": "Accès anticipé aux nouvelles fonctionnalités"
+    },
+    "topup": {
+      "title": "Recharge de Poussière d'Étoiles"
+    }
   }
 }

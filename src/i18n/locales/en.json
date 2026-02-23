@@ -39,7 +39,10 @@
     "findTribe": "Find Your Soul Tribe",
     "searching": "Scanning the cosmic network...",
     "noMatches": "No soul matches found yet",
-    "noMatchesHint": "More souls will join the network soon"
+    "noMatchesHint": "More souls will join the network soon",
+    "generateCard": "Generate Soul Card",
+    "downloadCard": "Download",
+    "shareCard": "Share"
   },
   "altar": {
     "title": "Sacred Altar",
@@ -115,5 +118,34 @@
     "suitable": "Favorable",
     "avoid": "Unfavorable",
     "heavenlyMessage": "Celestial Message"
+  },
+  "subscription": {
+    "title": "Celestial Membership",
+    "subtitle": "Unlock the full power of the cosmos",
+    "back": "Back",
+    "popular": "Most Popular",
+    "month": "month",
+    "year": "year",
+    "subscribe": "Subscribe Now ✦",
+    "choosePlan": "Choose a Plan",
+    "annualReport": "Annual Destiny Report",
+    "annualReportDesc": "20-page personalized PDF — included with Annual plan",
+    "plan": {
+      "monthly": { "name": "Celestial Monthly" },
+      "annual": { "name": "Annual Awakening" }
+    },
+    "feature": {
+      "unlimitedMatching": "Unlimited soul matching",
+      "premiumAltarLamps": "Premium altar lamp designs",
+      "priorityReading": "Priority celestial readings",
+      "noAds": "Ad-free experience",
+      "allMonthly": "Everything in Monthly",
+      "annualReport": "20-page Annual Destiny Report PDF",
+      "exclusiveBadge": "Exclusive cosmic badge",
+      "earlyAccess": "Early access to new features"
+    },
+    "topup": {
+      "title": "Star Dust Top-Up"
+    }
   }
 }
