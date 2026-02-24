@@ -143,54 +143,20 @@
     "switchAccount": "Konto wechseln"
   },
   "divination": {
-    "name": "Name",
-    "namePlaceholder": "Gib deinen Namen ein",
-    "birthYear": "Jahr",
-    "birthMonth": "Monat",
-    "birthDay": "Tag",
-    "birthHour": "Stunde",
-    "region": "Region",
-    "solarTime": "Wahre Sonnenzeit",
-    "divine": "Himmlische Einsichten enthüllen",
-    "loading": "Verbindung zu den Sternen...",
-    "result": "Kosmische Lesung",
-    "again": "Neue Lesung",
-    "luckLevel": "Glücksstufe",
-    "fiveElements": "Fünf Elemente",
-    "fateStar": "Schicksalsstern",
-    "fortuneScore": "Glückswert",
-    "suitable": "Günstig",
-    "avoid": "Ungünstig",
-    "heavenlyMessage": "Himmlische Botschaft"
+    "name": "Name", "namePlaceholder": "Gib deinen Namen ein", "birthYear": "Jahr", "birthMonth": "Monat", "birthDay": "Tag", "birthHour": "Stunde", "birthInfo": "Geburtsdaten", "region": "Region", "regionPlaceholder": "Stadt suchen (z.B. Berlin, München...)", "solarTime": "Wahre Sonnenzeit", "solarTimeDesc": "Zeit anhand des Geburtslängengrads anpassen", "standardTime": "Standardzeit", "divine": "Himmlische Einsichten enthüllen", "loading": "Verbindung zu den Sternen...", "result": "Kosmische Lesung", "again": "Neue Lesung", "luckLevel": "Glücksstufe", "fiveElements": "Fünf Elemente", "fateStar": "Schicksalsstern", "fortuneScore": "Glückswert", "suitable": "Günstig", "avoid": "Ungünstig", "heavenlyMessage": "Himmlische Botschaft",
+    "hour0": "Zi (23:00-01:00)", "hour1": "Chou (01:00-03:00)", "hour2": "Yin (03:00-05:00)", "hour3": "Mao (05:00-07:00)", "hour4": "Chen (07:00-09:00)", "hour5": "Si (09:00-11:00)", "hour6": "Wu (11:00-13:00)", "hour7": "Wei (13:00-15:00)", "hour8": "Shen (15:00-17:00)", "hour9": "You (17:00-19:00)", "hour10": "Xu (19:00-21:00)", "hour11": "Hai (21:00-23:00)", "hour12": "Unbekannt",
+    "fortune1": "Alles hat Risse — dort kommt das Licht herein.", "fortune2": "Was du erwartest, nähert sich auf unerwartete Weise.", "fortune3": "Die Zahnräder des Schicksals haben sich in Bewegung gesetzt.", "fortune4": "In der Dunkelheit wird Licht geboren.", "fortune5": "Scheinbar zufällige Begegnungen sind kosmische Fügung.", "fortune6": "Lass die Besessenheit los, um zu empfangen, was du wirklich willst.", "fortune7": "Nach dem Sturm wird der Regenbogen strahlender sein.", "fortune8": "Dein Energiefeld schwingt mit den Sternen.", "fortune9": "Die Vergangenheit ist geschrieben; die Zukunft gehört dir.", "fortune10": "Deine innere Stimme ist genauer als jede Wahrsagung.",
+    "luck": { "greatLuck": "Großes Glück", "greatLuckDesc": "Alles gedeiht, Neuanfang", "mediumLuck": "Gutes Glück", "mediumLuckDesc": "Stetiger Fortschritt", "smallLuck": "Kleines Glück", "smallLuckDesc": "Vorsicht bringt Segen", "luck": "Glück", "luckDesc": "Frieden und Stabilität", "lateLuck": "Spätes Glück", "lateLuckDesc": "Erst Schwierigkeit, dann Leichtigkeit", "reverseLuck": "Umkehrglück", "reverseLuckDesc": "Unglück wird zum Segen" },
+    "yi1": "Reisen", "yi2": "Verträge", "yi3": "Geständnisse", "yi4": "Lernen", "yi5": "Meditation", "yi6": "Geselligkeit", "yi7": "Investieren", "yi8": "Kreativität", "yi9": "Sport", "yi10": "Umzug", "yi11": "Gebet", "yi12": "Freunde treffen", "yi13": "Lesen", "yi14": "Planen",
+    "ji1": "Streit", "ji2": "Aufbleiben", "ji3": "Impulskäufe", "ji4": "Lange Reisen", "ji5": "Glücksspiel", "ji6": "Leihen", "ji7": "Operation", "ji8": "Prozesse", "ji9": "Eröffnungen", "ji10": "Bauarbeiten", "ji11": "Übermäßiges Trinken", "ji12": "Unüberlegtes Reden",
+    "star1": "Kaiserstern", "star2": "Himmlisches Werk", "star3": "Sonnenstern", "star4": "Kriegerstern", "star5": "Harmoniestern", "star6": "Integritätsstern", "star7": "Himmlischer Schatz", "star8": "Mondstern", "star9": "Begierdenstern", "star10": "Großes Tor", "star11": "Ministerstern", "star12": "Himmlischer Balken", "star13": "Sieben Killer", "star14": "Zerstörerstern"
   },
   "subscription": {
-    "title": "Kosmische Mitgliedschaft",
-    "subtitle": "Entfessle die volle Kraft des Kosmos",
-    "back": "Zurück",
-    "popular": "Am beliebtesten",
-    "month": "Monat",
-    "year": "Jahr",
-    "subscribe": "Jetzt abonnieren ✦",
-    "choosePlan": "Plan wählen",
-    "annualReport": "Jährlicher Schicksalsbericht",
-    "annualReportDesc": "20-seitiges PDF — im Jahresplan enthalten",
-    "plan": {
-      "monthly": { "name": "Kosmisch Monatlich" },
-      "annual": { "name": "Jährliches Erwachen" }
-    },
-    "feature": {
-      "unlimitedMatching": "Unbegrenztes Seelen-Matching",
-      "premiumAltarLamps": "Premium-Altar-Lampen",
-      "priorityReading": "Prioritäts-Lesungen",
-      "noAds": "Werbefrei",
-      "allMonthly": "Alles aus Monatlich",
-      "annualReport": "20-seitiger Schicksalsbericht PDF",
-      "exclusiveBadge": "Exklusives kosmisches Abzeichen",
-      "earlyAccess": "Frühzugang zu neuen Funktionen"
-    },
-    "topup": {
-      "title": "Sternenstaub aufladen"
-    }
+    "title": "Kosmische Mitgliedschaft", "subtitle": "Entfessle die volle Kraft des Kosmos", "back": "Zurück", "popular": "Am beliebtesten", "day": "Tag", "month": "Monat", "year": "Jahr", "subscribe": "Jetzt abonnieren ✦", "choosePlan": "Plan wählen", "loginRequired": "Bitte zuerst anmelden.",
+    "annualReport": "Jährlicher Schicksalsbericht", "annualReportDesc": "20-seitiges PDF — im Jahresplan enthalten",
+    "plan": { "daily": { "name": "Tägliche Inspiration" }, "monthly": { "name": "Kosmisch Monatlich" }, "annual": { "name": "Jährliches Erwachen" } },
+    "feature": { "unlimitedReadings24h": "24h unbegrenzte Lesungen", "allDivinations": "Alle Wahrsagesysteme", "unlimitedMatching": "Unbegrenztes Seelen-Matching", "premiumAltarLamps": "Premium-Altar-Lampen", "priorityReading": "Prioritäts-Lesungen", "noAds": "Werbefrei", "allMonthly": "Alles aus Monatlich", "annualReport": "20-seitiger PDF-Bericht", "exclusiveBadge": "Exklusives Abzeichen", "earlyAccess": "Frühzugang zu Funktionen" },
+    "topup": { "title": "Sternenstaub aufladen" }
   },
   "cta": {
     "createCardTitle": "Entdecke deine kosmische Identität",

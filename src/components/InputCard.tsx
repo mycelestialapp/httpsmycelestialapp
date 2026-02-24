@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import CitySearch from "./CitySearch";
+import type { CityEntry } from "@/lib/cities";
 
 interface InputCardProps {
   name: string;
@@ -15,26 +17,16 @@ export interface DivinationInfo {
   hour: string;
   region: string;
   useSolarTime: boolean;
+  lat?: number;
+  lng?: number;
 }
 
 const years = Array.from({ length: 100 }, (_, i) => `${2025 - i}`);
 const months = Array.from({ length: 12 }, (_, i) => `${i + 1}`);
 const days = Array.from({ length: 31 }, (_, i) => `${i + 1}`);
-const hours = [
-  "子时 (23:00-01:00)", "丑时 (01:00-03:00)", "寅时 (03:00-05:00)",
-  "卯时 (05:00-07:00)", "辰时 (07:00-09:00)", "巳时 (09:00-11:00)",
-  "午时 (11:00-13:00)", "未时 (13:00-15:00)", "申时 (15:00-17:00)",
-  "酉时 (17:00-19:00)", "戌时 (19:00-21:00)", "亥时 (21:00-23:00)",
-  "不确定",
-];
 
-const regions = [
-  "北京", "上海", "广州", "深圳", "成都", "重庆", "杭州", "武汉",
-  "南京", "西安", "长沙", "天津", "苏州", "郑州", "东莞", "青岛",
-  "昆明", "大连", "沈阳", "哈尔滨", "福州", "济南", "合肥", "贵阳",
-  "南宁", "兰州", "太原", "石家庄", "乌鲁木齐", "拉萨", "呼和浩特",
-  "海口", "银川", "西宁", "台北", "香港", "澳门", "海外",
-];
+// Hour keys for i18n — index 0-12 maps to divination.hour0..hour12
+const HOUR_KEYS = Array.from({ length: 13 }, (_, i) => `divination.hour${i}`);
 
 const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
   const { t } = useTranslation();
@@ -42,14 +34,20 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [hour, setHour] = useState("");
-  const [region, setRegion] = useState("");
+  const [selectedCity, setSelectedCity] = useState<CityEntry | null>(null);
   const [useSolarTime, setUseSolarTime] = useState(false);
 
   const isValid = name.trim() && year && month && day;
 
   const handleSubmit = () => {
     if (!isValid) return;
-    onDivine({ name, year, month, day, hour, region, useSolarTime });
+    onDivine({
+      name, year, month, day, hour,
+      region: selectedCity?.name || '',
+      useSolarTime,
+      lat: selectedCity?.lat,
+      lng: selectedCity?.lng,
+    });
   };
 
   return (
@@ -121,7 +119,9 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
           <label className="input-label">{t('divination.birthHour')}</label>
           <select className="glass-select" value={hour} onChange={(e) => setHour(e.target.value)}>
             <option value="">—</option>
-            {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            {HOUR_KEYS.map((key, i) => (
+              <option key={key} value={String(i)}>{t(key)}</option>
+            ))}
           </select>
         </div>
 
@@ -131,12 +131,10 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
           <span className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
         </div>
 
-        <div>
-          <select className="glass-select" value={region} onChange={(e) => setRegion(e.target.value)}>
-            <option value="">—</option>
-            {regions.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
+        <CitySearch
+          value={selectedCity ? (selectedCity.nameZh ? `${selectedCity.nameZh} (${selectedCity.name})` : selectedCity.name) : ''}
+          onChange={setSelectedCity}
+        />
 
         <div
           className="flex items-center justify-between glass-toggle-row cursor-pointer"

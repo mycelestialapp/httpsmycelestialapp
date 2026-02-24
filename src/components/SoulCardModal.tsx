@@ -63,7 +63,7 @@ const vibrationFrequencies: Record<string, { hz: number; label: string }> = {
   water: { hz: 432, label: 'Vibrating at 432 Hz — the frequency of flow, intuition, and deep cosmic memory.' },
 };
 
-const APP_URL = window.location.origin;
+const APP_URL = 'https://mycelestial.app';
 
 const SoulCardModal = ({ open, onClose, profile }: SoulCardModalProps) => {
   const { t } = useTranslation();
