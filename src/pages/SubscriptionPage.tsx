@@ -63,10 +63,6 @@ const SubscriptionPage = () => {
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
-      {/* Back button */}
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft size={14} /> {t('subscription.back')}
-      </button>
 
       {/* Header */}
       <div className="text-center space-y-2">
