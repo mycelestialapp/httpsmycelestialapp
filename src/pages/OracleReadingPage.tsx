@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Download, Share2, Lock } from 'lucide-react';
+import { Download, Share2, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { domToPng } from 'modern-screenshot';
 import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
 import ReadingPoster from '@/components/ReadingPoster';
+import OracleLoadingRitual from '@/components/OracleLoadingRitual';
+import TimeSlider from '@/components/TimeSlider';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
 import type { ElementEnergy, CelestialProfile } from '@/lib/fiveElements';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,8 +48,28 @@ const OracleReadingPage = () => {
   const [reading, setReading] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const [sliderYear, setSliderYear] = useState(new Date().getFullYear());
+  const [sliderEnergy, setSliderEnergy] = useState<ElementEnergy | null>(null);
 
   useEffect(() => { setModalOpen(true); }, []);
+
+  // Recalculate energy when slider year changes
+  useEffect(() => {
+    if (birthData) {
+      const p = calculateElementEnergy(birthData.year, birthData.month, birthData.day);
+      // Simulate year-based variation
+      const yearDiff = sliderYear - new Date().getFullYear();
+      const vary = (v: number, seed: number) => Math.max(5, Math.min(95, v + Math.round(Math.sin(yearDiff * 0.7 + seed) * 12)));
+      setSliderEnergy({
+        wood: vary(p.energy.wood, 1),
+        fire: vary(p.energy.fire, 2),
+        earth: vary(p.energy.earth, 3),
+        metal: vary(p.energy.metal, 4),
+        water: vary(p.energy.water, 5),
+      });
+    }
+  }, [sliderYear, birthData]);
 
   const handleBirthSubmit = async (year: number, month: number, day: number) => {
     const p = calculateElementEnergy(year, month, day);
@@ -63,8 +85,17 @@ const OracleReadingPage = () => {
         metal: p.energy.metal, water: p.energy.water, dominant_element: p.dominantElement,
       }).eq('id', user.id);
     }
-    startAIReading(year, month, day, p);
+
+    // Show loading ritual before AI reading
+    setShowLoading(true);
   };
+
+  const onLoadingComplete = useCallback(() => {
+    setShowLoading(false);
+    if (birthData && profile) {
+      startAIReading(birthData.year, birthData.month, birthData.day, profile);
+    }
+  }, [birthData, profile]);
 
   const startAIReading = useCallback(async (year: number, month: number, day: number, p: CelestialProfile) => {
     setIsStreaming(true);
@@ -161,6 +192,8 @@ const OracleReadingPage = () => {
     }
   };
 
+  const displayEnergy = sliderYear !== new Date().getFullYear() && sliderEnergy ? sliderEnergy : energy;
+
   return (
     <div className="max-w-md mx-auto space-y-5 pt-2 page-transition pb-8">
       {/* Header */}
@@ -174,12 +207,24 @@ const OracleReadingPage = () => {
         <p className="text-xs text-muted-foreground">{t(`oracle.${toolKey}Desc`)}</p>
       </div>
 
+      {/* Loading Ritual */}
+      <AnimatePresence>
+        {showLoading && (
+          <OracleLoadingRitual toolKey={toolKey} onComplete={onLoadingComplete} />
+        )}
+      </AnimatePresence>
+
       {/* Energy Radar */}
-      {energy && <EnergyRadar energy={energy} insight={insight} />}
+      {displayEnergy && !showLoading && <EnergyRadar energy={displayEnergy} insight={insight} />}
+
+      {/* Time Slider */}
+      {energy && !showLoading && !isStreaming && (
+        <TimeSlider year={sliderYear} onChange={setSliderYear} />
+      )}
 
       {/* AI Reading */}
       <AnimatePresence>
-        {reading && (
+        {reading && !showLoading && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -188,7 +233,12 @@ const OracleReadingPage = () => {
           >
             {isStreaming && (
               <div className="absolute top-3 right-3">
-                <Loader2 size={14} className="animate-spin" style={{ color: 'hsl(var(--gold))' }} />
+                <motion.div
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: 'hsl(var(--gold))', boxShadow: '0 0 10px hsl(var(--gold))' }}
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                />
               </div>
             )}
             <div className="flex items-center gap-2 mb-3">
@@ -220,9 +270,8 @@ const OracleReadingPage = () => {
       </AnimatePresence>
 
       {/* Action buttons */}
-      {energy && !isStreaming && reading && (
+      {energy && !isStreaming && reading && !showLoading && (
         <div className="space-y-2">
-          {/* Download HD Poster */}
           <button
             onClick={handleDownloadPoster}
             disabled={downloading}
@@ -238,7 +287,6 @@ const OracleReadingPage = () => {
             {downloading ? '...' : t('oracle.downloadPoster', { defaultValue: '✦ Save HD Soul Chart ✦' })}
           </button>
 
-          {/* Share */}
           <button
             onClick={handleShare}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium transition-all hover:scale-[1.01] active:scale-[0.98]"
@@ -252,7 +300,7 @@ const OracleReadingPage = () => {
             {t('oracle.shareReading', { defaultValue: 'Share Reading' })}
           </button>
 
-          {/* Premium unlock CTA */}
+          {/* Premium unlock */}
           <div
             className="rounded-2xl p-4 text-center"
             style={{
@@ -283,9 +331,13 @@ const OracleReadingPage = () => {
       )}
 
       {/* Re-read */}
-      {energy && !isStreaming && (
+      {energy && !isStreaming && !showLoading && (
         <button
-          onClick={() => birthData && profile && startAIReading(birthData.year, birthData.month, birthData.day, profile)}
+          onClick={() => {
+            if (birthData && profile) {
+              setShowLoading(true);
+            }
+          }}
           className="w-full py-3 rounded-xl text-sm font-semibold tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
           style={{
             background: 'linear-gradient(135deg, hsla(var(--gold) / 0.15), hsla(var(--accent) / 0.1))',
@@ -297,7 +349,7 @@ const OracleReadingPage = () => {
         </button>
       )}
 
-      {/* Hidden poster for screenshot */}
+      {/* Hidden poster */}
       {energy && reading && (
         <ReadingPoster
           ref={posterRef}

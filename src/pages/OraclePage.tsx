@@ -69,7 +69,7 @@ const OraclePage = () => {
     setTappedTool(key);
     setTimeout(() => {
       navigate(`/oracle/reading?tool=${key}`);
-    }, 600);
+    }, 700);
   };
 
   return (
@@ -126,7 +126,7 @@ const OraclePage = () => {
       {/* Today's Wisdom */}
       <DailyWisdom />
 
-      {/* Tools grid with animations */}
+      {/* Tools grid with enhanced animations */}
       <div>
         <h3 className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
           {t('oracle.tools')}
@@ -153,36 +153,52 @@ const OraclePage = () => {
                 }}
                 className="glass-card text-center p-3 relative overflow-hidden"
                 style={{
-                  border: isAwakened ? '1px solid hsla(var(--gold) / 0.4)' : undefined,
-                  boxShadow: isAwakened ? '0 0 12px hsla(var(--gold) / 0.15), inset 0 0 8px hsla(var(--gold) / 0.05)' : undefined,
+                  border: isAwakened ? '1px solid hsla(var(--gold) / 0.6)' : undefined,
+                  boxShadow: isAwakened
+                    ? '0 0 16px hsla(var(--gold) / 0.25), inset 0 0 10px hsla(var(--gold) / 0.08)'
+                    : undefined,
                 }}
               >
-                {/* Breathing glow overlay */}
+                {/* Breathing border glow - flowing linear light */}
                 <motion.div
-                  className="absolute inset-0 rounded-xl pointer-events-none"
+                  className="absolute inset-0 rounded-2xl pointer-events-none"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent, hsla(var(--gold) / 0.15), transparent, hsla(var(--gold) / 0.1), transparent)',
+                    maskImage: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMaskComposite: 'xor',
+                    padding: 1,
+                  }}
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ repeat: Infinity, duration: 4 + index * 0.3, ease: 'linear' }}
+                />
+
+                {/* Breathing inner glow */}
+                <motion.div
+                  className="absolute inset-0 rounded-2xl pointer-events-none"
                   animate={{
                     boxShadow: [
-                      'inset 0 0 8px hsla(var(--gold) / 0.02)',
-                      'inset 0 0 16px hsla(var(--gold) / 0.08)',
-                      'inset 0 0 8px hsla(var(--gold) / 0.02)',
+                      'inset 0 0 6px hsla(var(--gold) / 0.02)',
+                      'inset 0 0 18px hsla(var(--gold) / 0.1)',
+                      'inset 0 0 6px hsla(var(--gold) / 0.02)',
                     ],
                   }}
-                  transition={{ repeat: Infinity, duration: 3 + index * 0.3, ease: 'easeInOut' }}
+                  transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                 />
 
                 {/* Awakened badge */}
                 {isAwakened && (
-                  <div className="absolute top-1 right-1">
+                  <div className="absolute top-1.5 right-1.5">
                     <motion.div
                       className="w-2 h-2 rounded-full"
-                      style={{ background: 'hsl(var(--gold))' }}
+                      style={{ background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold))' }}
                       animate={{ opacity: [0.5, 1, 0.5], scale: [0.8, 1.1, 0.8] }}
                       transition={{ repeat: Infinity, duration: 2 }}
                     />
                   </div>
                 )}
 
-                <Icon size={18} className="mb-1.5 mx-auto relative z-10" style={{ color: 'hsl(var(--gold))' }} />
+                <Icon size={18} className="mb-1.5 mx-auto relative z-10" style={{ color: 'hsl(var(--gold))', filter: 'drop-shadow(0 0 6px hsla(var(--gold) / 0.4))' }} />
                 <div className="text-xs font-semibold text-foreground relative z-10" style={{ fontFamily: 'var(--font-serif)' }}>
                   {t(`oracle.${key}`)}
                 </div>
@@ -205,32 +221,37 @@ const OraclePage = () => {
             exit={{ opacity: 0 }}
           >
             {/* Golden particle burst */}
-            {Array.from({ length: 24 }).map((_, i) => {
-              const angle = (Math.PI * 2 * i) / 24;
-              const dist = 120 + Math.random() * 80;
+            {Array.from({ length: 32 }).map((_, i) => {
+              const angle = (Math.PI * 2 * i) / 32;
+              const dist = 100 + Math.random() * 120;
               return (
                 <motion.div
                   key={i}
-                  className="absolute w-1.5 h-1.5 rounded-full"
-                  style={{ background: 'hsl(var(--gold))', boxShadow: '0 0 8px hsl(var(--gold))' }}
+                  className="absolute rounded-full"
+                  style={{
+                    width: 2 + Math.random() * 3,
+                    height: 2 + Math.random() * 3,
+                    background: 'hsl(var(--gold))',
+                    boxShadow: '0 0 8px hsl(var(--gold)), 0 0 16px hsla(var(--gold) / 0.5)',
+                  }}
                   initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
                   animate={{
                     x: Math.cos(angle) * dist,
                     y: Math.sin(angle) * dist,
                     opacity: 0,
-                    scale: 0.2,
+                    scale: 0.1,
                   }}
-                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
                 />
               );
             })}
             {/* Central flash */}
             <motion.div
               className="w-32 h-32 rounded-full"
-              style={{ background: 'radial-gradient(circle, hsla(var(--gold) / 0.4), transparent)' }}
+              style={{ background: 'radial-gradient(circle, hsla(var(--gold) / 0.5), transparent)' }}
               initial={{ scale: 0.5, opacity: 1 }}
-              animate={{ scale: 3, opacity: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              animate={{ scale: 4, opacity: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
             />
           </motion.div>
         )}
