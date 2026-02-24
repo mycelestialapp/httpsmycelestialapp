@@ -67,11 +67,11 @@ const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) =>
   const currentEnergy = animatedEnergy || (energy ? energy : defaultEnergy);
 
   const data = [
-    { element: t('oracle.wood'), value: currentEnergy.wood, fullMark: 100 },
-    { element: t('oracle.fire'), value: currentEnergy.fire, fullMark: 100 },
-    { element: t('oracle.earth'), value: currentEnergy.earth, fullMark: 100 },
-    { element: t('oracle.metal'), value: currentEnergy.metal, fullMark: 100 },
-    { element: t('oracle.water'), value: currentEnergy.water, fullMark: 100 },
+    { element: `${t('oracle.wood')} ${currentEnergy.wood}%`, value: currentEnergy.wood, fullMark: 100 },
+    { element: `${t('oracle.fire')} ${currentEnergy.fire}%`, value: currentEnergy.fire, fullMark: 100 },
+    { element: `${t('oracle.earth')} ${currentEnergy.earth}%`, value: currentEnergy.earth, fullMark: 100 },
+    { element: `${t('oracle.metal')} ${currentEnergy.metal}%`, value: currentEnergy.metal, fullMark: 100 },
+    { element: `${t('oracle.water')} ${currentEnergy.water}%`, value: currentEnergy.water, fullMark: 100 },
   ];
 
   return (
@@ -116,9 +116,33 @@ const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) =>
         </ResponsiveContainer>
       </div>
 
+      {/* Five-Element Balance Analysis */}
+      {energy && (
+        <div className="mt-3 px-2 animate-fade-in">
+          <div className="flex items-center gap-2 mb-2">
+            <span style={{ color: 'hsl(var(--gold))' }}>☯</span>
+            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
+              {t('oracle.balanceTitle', { defaultValue: 'Balance Analysis' })}
+            </span>
+            <span className="flex-1 h-px" style={{ background: 'linear-gradient(to right, hsla(var(--gold) / 0.3), transparent)' }} />
+          </div>
+          <div className="space-y-1.5 mb-3">
+            {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
+              <div key={el} className="flex items-center gap-2">
+                <span className="text-[10px] w-8 text-muted-foreground uppercase">{t(`oracle.${el}`)}</span>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${energy[el]}%`, background: 'linear-gradient(90deg, hsl(var(--gold)), hsla(var(--gold) / 0.5))' }} />
+                </div>
+                <span className="text-[10px] w-8 text-right font-mono text-muted-foreground">{energy[el]}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Celestial Insight */}
       {insight && (
-        <div className="mt-3 px-2 animate-fade-in">
+        <div className="mt-1 px-2 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span style={{ color: 'hsl(var(--gold))' }}>✦</span>
             <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
