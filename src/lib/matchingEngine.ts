@@ -57,7 +57,8 @@ export interface MatchProfile {
 export interface MatchResult {
   profile: MatchProfile;
   compatibility: number;
-  reason: string;
+  reason: string; // now an i18n key
+  reasonParams?: Record<string, string>; // interpolation params
 }
 
 function getDominant(energy: ElementEnergy): string {
@@ -71,31 +72,31 @@ export function calculateCompatibility(
   userMbti: string,
   otherEnergy: ElementEnergy,
   otherMbti: string,
-): { score: number; reason: string } {
+): { score: number; reasonKey: string; reasonParams: Record<string, string> } {
   const userDom = getDominant(userEnergy);
   const otherDom = getDominant(otherEnergy);
 
   let elementScore = 50; // base
-  let reason = '';
+  let reasonKey = 'tribe.matchReasonComplement';
+  let reasonParams: Record<string, string> = {};
 
   // Generating relationship (I generate them)
   if (generatingCycle[userDom] === otherDom) {
     elementScore += 30;
-    const elementNames: Record<string, string> = { wood: 'Wood', fire: 'Fire', earth: 'Earth', metal: 'Metal', water: 'Water' };
-    reason = `Your ${elementNames[userDom]} nourishes their ${elementNames[otherDom]}`;
+    reasonKey = 'tribe.matchReasonNourish';
+    reasonParams = { userEl: `oracle.${userDom}`, otherEl: `oracle.${otherDom}` };
   }
   // They generate me
   else if (generatedBy[userDom] === otherDom) {
     elementScore += 25;
-    const elementNames: Record<string, string> = { wood: 'Wood', fire: 'Fire', earth: 'Earth', metal: 'Metal', water: 'Water' };
-    reason = `Their ${elementNames[otherDom]} energizes your ${elementNames[userDom]}`;
+    reasonKey = 'tribe.matchReasonEnergize';
+    reasonParams = { userEl: `oracle.${userDom}`, otherEl: `oracle.${otherDom}` };
   }
   // Same element
   else if (userDom === otherDom) {
     elementScore += 15;
-    reason = `Kindred ${userDom.charAt(0).toUpperCase() + userDom.slice(1)} spirits in resonance`;
-  } else {
-    reason = `Complementary elemental forces at play`;
+    reasonKey = 'tribe.matchReasonKindred';
+    reasonParams = { element: `oracle.${userDom}` };
   }
 
   // MBTI compatibility
@@ -120,7 +121,7 @@ export function calculateCompatibility(
 
   const score = Math.min(99, Math.round(elementScore * 0.5 + mbtiScore * 0.35 + similarityBonus * 1.5));
 
-  return { score, reason };
+  return { score, reasonKey, reasonParams };
 }
 
 export function findTopMatches(
@@ -140,8 +141,8 @@ export function findTopMatches(
         metal: profile.metal,
         water: profile.water,
       };
-      const { score, reason } = calculateCompatibility(userEnergy, userMbti, otherEnergy, profile.mbti || '');
-      return { profile, compatibility: score, reason };
+      const { score, reasonKey, reasonParams } = calculateCompatibility(userEnergy, userMbti, otherEnergy, profile.mbti || '');
+      return { profile, compatibility: score, reason: reasonKey, reasonParams };
     });
 
   results.sort((a, b) => b.compatibility - a.compatibility);

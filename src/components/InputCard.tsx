@@ -89,7 +89,7 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
 
         <div className="flex items-center gap-2 mt-5 mb-1">
           <span className="text-primary text-lg">☷</span>
-          <span className="text-xs tracking-[0.3em] font-bold input-label">生辰八字</span>
+          <span className="text-xs tracking-[0.3em] font-bold input-label">{t('divination.birthInfo')}</span>
           <span className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
         </div>
 
@@ -144,7 +144,7 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
         >
           <div>
             <p className="text-sm text-foreground">{t('divination.solarTime')}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">根据出生地经度修正时辰</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('divination.solarTimeDesc')}</p>
           </div>
           <div className={`toggle-switch ${useSolarTime ? "active" : ""}`}>
             <div className="toggle-knob" />

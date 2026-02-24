@@ -68,7 +68,6 @@ function getMonthBranch(month: number): string {
 }
 
 function getDayStem(year: number, month: number, day: number): string {
-  // Simplified day stem calculation
   const base = new Date(year, month - 1, day);
   const ref = new Date(1900, 0, 1);
   const diff = Math.floor((base.getTime() - ref.getTime()) / 86400000);
@@ -85,7 +84,6 @@ function getDayBranch(year: number, month: number, day: number): string {
 export function calculateElementEnergy(year: number, month: number, day: number): CelestialProfile {
   const energy: ElementEnergy = { wood: 30, fire: 30, earth: 30, metal: 30, water: 30 };
 
-  // Gather all pillars
   const pillars = [
     stemElements[getYearStem(year)],
     branchElements[getYearBranch(year)],
@@ -95,27 +93,22 @@ export function calculateElementEnergy(year: number, month: number, day: number)
     branchElements[getDayBranch(year, month, day)],
   ];
 
-  // Accumulate weights
   for (const p of pillars) {
     if (p) {
       energy[p.element as keyof ElementEnergy] += p.weight;
     }
   }
 
-  // Normalize to 0-100 range
   const max = Math.max(...Object.values(energy));
-  const min = Math.min(...Object.values(energy));
   for (const key of Object.keys(energy) as (keyof ElementEnergy)[]) {
     energy[key] = Math.round((energy[key] / max) * 100);
   }
 
-  // Find dominant and weakest
   const entries = Object.entries(energy) as [string, number][];
   entries.sort((a, b) => b[1] - a[1]);
   const dominantElement = entries[0][0];
   const weakestElement = entries[entries.length - 1][0];
 
-  // Balance score: how evenly distributed (100 = all equal)
   const avg = entries.reduce((s, e) => s + e[1], 0) / 5;
   const variance = entries.reduce((s, e) => s + Math.pow(e[1] - avg, 2), 0) / 5;
   const balance = Math.max(0, Math.round(100 - Math.sqrt(variance) * 2));
@@ -123,34 +116,27 @@ export function calculateElementEnergy(year: number, month: number, day: number)
   return { energy, dominantElement, weakestElement, balance };
 }
 
-// Generate insight text based on profile
-export function generateInsight(profile: CelestialProfile, lang: string): string {
+// Generate insight using i18n translation function
+export function generateInsight(
+  profile: CelestialProfile,
+  _lang: string,
+  t?: (key: string, params?: Record<string, string>) => string
+): string {
   const { dominantElement, weakestElement, balance } = profile;
 
-  const elementNames: Record<string, Record<string, string>> = {
-    en: { wood: 'Wood', fire: 'Fire', earth: 'Earth', metal: 'Metal', water: 'Water' },
-    fr: { wood: 'Bois', fire: 'Feu', earth: 'Terre', metal: 'Métal', water: 'Eau' },
-    'zh-Hant': { wood: '木', fire: '火', earth: '土', metal: '金', water: '水' },
-  };
-
-  const names = elementNames[lang] || elementNames.en;
-  const dom = names[dominantElement];
-  const weak = names[weakestElement];
-
-  if (lang === 'zh-Hant') {
-    if (balance > 75) return `你的五行能量高度和諧。${dom}為主導元素，賦予你獨特的力量。保持內心平靜，順應宇宙節奏。`;
-    if (balance > 50) return `${dom}能量強勢主導你的命盤，${weak}略顯不足。建議通過冥想和自然接觸來增強${weak}能量，達到更好的平衡。`;
-    return `你的能量分佈呈現明顯的${dom}傾向，${weak}能量需要特別關注。宇宙建議你在日常生活中多融入${weak}元素的活動。`;
+  // If no t function provided, return a key-based fallback
+  if (!t) {
+    return `Dominant: ${dominantElement}, Weakest: ${weakestElement}, Balance: ${balance}`;
   }
 
-  if (lang === 'fr') {
-    if (balance > 75) return `Votre énergie élémentaire est remarquablement harmonieuse. ${dom} domine, vous conférant une force unique. Maintenez votre sérénité intérieure.`;
-    if (balance > 50) return `${dom} domine votre profil énergétique, tandis que ${weak} nécessite attention. La méditation peut aider à rétablir l'équilibre cosmique.`;
-    return `Votre profil montre une forte tendance ${dom} avec ${weak} en déficit. L'univers recommande d'intégrer des activités liées à ${weak} dans votre quotidien.`;
-  }
+  const dom = t(`oracle.${dominantElement}`);
+  const weak = t(`oracle.${weakestElement}`);
 
-  // English default
-  if (balance > 75) return `Your elemental energy is remarkably harmonious. ${dom} leads your celestial profile, granting you a unique inner strength. Stay centered and flow with the cosmic rhythm.`;
-  if (balance > 50) return `${dom} energy dominates your celestial blueprint, while ${weak} seeks nourishment. Consider meditation and nature to strengthen your ${weak} connection for greater balance.`;
-  return `Your energy profile reveals a strong ${dom} tendency with ${weak} requiring special attention. The cosmos suggests integrating ${weak}-aligned activities into your daily rituals for equilibrium.`;
+  if (balance > 75) {
+    return t('oracle.insightBalanced', { dom, weak });
+  }
+  if (balance > 50) {
+    return t('oracle.insightModerate', { dom, weak });
+  }
+  return t('oracle.insightUnbalanced', { dom, weak });
 }

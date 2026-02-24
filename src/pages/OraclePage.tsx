@@ -41,7 +41,7 @@ const OraclePage = () => {
   const handleBirthSubmit = async (year: number, month: number, day: number) => {
     const profile: CelestialProfile = calculateElementEnergy(year, month, day);
     setEnergy(profile.energy);
-    setInsight(generateInsight(profile, i18n.language));
+    setInsight(generateInsight(profile, i18n.language, t));
 
     // Save to profile if logged in
     if (user) {
