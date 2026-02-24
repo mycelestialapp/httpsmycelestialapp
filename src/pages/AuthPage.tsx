@@ -4,7 +4,47 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { lovable } from '@/integrations/lovable/index';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
+
+/** Map common Supabase auth error messages to i18n keys */
+const mapAuthError = (msg: string, t: (k: string) => string): string => {
+  const lower = msg.toLowerCase();
+  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials'))
+    return t('auth.errorInvalidCredentials');
+  if (lower.includes('user already registered') || lower.includes('already been registered'))
+    return t('auth.errorEmailTaken');
+  if (lower.includes('email not confirmed'))
+    return t('auth.errorEmailNotConfirmed');
+  if (lower.includes('too many requests') || lower.includes('rate limit'))
+    return t('auth.errorRateLimit');
+  if (lower.includes('password') && lower.includes('short'))
+    return t('auth.passwordTooShort');
+  return msg;
+};
+
+const PasswordInput = ({ value, onChange, placeholder, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        {...props}
+        type={show ? 'text' : 'password'}
+        className="glass-input pr-10"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder || '••••••••'}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        tabIndex={-1}
+      >
+        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+};
 
 const AuthPage = () => {
   const { t } = useTranslation();
@@ -28,10 +68,10 @@ const AuthPage = () => {
 
     if (isForgot) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: 'https://mycelestial.app/reset-password',
       });
       if (error) {
-        setError(error.message);
+        setError(mapAuthError(error.message, t));
       } else {
         setSuccess(t('auth.resetEmailSent'));
       }
@@ -42,14 +82,14 @@ const AuthPage = () => {
     if (isSignUp) {
       const { error } = await signUp(email, password, displayName);
       if (error) {
-        setError(error.message);
+        setError(mapAuthError(error.message, t));
       } else {
         setSuccess(t('auth.checkEmail'));
       }
     } else {
       const { error } = await signIn(email, password);
       if (error) {
-        setError(error.message);
+        setError(mapAuthError(error.message, t));
       } else {
         navigate('/tribe');
       }
@@ -62,7 +102,7 @@ const AuthPage = () => {
     setError('');
     try {
       const { error } = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+        redirect_uri: 'https://mycelestial.app',
       });
       if (error) setError(error.message || t('auth.googleError'));
     } catch {
@@ -156,12 +196,9 @@ const AuthPage = () => {
         {!isForgot && (
           <div>
             <label className="input-label">{t('auth.password')}</label>
-            <input
-              type="password"
-              className="glass-input"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
               required
               minLength={6}
             />
@@ -190,7 +227,6 @@ const AuthPage = () => {
           {loading ? '...' : isForgot ? t('auth.sendReset') : isSignUp ? t('auth.signUp') : t('auth.signIn')}
         </button>
 
-        {/* Forgot password link (only on sign-in) */}
         {!isSignUp && !isForgot && (
           <p className="text-xs text-center">
             <button

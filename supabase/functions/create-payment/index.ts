@@ -51,6 +51,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: topup.priceId, quantity: 1 }],
       mode: "payment",
+      locale: "auto",
       success_url: `${origin}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/subscribe`,
       metadata: {

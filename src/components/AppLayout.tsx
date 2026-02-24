@@ -20,10 +20,16 @@ const AppLayout = () => {
           {!isHome && (
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110 active:scale-95"
-              style={{ background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.2)' }}
+              className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95"
+              style={{
+                background: 'hsla(var(--card) / 0.5)',
+                border: '1px solid hsla(var(--gold) / 0.35)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: '0 0 16px hsla(var(--gold) / 0.15), 0 0 4px hsla(var(--gold) / 0.1)',
+              }}
             >
-              <ArrowLeft size={16} style={{ color: 'hsl(var(--gold))' }} />
+              <ArrowLeft size={17} style={{ color: 'hsl(var(--gold))', filter: 'drop-shadow(0 0 6px hsla(var(--gold) / 0.5))' }} />
             </button>
           )}
           <h1
