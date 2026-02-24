@@ -10,6 +10,9 @@ import ja from './locales/ja.json';
 import ko from './locales/ko.json';
 import ar from './locales/ar.json';
 import hi from './locales/hi.json';
+import th from './locales/th.json';
+import de from './locales/de.json';
+import ru from './locales/ru.json';
 
 i18n
   .use(LanguageDetector)
@@ -25,6 +28,9 @@ i18n
       ko: { translation: ko },
       ar: { translation: ar },
       hi: { translation: hi },
+      th: { translation: th },
+      de: { translation: de },
+      ru: { translation: ru },
     },
     fallbackLng: 'en',
     interpolation: { escapeValue: false },

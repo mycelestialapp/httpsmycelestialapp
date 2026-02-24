@@ -12,6 +12,9 @@ const languages = [
   { code: 'ko', label: '한' },
   { code: 'ar', label: 'عر' },
   { code: 'hi', label: 'हि' },
+  { code: 'th', label: 'ไทย' },
+  { code: 'de', label: 'DE' },
+  { code: 'ru', label: 'РУ' },
 ];
 
 const LanguageSwitcher = () => {

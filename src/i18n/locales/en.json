@@ -138,7 +138,9 @@
     "errorInvalidCredentials": "Incorrect email or password",
     "errorEmailTaken": "This email is already registered",
     "errorEmailNotConfirmed": "Please confirm your email first",
-    "errorRateLimit": "Too many attempts. Please try again later."
+    "errorRateLimit": "Too many attempts. Please try again later.",
+    "logout": "Sign Out",
+    "switchAccount": "Switch Account"
   },
   "divination": {
     "name": "Name",
