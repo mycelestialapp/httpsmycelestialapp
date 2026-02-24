@@ -54,7 +54,6 @@ serve(async (req) => {
       mode: "payment",
       locale: "auto",
       automatic_tax: { enabled: false },
-      payment_method_collection: "always",
       success_url: topup.dust > 0
         ? `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`
         : `${BASE_URL}/payment-success?plan=daily&session_id={CHECKOUT_SESSION_ID}`,
