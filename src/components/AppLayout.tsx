@@ -27,13 +27,13 @@ const AppLayout = () => {
               className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95"
               style={{
                 background: 'hsla(var(--card) / 0.5)',
-                border: '1px solid hsla(var(--gold) / 0.35)',
+                border: '1px solid rgba(255, 215, 0, 0.5)',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: '0 0 16px hsla(var(--gold) / 0.15), 0 0 4px hsla(var(--gold) / 0.1)',
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.35), 0 0 8px rgba(255, 215, 0, 0.2), 0 0 40px rgba(255, 215, 0, 0.12)',
               }}
             >
-              <ArrowLeft size={17} style={{ color: 'hsl(var(--gold))', filter: 'drop-shadow(0 0 6px hsla(var(--gold) / 0.5))' }} />
+              <ArrowLeft size={17} style={{ color: '#FFD700', filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.7))' }} />
             </button>
           )}
           <h1

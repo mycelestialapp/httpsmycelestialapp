@@ -200,7 +200,7 @@ const TribePage = () => {
                 SOUL ID: {profile.soul_id}
               </p>
               <p className="text-xs text-muted-foreground mt-1.5 italic leading-relaxed">
-                {profile.bio || `A ${domElement.charAt(0).toUpperCase() + domElement.slice(1)}-aligned soul navigating the cosmic flow.`}
+                {profile.bio || t('tribe.defaultBio', { element: t(`oracle.${domElement}`) })}
               </p>
             </div>
           </div>
@@ -317,7 +317,16 @@ const TribePage = () => {
                       {mArchetype && (
                         <p className="text-[9px] mt-0.5" style={{ color: 'hsla(var(--gold) / 0.6)' }}>{mArchetype}</p>
                       )}
-                      <p className="text-xs text-muted-foreground italic mt-0.5">{match.reason}</p>
+                      <p className="text-xs text-muted-foreground italic mt-0.5">
+                        {match.reasonParams
+                          ? t(match.reason, {
+                              userEl: match.reasonParams.userEl ? t(match.reasonParams.userEl) : '',
+                              otherEl: match.reasonParams.otherEl ? t(match.reasonParams.otherEl) : '',
+                              element: match.reasonParams.element ? t(match.reasonParams.element) : '',
+                            })
+                          : t(match.reason)
+                        }
+                      </p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-lg font-bold" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
@@ -339,12 +348,12 @@ const TribePage = () => {
                                 background: `hsl(${elementColors[el]})`,
                               }} />
                             </div>
-                            <span className="text-[8px] text-muted-foreground">{el}</span>
+                            <span className="text-[8px] text-muted-foreground">{t(`oracle.${el}`)}</span>
                           </div>
                         ))}
                       </div>
                       <p className="text-[10px] text-muted-foreground italic mt-2 text-center">
-                        {match.profile.bio || `A ${mDom}-aligned soul seeking cosmic harmony.`}
+                        {match.profile.bio || t('tribe.defaultBio', { element: t(`oracle.${mDom}`) })}
                       </p>
                     </div>
                   ) : (
@@ -357,7 +366,7 @@ const TribePage = () => {
                         color: 'hsla(var(--gold) / 0.7)',
                       }}
                     >
-                      <Eye size={12} /> View Full Profile (10 ✦)
+                      <Eye size={12} /> {t('tribe.viewProfile')} (10 ✦)
                     </button>
                   )}
                 </motion.div>
@@ -409,14 +418,14 @@ const TribePage = () => {
                 <Eye size={24} style={{ color: 'hsl(var(--gold))' }} />
               </div>
               <h3 className="text-base font-bold mb-1" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
-                Unlock Soul Profile
+                {t('tribe.unlockTitle')}
               </h3>
               <p className="text-xs text-muted-foreground mb-1">
-                View their full energy radar, bio & cosmic insights.
+                {t('tribe.unlockDesc')}
               </p>
               <div className="flex items-center justify-center gap-1 mb-4">
                 <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
-                <span className="text-sm font-bold" style={{ color: 'hsl(var(--gold))' }}>10 Star Dust</span>
+                <span className="text-sm font-bold" style={{ color: 'hsl(var(--gold))' }}>10 ✦</span>
               </div>
               <div className="flex gap-2">
                 <button onClick={confirmUnlock} className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]" style={{
@@ -424,12 +433,12 @@ const TribePage = () => {
                   border: '1px solid hsla(var(--gold) / 0.3)',
                   color: 'hsl(var(--gold))',
                 }}>
-                  ✦ Unlock Now
-                </button>
+                   ✦ {t('tribe.unlockNow')}
+                 </button>
                 <button onClick={() => setShowUnlockPrompt(false)} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground" style={{
                   background: 'hsla(var(--muted) / 0.15)', border: '1px solid hsla(var(--muted) / 0.25)',
-                }}>
-                  Cancel
+                 }}>
+                   {t('tribe.cancel')}
                 </button>
               </div>
               <p className="text-[9px] text-muted-foreground mt-3">
