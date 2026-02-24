@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Compass, Star, Layers, BookOpen } from 'lucide-react';
+import { Compass, Star, Layers, BookOpen, Orbit, Shield, Wind, Flower2, Hexagon } from 'lucide-react';
 import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
 import DailyWisdom from '@/components/DailyWisdom';
@@ -15,9 +15,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 const tools = [
   { key: 'bazi', icon: Compass, path: '/oracle/bazi' },
-  { key: 'astrology', icon: Star, path: '/oracle/astrology' },
-  { key: 'tarot', icon: Layers, path: '/oracle/tarot' },
-  { key: 'iching', icon: BookOpen, path: '/oracle/iching' },
+  { key: 'ziwei', icon: Star, path: '/oracle/bazi' },
+  { key: 'qimen', icon: Shield, path: '/oracle/bazi' },
+  { key: 'liuren', icon: Orbit, path: '/oracle/bazi' },
+  { key: 'xiaoliuren', icon: Wind, path: '/oracle/bazi' },
+  { key: 'xuankong', icon: Hexagon, path: '/oracle/bazi' },
+  { key: 'tarot', icon: Layers, path: '/oracle/bazi' },
+  { key: 'astrology', icon: Flower2, path: '/oracle/bazi' },
+  { key: 'meihua', icon: BookOpen, path: '/oracle/bazi' },
 ] as const;
 
 const OraclePage = () => {
@@ -120,18 +125,18 @@ const OraclePage = () => {
         <h3 className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
           {t('oracle.tools')}
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           {tools.map(({ key, icon: Icon, path }) => (
             <button
               key={key}
               onClick={() => navigate(path)}
-              className="glass-card text-left p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="glass-card text-center p-3 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Icon size={20} className="mb-2" style={{ color: 'hsl(var(--gold))' }} />
-              <div className="text-sm font-semibold text-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
+              <Icon size={18} className="mb-1.5 mx-auto" style={{ color: 'hsl(var(--gold))' }} />
+              <div className="text-xs font-semibold text-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
                 {t(`oracle.${key}`)}
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
+              <div className="text-[9px] text-muted-foreground mt-0.5 leading-tight">
                 {t(`oracle.${key}Desc`)}
               </div>
             </button>

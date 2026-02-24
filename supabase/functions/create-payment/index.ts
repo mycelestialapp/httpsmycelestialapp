@@ -44,7 +44,7 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    const origin = req.headers.get("origin") || "https://mycelestial.app";
+    const BASE_URL = "https://mycelestial.app";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -52,8 +52,8 @@ serve(async (req) => {
       line_items: [{ price: topup.priceId, quantity: 1 }],
       mode: "payment",
       locale: "auto",
-      success_url: `${origin}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/subscribe`,
+      success_url: `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${BASE_URL}/subscribe`,
       metadata: {
         user_id: user.id,
         dust_amount: topup.dust.toString(),
