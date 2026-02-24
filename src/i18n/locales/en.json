@@ -163,7 +163,9 @@
     "errorEmailNotConfirmed": "Please confirm your email first",
     "errorRateLimit": "Too many attempts. Please try again later.",
     "logout": "Sign Out",
-    "switchAccount": "Switch Account"
+    "signOut": "Sign Out",
+    "switchAccount": "Switch Account",
+    "recentAccounts": "Recent Accounts"
   },
   "divination": {
     "name": "Name",
