@@ -11,6 +11,7 @@ const TOPUP_PRICES: Record<string, { priceId: string; dust: number }> = {
   dust_50:  { priceId: "price_1T3ultJl2234Nccs4CaRPn9C", dust: 50 },
   dust_150: { priceId: "price_1T3uoYJl2234Nccs85IxiHK0", dust: 150 },
   dust_500: { priceId: "price_1T3uojJl2234Nccsupg68tDb", dust: 500 },
+  plan_daily: { priceId: "price_1T4DflJl2234Nccsivm3ykKG", dust: 0 },
 };
 
 serve(async (req) => {
@@ -52,11 +53,16 @@ serve(async (req) => {
       line_items: [{ price: topup.priceId, quantity: 1 }],
       mode: "payment",
       locale: "auto",
-      success_url: `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`,
+      automatic_tax: { enabled: false },
+      payment_method_collection: "always",
+      success_url: topup.dust > 0
+        ? `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`
+        : `${BASE_URL}/payment-success?plan=daily&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${BASE_URL}/subscribe`,
       metadata: {
         user_id: user.id,
         dust_amount: topup.dust.toString(),
+        package: pkg,
       },
     });
 

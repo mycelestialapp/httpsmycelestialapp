@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { lovable } from '@/integrations/lovable/index';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, UserCircle, X } from 'lucide-react';
 
 /** Map common Supabase auth error messages to i18n keys */
 const mapAuthError = (msg: string, t: (k: string) => string): string => {
@@ -20,6 +20,31 @@ const mapAuthError = (msg: string, t: (k: string) => string): string => {
   if (lower.includes('password') && lower.includes('short'))
     return t('auth.passwordTooShort');
   return msg;
+};
+
+interface SavedAccount {
+  email: string;
+  displayName: string;
+  lastLogin: number;
+}
+
+const ACCOUNTS_KEY = 'celestial_saved_accounts';
+
+const getSavedAccounts = (): SavedAccount[] => {
+  try {
+    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '[]');
+  } catch { return []; }
+};
+
+const saveAccount = (email: string, displayName: string) => {
+  const accounts = getSavedAccounts().filter(a => a.email !== email);
+  accounts.unshift({ email, displayName, lastLogin: Date.now() });
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts.slice(0, 5)));
+};
+
+const removeAccount = (email: string) => {
+  const accounts = getSavedAccounts().filter(a => a.email !== email);
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
 };
 
 const PasswordInput = ({ value, onChange, placeholder, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
@@ -59,6 +84,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>(getSavedAccounts);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +118,8 @@ const AuthPage = () => {
         setError(mapAuthError(error.message, t));
       } else {
         localStorage.setItem('celestial_last_email', email);
+        saveAccount(email, displayName || email.split('@')[0]);
+        setSavedAccounts(getSavedAccounts());
         navigate('/tribe');
       }
     }
@@ -133,6 +161,46 @@ const AuthPage = () => {
           {getSubtitle()}
         </p>
       </div>
+
+      {/* Saved Accounts - Quick Switch */}
+      {!isSignUp && !isForgot && savedAccounts.length > 0 && (
+        <div className="mb-4 space-y-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest text-center mb-2">
+            {t('auth.recentAccounts', { defaultValue: 'Recent Accounts' })}
+          </p>
+          {savedAccounts.map((acc) => (
+            <div key={acc.email} className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { setEmail(acc.email); setPassword(''); }}
+                className="flex-1 flex items-center gap-3 py-2.5 px-3 rounded-xl text-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: email === acc.email ? 'hsla(var(--gold) / 0.12)' : 'hsla(var(--muted) / 0.1)',
+                  border: `1px solid ${email === acc.email ? 'hsla(var(--gold) / 0.3)' : 'hsla(var(--muted) / 0.2)'}`,
+                }}
+              >
+                <UserCircle size={20} style={{ color: 'hsl(var(--gold))' }} />
+                <div className="text-left min-w-0">
+                  <div className="text-xs font-medium text-foreground truncate">{acc.displayName}</div>
+                  <div className="text-[10px] text-muted-foreground truncate">{acc.email}</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => { removeAccount(acc.email); setSavedAccounts(getSavedAccounts()); }}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          <div className="flex items-center gap-3 mt-2">
+            <span className="flex-1 h-px" style={{ background: 'hsla(var(--muted) / 0.3)' }} />
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('auth.or')}</span>
+            <span className="flex-1 h-px" style={{ background: 'hsla(var(--muted) / 0.3)' }} />
+          </div>
+        </div>
+      )}
 
       {/* Google Sign-In */}
       {!isForgot && (
