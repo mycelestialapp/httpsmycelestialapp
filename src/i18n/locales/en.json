@@ -134,7 +134,11 @@
     "confirmPassword": "Confirm Password",
     "passwordMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 6 characters",
-    "invalidResetLink": "This reset link is invalid or expired. Please request a new one."
+    "invalidResetLink": "This reset link is invalid or expired. Please request a new one.",
+    "errorInvalidCredentials": "Incorrect email or password",
+    "errorEmailTaken": "This email is already registered",
+    "errorEmailNotConfirmed": "Please confirm your email first",
+    "errorRateLimit": "Too many attempts. Please try again later."
   },
   "divination": {
     "name": "Name",

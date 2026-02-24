@@ -134,7 +134,11 @@
     "confirmPassword": "Confirmer le mot de passe",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
-    "invalidResetLink": "Ce lien est invalide ou expiré. Veuillez en demander un nouveau."
+    "invalidResetLink": "Ce lien est invalide ou expiré. Veuillez en demander un nouveau.",
+    "errorInvalidCredentials": "E-mail ou mot de passe incorrect",
+    "errorEmailTaken": "Cet e-mail est déjà enregistré",
+    "errorEmailNotConfirmed": "Veuillez d'abord confirmer votre e-mail",
+    "errorRateLimit": "Trop de tentatives. Réessayez plus tard."
   },
   "divination": {
     "name": "Nom",
