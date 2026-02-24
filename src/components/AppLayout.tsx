@@ -1,11 +1,15 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/useAuth';
 import Starfield from './Starfield';
 import BottomNav from './BottomNav';
 import LanguageSwitcher from './LanguageSwitcher';
 import Disclaimer from './Disclaimer';
 
 const AppLayout = () => {
+  const { t } = useTranslation();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
@@ -39,7 +43,24 @@ const AppLayout = () => {
             ✦ Celestial
           </h1>
         </div>
-        <LanguageSwitcher />
+        <div className="flex items-center gap-2">
+          {user && (
+            <button
+              onClick={async () => { await signOut(); navigate('/auth'); }}
+              className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95"
+              style={{
+                background: 'hsla(var(--card) / 0.5)',
+                border: '1px solid hsla(var(--destructive) / 0.35)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+              title={t('auth.logout')}
+            >
+              <LogOut size={15} style={{ color: 'hsl(var(--destructive))' }} />
+            </button>
+          )}
+          <LanguageSwitcher />
+        </div>
       </header>
 
       {/* Main content */}

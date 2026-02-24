@@ -52,7 +52,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('celestial_last_email') || '');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
@@ -91,6 +91,7 @@ const AuthPage = () => {
       if (error) {
         setError(mapAuthError(error.message, t));
       } else {
+        localStorage.setItem('celestial_last_email', email);
         navigate('/tribe');
       }
     }
