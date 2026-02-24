@@ -8,6 +8,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import AppLayout from "./components/AppLayout";
 import OraclePage from "./pages/OraclePage";
 import BaziPage from "./pages/BaziPage";
+import OracleReadingPage from "./pages/OracleReadingPage";
 import TribePage from "./pages/TribePage";
 import AltarPage from "./pages/AltarPage";
 import LibraryPage from "./pages/LibraryPage";
@@ -53,6 +54,7 @@ const App = () => (
             <Route element={<AppLayout />}>
               <Route path="/" element={<OraclePage />} />
               <Route path="/oracle/bazi" element={<BaziPage />} />
+              <Route path="/oracle/reading" element={<OracleReadingPage />} />
               <Route path="/tribe" element={<TribePage />} />
               <Route path="/altar" element={<AltarPage />} />
               <Route path="/library" element={<LibraryPage />} />
