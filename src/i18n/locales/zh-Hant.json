@@ -163,7 +163,9 @@
     "errorEmailNotConfirmed": "請先確認您的電子郵件",
     "errorRateLimit": "請求過於頻繁，請稍後再試",
     "logout": "登出",
-    "switchAccount": "切換帳號"
+    "signOut": "登出",
+    "switchAccount": "切換帳號",
+    "recentAccounts": "最近帳號"
   },
   "divination": {
     "name": "姓名",

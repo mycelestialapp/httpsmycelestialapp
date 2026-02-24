@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Share2, Plus, Users, Search, CreditCard, Lock, Eye } from 'lucide-react';
+import { Star, Share2, Plus, Users, Search, CreditCard, Lock, Eye, LogOut, ArrowRightLeft } from 'lucide-react';
 import { findTopMatches, type MatchResult } from '@/lib/matchingEngine';
 import type { ElementEnergy } from '@/lib/fiveElements';
 import Disclaimer from '@/components/Disclaimer';
@@ -50,7 +50,7 @@ interface Profile {
 
 const TribePage = () => {
   const { t } = useTranslation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [matches, setMatches] = useState<MatchResult[]>([]);
@@ -251,6 +251,38 @@ const TribePage = () => {
               background: 'hsla(var(--accent) / 0.1)', border: '1px solid hsla(var(--accent) / 0.2)', color: 'hsl(var(--accent))',
             }}>
               <CreditCard size={12} /> VIP
+            </button>
+          </div>
+
+          {/* Logout & Switch */}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate('/auth');
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'hsla(var(--destructive) / 0.08)',
+                border: '1px solid hsla(var(--destructive) / 0.2)',
+                color: 'hsl(var(--destructive))',
+              }}
+            >
+              <LogOut size={12} /> {t('auth.signOut', { defaultValue: 'Sign Out' })}
+            </button>
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate('/auth');
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'hsla(var(--gold) / 0.08)',
+                border: '1px solid hsla(var(--gold) / 0.15)',
+                color: 'hsl(var(--gold))',
+              }}
+            >
+              <ArrowRightLeft size={12} /> {t('auth.switchAccount', { defaultValue: 'Switch Account' })}
             </button>
           </div>
         </div>

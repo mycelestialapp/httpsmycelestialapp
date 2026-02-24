@@ -118,7 +118,10 @@ const AuthPage = () => {
         setError(mapAuthError(error.message, t));
       } else {
         localStorage.setItem('celestial_last_email', email);
-        saveAccount(email, displayName || email.split('@')[0]);
+        // Fetch display name from profile for saved accounts
+        const { data: profileData } = await supabase.from('profiles').select('display_name').eq('id', (await supabase.auth.getUser()).data.user?.id || '').single();
+        const name = profileData?.display_name || displayName || email.split('@')[0];
+        saveAccount(email, name);
         setSavedAccounts(getSavedAccounts());
         navigate('/tribe');
       }
