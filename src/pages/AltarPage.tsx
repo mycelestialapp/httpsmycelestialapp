@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Landmark, Compass, Volume2, VolumeX } from 'lucide-react';
 import LotusLamp from '@/components/LotusLamp';
 import GoldParticles from '@/components/GoldParticles';
-
+import HealingSanctuary from '@/components/HealingSanctuary';
+import SpiritualPet from '@/components/SpiritualPet';
 
 const AltarPage = () => {
   const { t } = useTranslation();
@@ -40,6 +41,12 @@ const AltarPage = () => {
           {t('altar.ambientSound')}
         </button>
       </div>
+
+      {/* Spirit Companion */}
+      <SpiritualPet />
+
+      {/* Healing Rituals */}
+      <HealingSanctuary />
 
       {/* Lotus Lamp Offering */}
       <section>
@@ -92,8 +99,6 @@ const AltarPage = () => {
           </div>
         </div>
       </section>
-
-      
     </div>
   );
 };
