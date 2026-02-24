@@ -14,6 +14,7 @@ import LibraryPage from "./pages/LibraryPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/subscribe" element={<SubscriptionPage />} />
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
