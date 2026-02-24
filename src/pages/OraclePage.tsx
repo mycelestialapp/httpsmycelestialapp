@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Compass, Star, Layers, BookOpen, Orbit, Shield, Wind, Flower2, Hexagon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import EnergyRadar from '@/components/EnergyRadar';
 import BirthInputModal from '@/components/BirthInputModal';
 import DailyWisdom from '@/components/DailyWisdom';
@@ -14,16 +15,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 const tools = [
-  { key: 'bazi', icon: Compass, path: '/oracle/bazi' },
-  { key: 'ziwei', icon: Star, path: '/oracle/bazi' },
-  { key: 'qimen', icon: Shield, path: '/oracle/bazi' },
-  { key: 'liuren', icon: Orbit, path: '/oracle/bazi' },
-  { key: 'xiaoliuren', icon: Wind, path: '/oracle/bazi' },
-  { key: 'xuankong', icon: Hexagon, path: '/oracle/bazi' },
-  { key: 'tarot', icon: Layers, path: '/oracle/bazi' },
-  { key: 'astrology', icon: Flower2, path: '/oracle/bazi' },
-  { key: 'meihua', icon: BookOpen, path: '/oracle/bazi' },
+  { key: 'bazi', icon: Compass },
+  { key: 'ziwei', icon: Star },
+  { key: 'qimen', icon: Shield },
+  { key: 'liuren', icon: Orbit },
+  { key: 'xiaoliuren', icon: Wind },
+  { key: 'xuankong', icon: Hexagon },
+  { key: 'tarot', icon: Layers },
+  { key: 'astrology', icon: Flower2 },
+  { key: 'meihua', icon: BookOpen },
 ] as const;
+
+const AWAKENED_KEY = 'celestial_awakened_tools';
+const getAwakened = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(AWAKENED_KEY) || '[]'); } catch { return []; }
+};
 
 const OraclePage = () => {
   const { t, i18n } = useTranslation();
@@ -33,8 +39,9 @@ const OraclePage = () => {
   const [energy, setEnergy] = useState<ElementEnergy | null>(null);
   const [insight, setInsight] = useState('');
   const [compareSoul, setCompareSoul] = useState<string | null>(null);
+  const [awakened] = useState<string[]>(getAwakened);
+  const [tappedTool, setTappedTool] = useState<string | null>(null);
 
-  // Check for comparison challenge from shared link
   useEffect(() => {
     const soul = localStorage.getItem('celestial_compare_soul');
     if (soul) {
@@ -48,18 +55,21 @@ const OraclePage = () => {
     setEnergy(profile.energy);
     setInsight(generateInsight(profile, i18n.language, t));
 
-    // Save to profile if logged in
     if (user) {
       await supabase.from('profiles').update({
         birthday: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-        wood: profile.energy.wood,
-        fire: profile.energy.fire,
-        earth: profile.energy.earth,
-        metal: profile.energy.metal,
-        water: profile.energy.water,
+        wood: profile.energy.wood, fire: profile.energy.fire, earth: profile.energy.earth,
+        metal: profile.energy.metal, water: profile.energy.water,
         dominant_element: profile.dominantElement,
       }).eq('id', user.id);
     }
+  };
+
+  const handleToolTap = (key: string) => {
+    setTappedTool(key);
+    setTimeout(() => {
+      navigate(`/oracle/reading?tool=${key}`);
+    }, 600);
   };
 
   return (
@@ -105,11 +115,7 @@ const OraclePage = () => {
       </div>
 
       {/* Energy Radar */}
-      <EnergyRadar
-        energy={energy}
-        insight={insight}
-        onRequestReading={() => setModalOpen(true)}
-      />
+      <EnergyRadar energy={energy} insight={insight} onRequestReading={() => setModalOpen(true)} />
 
       {/* Daily Check-in */}
       <DailyCheckin />
@@ -120,38 +126,118 @@ const OraclePage = () => {
       {/* Today's Wisdom */}
       <DailyWisdom />
 
-      {/* Tools grid */}
+      {/* Tools grid with animations */}
       <div>
         <h3 className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
           {t('oracle.tools')}
         </h3>
         <div className="grid grid-cols-3 gap-2.5">
-          {tools.map(({ key, icon: Icon, path }) => (
-            <button
-              key={key}
-              onClick={() => navigate(path)}
-              className="glass-card text-center p-3 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Icon size={18} className="mb-1.5 mx-auto" style={{ color: 'hsl(var(--gold))' }} />
-              <div className="text-xs font-semibold text-foreground" style={{ fontFamily: 'var(--font-serif)' }}>
-                {t(`oracle.${key}`)}
-              </div>
-              <div className="text-[9px] text-muted-foreground mt-0.5 leading-tight">
-                {t(`oracle.${key}Desc`)}
-              </div>
-            </button>
-          ))}
+          {tools.map(({ key, icon: Icon }, index) => {
+            const isAwakened = awakened.includes(key);
+            const isTapped = tappedTool === key;
+
+            return (
+              <motion.button
+                key={key}
+                onClick={() => handleToolTap(key)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: isTapped ? 0 : 1,
+                  y: 0,
+                  scale: isTapped ? 0.3 : 1,
+                }}
+                transition={{
+                  delay: index * 0.05,
+                  duration: isTapped ? 0.5 : 0.4,
+                  ease: isTapped ? 'easeIn' : 'easeOut',
+                }}
+                className="glass-card text-center p-3 relative overflow-hidden"
+                style={{
+                  border: isAwakened ? '1px solid hsla(var(--gold) / 0.4)' : undefined,
+                  boxShadow: isAwakened ? '0 0 12px hsla(var(--gold) / 0.15), inset 0 0 8px hsla(var(--gold) / 0.05)' : undefined,
+                }}
+              >
+                {/* Breathing glow overlay */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none"
+                  animate={{
+                    boxShadow: [
+                      'inset 0 0 8px hsla(var(--gold) / 0.02)',
+                      'inset 0 0 16px hsla(var(--gold) / 0.08)',
+                      'inset 0 0 8px hsla(var(--gold) / 0.02)',
+                    ],
+                  }}
+                  transition={{ repeat: Infinity, duration: 3 + index * 0.3, ease: 'easeInOut' }}
+                />
+
+                {/* Awakened badge */}
+                {isAwakened && (
+                  <div className="absolute top-1 right-1">
+                    <motion.div
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: 'hsl(var(--gold))' }}
+                      animate={{ opacity: [0.5, 1, 0.5], scale: [0.8, 1.1, 0.8] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                    />
+                  </div>
+                )}
+
+                <Icon size={18} className="mb-1.5 mx-auto relative z-10" style={{ color: 'hsl(var(--gold))' }} />
+                <div className="text-xs font-semibold text-foreground relative z-10" style={{ fontFamily: 'var(--font-serif)' }}>
+                  {t(`oracle.${key}`)}
+                </div>
+                <div className="text-[9px] text-muted-foreground mt-0.5 leading-tight relative z-10">
+                  {t(`oracle.${key}Desc`)}
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
-      
+      {/* Collapse particle overlay when a tool is tapped */}
+      <AnimatePresence>
+        {tappedTool && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Golden particle burst */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const angle = (Math.PI * 2 * i) / 24;
+              const dist = 120 + Math.random() * 80;
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'hsl(var(--gold))', boxShadow: '0 0 8px hsl(var(--gold))' }}
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{
+                    x: Math.cos(angle) * dist,
+                    y: Math.sin(angle) * dist,
+                    opacity: 0,
+                    scale: 0.2,
+                  }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                />
+              );
+            })}
+            {/* Central flash */}
+            <motion.div
+              className="w-32 h-32 rounded-full"
+              style={{ background: 'radial-gradient(circle, hsla(var(--gold) / 0.4), transparent)' }}
+              initial={{ scale: 0.5, opacity: 1 }}
+              animate={{ scale: 3, opacity: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal */}
-      <BirthInputModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleBirthSubmit}
-      />
+      <BirthInputModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleBirthSubmit} />
     </div>
   );
 };
