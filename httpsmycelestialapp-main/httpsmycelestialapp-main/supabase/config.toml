@@ -1,0 +1,16 @@
+project_id = "qnlciqqimwzlsvmplskq"
+
+[functions.process-referral]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
+
+[functions.oracle-reading]
+verify_jwt = false

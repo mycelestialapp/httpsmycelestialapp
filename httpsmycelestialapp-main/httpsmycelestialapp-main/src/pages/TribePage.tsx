@@ -1,0 +1,525 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Star, Share2, Plus, Users, Search, CreditCard, Lock, Eye, LogOut, ArrowRightLeft } from 'lucide-react';
+import { findTopMatches, type MatchResult } from '@/lib/matchingEngine';
+import type { ElementEnergy } from '@/lib/fiveElements';
+import Disclaimer from '@/components/Disclaimer';
+import SoulCardModal from '@/components/SoulCardModal';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const MBTI_TYPES = [
+  'INTJ', 'INTP', 'ENTJ', 'ENTP',
+  'INFJ', 'INFP', 'ENFJ', 'ENFP',
+  'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
+  'ISTP', 'ISFP', 'ESTP', 'ESFP',
+];
+
+const mbtiArchetypes: Record<string, string> = {
+  INTJ: 'The Architect', INTP: 'The Thinker', ENTJ: 'The Commander', ENTP: 'The Debater',
+  INFJ: 'The Advocate', INFP: 'The Mediator', ENFJ: 'The Protagonist', ENFP: 'The Campaigner',
+  ISTJ: 'The Logistician', ISFJ: 'The Defender', ESTJ: 'The Executive', ESFJ: 'The Consul',
+  ISTP: 'The Virtuoso', ISFP: 'The Adventurer', ESTP: 'The Entrepreneur', ESFP: 'The Entertainer',
+};
+
+const elementColors: Record<string, string> = {
+  wood: '120, 60%, 40%',
+  fire: '0, 75%, 55%',
+  earth: '35, 70%, 50%',
+  metal: '210, 20%, 70%',
+  water: '210, 80%, 55%',
+};
+
+interface Profile {
+  id: string;
+  display_name: string | null;
+  mbti: string | null;
+  bio: string | null;
+  soul_id: string;
+  star_dust: number;
+  wood: number;
+  fire: number;
+  earth: number;
+  metal: number;
+  water: number;
+  dominant_element: string | null;
+  ref_code?: string;
+}
+
+const TribePage = () => {
+  const { t } = useTranslation();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [editingMbti, setEditingMbti] = useState(false);
+  const [showSoulCard, setShowSoulCard] = useState(false);
+  const [showInsufficientDust, setShowInsufficientDust] = useState(false);
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
+  const [unlockTargetId, setUnlockTargetId] = useState<string | null>(null);
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!authLoading && !user) navigate('/auth');
+  }, [user, authLoading, navigate]);
+
+  const fetchProfile = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (data) setProfile(data as Profile);
+  }, [user]);
+
+  useEffect(() => { fetchProfile(); }, [fetchProfile]);
+
+  const findMatches = useCallback(async () => {
+    if (!profile) return;
+    setLoadingMatches(true);
+    // Smart query: prioritize users with same generating-cycle element or compatible MBTI
+    const { data: candidates } = await supabase
+      .from('profiles')
+      .select('*')
+      .neq('id', profile.id)
+      .limit(50);
+
+    if (candidates && candidates.length > 0) {
+      const userEnergy: ElementEnergy = { wood: profile.wood, fire: profile.fire, earth: profile.earth, metal: profile.metal, water: profile.water };
+      const results = findTopMatches(userEnergy, profile.mbti || '', profile.id, candidates as any[], 5);
+      setMatches(results);
+    }
+    setLoadingMatches(false);
+  }, [profile]);
+
+  useEffect(() => { if (profile) findMatches(); }, [profile, findMatches]);
+
+  const updateMbti = async (mbti: string) => {
+    if (!user) return;
+    await supabase.from('profiles').update({ mbti }).eq('id', user.id);
+    setProfile((p) => p ? { ...p, mbti } : p);
+    setEditingMbti(false);
+  };
+
+  // Spend star dust for more matches
+  const handleViewMoreMatches = async () => {
+    if (!profile || !user) return;
+    if (profile.star_dust < 5) {
+      setShowInsufficientDust(true);
+      return;
+    }
+    await supabase.rpc('increment_star_dust', { uid: user.id, amount: -5 });
+    setProfile(p => p ? { ...p, star_dust: p.star_dust - 5 } : p);
+    findMatches();
+  };
+
+  // Unlock detailed profile view — costs 10 Star Dust
+  const handleUnlockProfile = (matchId: string) => {
+    if (unlockedIds.has(matchId)) return; // already unlocked
+    setUnlockTargetId(matchId);
+    setShowUnlockPrompt(true);
+  };
+
+  const confirmUnlock = async () => {
+    if (!profile || !user || !unlockTargetId) return;
+    if (profile.star_dust < 10) {
+      setShowUnlockPrompt(false);
+      setShowInsufficientDust(true);
+      return;
+    }
+    await supabase.rpc('increment_star_dust', { uid: user.id, amount: -10 });
+    setProfile(p => p ? { ...p, star_dust: p.star_dust - 10 } : p);
+    setUnlockedIds(prev => new Set(prev).add(unlockTargetId));
+    setShowUnlockPrompt(false);
+  };
+
+  if (authLoading || !user) return null;
+
+  const domElement = profile?.dominant_element || 'earth';
+  const domColor = elementColors[domElement] || elementColors.earth;
+  const archetype = profile?.mbti ? mbtiArchetypes[profile.mbti.toUpperCase()] : null;
+
+  return (
+    <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
+      {/* Header with Star Dust */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-serif)', color: 'hsl(var(--gold))', textShadow: '0 0 24px hsla(var(--gold) / 0.3)' }}>
+            {t('tribe.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t('tribe.subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{
+          background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.25)',
+        }}>
+          <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
+          <span className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>{profile?.star_dust ?? 0}</span>
+          <button onClick={() => navigate('/subscribe')} className="ml-1 w-4 h-4 rounded-full flex items-center justify-center" style={{
+            background: 'hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
+          }}>
+            <Plus size={10} />
+          </button>
+        </div>
+      </div>
+
+      {/* Soul ID Card */}
+      {profile && (
+        <div className="glass-card-highlight overflow-hidden">
+          <div className="h-2 -mx-6 -mt-6 mb-4" style={{
+            background: `linear-gradient(90deg, hsl(${domColor}), hsla(var(--gold) / 0.4), hsl(${domColor}))`,
+          }} />
+
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-xl font-bold" style={{
+              background: `radial-gradient(circle at 35% 35%, hsla(${domColor} / 0.5), hsla(${domColor} / 0.1))`,
+              border: `2px solid hsla(${domColor} / 0.5)`, color: `hsl(${domColor})`,
+              fontFamily: 'var(--font-serif)', boxShadow: `0 0 25px hsla(${domColor} / 0.25)`,
+            }}>
+              {(profile.display_name || 'S').charAt(0).toUpperCase()}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-serif)' }}>
+                  {profile.display_name || 'Soul'}
+                </h3>
+                {profile.mbti && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{
+                    background: 'hsla(var(--accent) / 0.15)', border: '1px solid hsla(var(--accent) / 0.3)', color: 'hsl(var(--accent))',
+                  }}>
+                    {profile.mbti}
+                  </span>
+                )}
+              </div>
+              {archetype && (
+                <p className="text-[10px] font-medium mt-0.5" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                  {archetype}
+                </p>
+              )}
+              <p className="text-[10px] text-muted-foreground tracking-wider mt-0.5">
+                SOUL ID: {profile.soul_id}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5 italic leading-relaxed">
+                {profile.bio || t('tribe.defaultBio', { element: t(`oracle.${domElement}`) })}
+              </p>
+            </div>
+          </div>
+
+          {/* Energy bar */}
+          <div className="mt-4 grid grid-cols-5 gap-1">
+            {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
+              <div key={el} className="flex flex-col items-center gap-1">
+                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{
+                    width: `${profile[el]}%`, background: `hsl(${elementColors[el]})`,
+                  }} />
+                </div>
+                <span className="text-[9px] text-muted-foreground">{t(`oracle.${el}`)}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* MBTI selector */}
+          {!profile.mbti && !editingMbti && (
+            <button onClick={() => setEditingMbti(true)} className="mt-3 w-full py-2 rounded-lg text-xs transition-all" style={{
+              background: 'hsla(var(--accent) / 0.1)', border: '1px solid hsla(var(--accent) / 0.2)', color: 'hsl(var(--accent))',
+            }}>
+              + {t('tribe.setMbti')}
+            </button>
+          )}
+
+          {editingMbti && (
+            <div className="mt-3 grid grid-cols-4 gap-1.5">
+              {MBTI_TYPES.map((type) => (
+                <button key={type} onClick={() => updateMbti(type)} className="py-1.5 rounded text-[10px] font-semibold transition-all hover:scale-105" style={{
+                  background: 'hsla(var(--card) / 0.5)', border: '1px solid hsla(var(--gold) / 0.15)', color: 'hsl(var(--foreground))',
+                }}>
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-4 flex gap-2">
+            <button onClick={() => setShowSoulCard(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]" style={{
+              background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
+            }}>
+              <Share2 size={12} /> {t('tribe.generateCard')}
+            </button>
+            <button onClick={() => navigate('/subscribe')} className="flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs transition-all hover:scale-[1.02]" style={{
+              background: 'hsla(var(--accent) / 0.1)', border: '1px solid hsla(var(--accent) / 0.2)', color: 'hsl(var(--accent))',
+            }}>
+              <CreditCard size={12} /> VIP
+            </button>
+          </div>
+
+          {/* Logout & Switch */}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate('/auth');
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'hsla(var(--destructive) / 0.08)',
+                border: '1px solid hsla(var(--destructive) / 0.2)',
+                color: 'hsl(var(--destructive))',
+              }}
+            >
+              <LogOut size={12} /> {t('auth.signOut', { defaultValue: 'Sign Out' })}
+            </button>
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate('/auth');
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'hsla(var(--gold) / 0.08)',
+                border: '1px solid hsla(var(--gold) / 0.15)',
+                color: 'hsl(var(--gold))',
+              }}
+            >
+              <ArrowRightLeft size={12} /> {t('auth.switchAccount', { defaultValue: 'Switch Account' })}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Find Your Soul Tribe */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Search size={14} style={{ color: 'hsl(var(--gold))' }} />
+          <h3 className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
+            {t('tribe.findTribe')}
+          </h3>
+          <span className="flex-1 h-px" style={{ background: 'linear-gradient(to right, hsla(var(--gold) / 0.3), transparent)' }} />
+        </div>
+
+        {loadingMatches && (
+          <div className="text-center py-8">
+            <div className="text-2xl animate-spin-slow mb-2">✦</div>
+            <p className="text-xs text-muted-foreground">{t('tribe.searching')}</p>
+          </div>
+        )}
+
+        {!loadingMatches && matches.length === 0 && (
+          <div className="glass-card text-center py-8">
+            <Users size={28} className="mx-auto mb-3" style={{ color: 'hsla(var(--gold) / 0.4)' }} />
+            <p className="text-sm text-muted-foreground">{t('tribe.noMatches')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('tribe.noMatchesHint')}</p>
+          </div>
+        )}
+
+        {matches.length > 0 && (
+          <div className="space-y-3">
+            {matches.map((match, idx) => {
+              const mDom = match.profile.dominant_element || 'earth';
+              const mColor = elementColors[mDom] || elementColors.earth;
+              const mArchetype = match.profile.mbti ? mbtiArchetypes[match.profile.mbti.toUpperCase()] : null;
+              const isUnlocked = unlockedIds.has(match.profile.id);
+              return (
+                <motion.div
+                  key={match.profile.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="glass-card p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold" style={{
+                      background: `radial-gradient(circle, hsla(${mColor} / 0.4), hsla(${mColor} / 0.1))`,
+                      border: `1px solid hsla(${mColor} / 0.4)`, color: `hsl(${mColor})`, fontFamily: 'var(--font-serif)',
+                    }}>
+                      {(match.profile.display_name || 'S').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold truncate">{match.profile.display_name || 'Soul'}</span>
+                        {match.profile.mbti && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{
+                            background: 'hsla(var(--accent) / 0.1)', color: 'hsl(var(--accent))',
+                          }}>
+                            {match.profile.mbti}
+                          </span>
+                        )}
+                      </div>
+                      {mArchetype && (
+                        <p className="text-[9px] mt-0.5" style={{ color: 'hsla(var(--gold) / 0.6)' }}>{mArchetype}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground italic mt-0.5">
+                        {match.reasonParams
+                          ? t(match.reason, {
+                              userEl: match.reasonParams.userEl ? t(match.reasonParams.userEl) : '',
+                              otherEl: match.reasonParams.otherEl ? t(match.reasonParams.otherEl) : '',
+                              element: match.reasonParams.element ? t(match.reasonParams.element) : '',
+                            })
+                          : t(match.reason)
+                        }
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-lg font-bold" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                        {match.compatibility}%
+                      </div>
+                      <div className="text-[9px] text-muted-foreground">{t('tribe.compatibility')}</div>
+                    </div>
+                  </div>
+
+                  {/* Unlock / View Details button */}
+                  {isUnlocked ? (
+                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid hsla(var(--gold) / 0.08)' }}>
+                      <div className="grid grid-cols-5 gap-1">
+                        {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
+                          <div key={el} className="flex flex-col items-center gap-0.5">
+                            <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                              <div className="h-full rounded-full" style={{
+                                width: `${match.profile[el as keyof typeof match.profile] ?? 50}%`,
+                                background: `hsl(${elementColors[el]})`,
+                              }} />
+                            </div>
+                            <span className="text-[8px] text-muted-foreground">{t(`oracle.${el}`)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic mt-2 text-center">
+                        {match.profile.bio || t('tribe.defaultBio', { element: t(`oracle.${mDom}`) })}
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleUnlockProfile(match.profile.id)}
+                      className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99]"
+                      style={{
+                        background: 'hsla(var(--gold) / 0.06)',
+                        border: '1px solid hsla(var(--gold) / 0.12)',
+                        color: 'hsla(var(--gold) / 0.7)',
+                      }}
+                    >
+                      <Eye size={12} /> {t('tribe.viewProfile')} (10 ✦)
+                    </button>
+                  )}
+                </motion.div>
+              );
+            })}
+
+            {/* View More — costs Star Dust */}
+            <button
+              onClick={handleViewMoreMatches}
+              className="w-full py-2.5 rounded-xl text-xs font-medium transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+              style={{
+                background: 'hsla(var(--gold) / 0.06)',
+                border: '1px solid hsla(var(--gold) / 0.15)',
+                color: 'hsla(var(--gold) / 0.7)',
+              }}
+            >
+              <Star size={12} /> {t('tribe.viewMore')} (5 ✦)
+            </button>
+          </div>
+        )}
+      </div>
+
+      <Disclaimer />
+
+      {/* Soul Card Modal */}
+      {profile && (
+        <SoulCardModal open={showSoulCard} onClose={() => setShowSoulCard(false)} profile={profile} />
+      )}
+
+      {/* ═══ Unlock Profile Prompt ═══ */}
+      <AnimatePresence>
+        {showUnlockPrompt && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowUnlockPrompt(false)} />
+            <motion.div
+              className="relative glass-card-highlight text-center max-w-xs p-6"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{
+                background: 'hsla(var(--gold) / 0.1)',
+                border: '2px solid hsla(var(--gold) / 0.3)',
+                boxShadow: '0 0 30px hsla(var(--gold) / 0.15)',
+              }}>
+                <Eye size={24} style={{ color: 'hsl(var(--gold))' }} />
+              </div>
+              <h3 className="text-base font-bold mb-1" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                {t('tribe.unlockTitle')}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t('tribe.unlockDesc')}
+              </p>
+              <div className="flex items-center justify-center gap-1 mb-4">
+                <Star size={14} style={{ color: 'hsl(var(--gold))' }} fill="hsl(var(--gold))" />
+                <span className="text-sm font-bold" style={{ color: 'hsl(var(--gold))' }}>10 ✦</span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={confirmUnlock} className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]" style={{
+                  background: 'linear-gradient(135deg, hsla(var(--gold) / 0.2), hsla(var(--gold) / 0.1))',
+                  border: '1px solid hsla(var(--gold) / 0.3)',
+                  color: 'hsl(var(--gold))',
+                }}>
+                   ✦ {t('tribe.unlockNow')}
+                 </button>
+                <button onClick={() => setShowUnlockPrompt(false)} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground" style={{
+                  background: 'hsla(var(--muted) / 0.15)', border: '1px solid hsla(var(--muted) / 0.25)',
+                 }}>
+                   {t('tribe.cancel')}
+                </button>
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-3">
+                Balance: {profile?.star_dust ?? 0} ✦
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Insufficient Star Dust Modal */}
+      <AnimatePresence>
+        {showInsufficientDust && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowInsufficientDust(false)} />
+            <motion.div
+              className="relative glass-card-highlight text-center max-w-xs p-6"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <Lock size={28} className="mx-auto mb-3" style={{ color: 'hsl(var(--gold))' }} />
+              <h3 className="text-base font-bold mb-2" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+                {t('tribe.insufficientDust')}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t('tribe.insufficientDustHint')}
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowInsufficientDust(false); navigate('/'); }} className="flex-1 py-2 rounded-lg text-xs" style={{
+                  background: 'hsla(var(--gold) / 0.1)', border: '1px solid hsla(var(--gold) / 0.2)', color: 'hsl(var(--gold))',
+                }}>
+                  {t('checkin.title')}
+                </button>
+                <button onClick={() => setShowInsufficientDust(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground" style={{
+                  background: 'hsla(var(--muted) / 0.2)', border: '1px solid hsla(var(--muted) / 0.3)',
+                }}>
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default TribePage;
