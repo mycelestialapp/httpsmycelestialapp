@@ -186,7 +186,7 @@ const OracleReadingPage = () => {
         body: { priceId: 'price_1day_inspiration' },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, '_blank');
+      if (data?.url) window.location.href = data.url;
     } catch (e) {
       console.error('Payment error:', e);
     }
