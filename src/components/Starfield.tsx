@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 const Starfield = () => {
   const stars = useMemo(() => {
-    return Array.from({ length: 150 }, (_, i) => ({
+    return Array.from({ length: 180 }, (_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,

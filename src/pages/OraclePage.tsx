@@ -131,7 +131,7 @@ const OraclePage = () => {
         <h3 className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
           {t('oracle.tools')}
         </h3>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {tools.map(({ key, icon: Icon }, index) => {
             const isAwakened = awakened.includes(key);
             const isTapped = tappedTool === key;
