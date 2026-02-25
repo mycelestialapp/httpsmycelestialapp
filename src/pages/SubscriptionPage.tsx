@@ -69,7 +69,7 @@ const SubscriptionPage = () => {
         : { package: `plan_${plan.key}`, priceId: plan.priceId };
       const { data, error } = await supabase.functions.invoke(fnName, { body });
       if (error) throw error;
-      if (data?.url) window.open(data.url, '_blank');
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: 'Payment error', description: err.message || 'Something went wrong' });
     } finally {
@@ -87,7 +87,7 @@ const SubscriptionPage = () => {
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', { body: { package: pkg } });
       if (error) throw error;
-      if (data?.url) window.open(data.url, '_blank');
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: 'Payment error', description: err.message || 'Something went wrong' });
     } finally {
