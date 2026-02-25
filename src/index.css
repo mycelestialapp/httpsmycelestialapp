@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    --background: 225 50% 4%;
+    --background: 228 30% 5%;
     --foreground: 45 30% 90%;
 
-    --card: 225 45% 7%;
+    --card: 228 30% 7%;
     --card-foreground: 45 30% 90%;
 
     --popover: 225 45% 7%;
@@ -36,8 +36,8 @@
 
     --gold: 51 100% 50%;
     --gold-dim: 43 50% 35%;
-    --midnight: 225 50% 4%;
-    --deep-space: 225 55% 3%;
+    --midnight: 228 30% 5%;
+    --deep-space: 230 25% 4%;
 
     --sidebar-background: 225 50% 4%;
     --sidebar-foreground: 45 30% 90%;
@@ -238,7 +238,7 @@
     inset: 0;
     overflow: hidden;
     z-index: 0;
-    background: radial-gradient(ellipse at 50% 0%, hsl(225 45% 8%), hsl(225 50% 4%) 50%, hsl(225 55% 3%));
+    background: radial-gradient(ellipse at 50% 0%, hsl(228 30% 8%), hsl(228 30% 5%) 50%, hsl(230 25% 4%));
   }
 
   .star {
