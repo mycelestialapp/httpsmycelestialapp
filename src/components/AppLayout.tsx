@@ -15,7 +15,7 @@ const AppLayout = () => {
   const isHome = location.pathname === '/';
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-x-hidden overflow-y-auto">
       <Starfield />
 
       {/* Top bar */}
