@@ -14,6 +14,28 @@ import th from './locales/th.json';
 import de from './locales/de.json';
 import ru from './locales/ru.json';
 
+const supportedLngs = ['en', 'fr', 'zh-Hant', 'es', 'pt', 'ja', 'ko', 'ar', 'hi', 'th', 'de', 'ru'];
+
+/**
+ * Map any detected browser language code to our supported language codes.
+ * e.g. "ko-KR" → "ko", "zh-TW" → "zh-Hant", "zh-CN" → "zh-Hant", "pt-BR" → "pt"
+ */
+function resolveLanguage(detected: string): string {
+  const lower = detected.toLowerCase();
+  
+  // Exact match first
+  if (supportedLngs.includes(detected)) return detected;
+  
+  // Chinese variants → zh-Hant
+  if (lower.startsWith('zh')) return 'zh-Hant';
+  
+  // Base language match (e.g. ko-KR → ko, pt-BR → pt)
+  const base = lower.split('-')[0];
+  if (supportedLngs.includes(base)) return base;
+  
+  return 'en';
+}
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -22,9 +44,6 @@ i18n
       en: { translation: en },
       fr: { translation: fr },
       'zh-Hant': { translation: zhHant },
-      'zh-TW': { translation: zhHant },
-      zh: { translation: zhHant },
-      'zh-CN': { translation: zhHant },
       es: { translation: es },
       pt: { translation: pt },
       ja: { translation: ja },
@@ -35,8 +54,17 @@ i18n
       de: { translation: de },
       ru: { translation: ru },
     },
+    supportedLngs,
+    nonExplicitSupportedLngs: false,
+    load: 'currentOnly',
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
+      convertDetectedLanguage: resolveLanguage,
+    },
   });
 
 export default i18n;
