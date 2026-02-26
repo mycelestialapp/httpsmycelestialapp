@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import html2canvas from "html2canvas";
+import * as domtoimage from "dom-to-image";
 import type { DivinationInfo } from "./InputCard";
 import type { BaziApiResult } from "@/lib/baziApi";
 import { isToolUnlocked } from "@/lib/oracleModuleContent";
@@ -25,23 +25,47 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
   const hasBazi = baziResult?.pillars && (baziResult.pillars.year || baziResult.pillars.month || baziResult.pillars.day || baziResult.pillars.hour);
   const premiumUnlock = isToolUnlocked('bazi');
 
+  const scale = typeof window !== 'undefined' ? (window.devicePixelRatio || 3) : 3;
+
+  const doExport = (): Promise<string | undefined> => {
+    if (!exportRef.current || !baziResult) return Promise.resolve(undefined);
+    const el = exportRef.current;
+    const w = (el.offsetWidth || 375) * scale;
+    const h = (el.scrollHeight || el.offsetHeight || 800) * scale;
+    return domtoimage.toPng(el, {
+      width: w,
+      height: h,
+      bgcolor: '#1a0b2e',
+    });
+  };
+
   const handleExportChart = async () => {
     if (!exportRef.current || !baziResult) return;
     setExporting(true);
     try {
-      const canvas = await html2canvas(exportRef.current, {
-        scale: 3,
-        backgroundColor: '#1a0b2e',
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
+      const dataUrl = await doExport();
+      if (!dataUrl) return;
       const link = document.createElement('a');
-      link.download = `天机命盘_${info.name || '命盘'}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.download = `天机命盘_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
       link.click();
     } catch {
       // fallback: could toast
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSaveToGallery = async () => {
+    if (!exportRef.current || !baziResult) return;
+    setExporting(true);
+    try {
+      const dataUrl = await doExport();
+      if (!dataUrl) return;
+      const link = document.createElement('a');
+      link.download = `天机命盘_${info.name || '命盘'}.png`;
+      link.href = dataUrl;
+      link.click();
     } finally {
       setExporting(false);
     }
@@ -84,12 +108,12 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
 
   return (
     <div className="animate-fade-in flex flex-col items-center gap-5">
-      {/* 导出用长图（离屏渲染，供 html2canvas 捕获） */}
+      {/* 导出用长图（离屏渲染，供 dom-to-image 捕获；iOS 避免截断） */}
       {hasBazi && (
         <div
           ref={exportRef}
           className="absolute left-[-9999px] top-0 w-[375px]"
-          style={{ zIndex: -1 }}
+          style={{ zIndex: -1, WebkitOverflowScrolling: 'touch' }}
           aria-hidden
         >
           <BaziChartImage
@@ -185,20 +209,40 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
             <p className="text-[10px] text-muted-foreground mt-3 italic">
               {t('divination.baziDisclaimer', { defaultValue: '命理结果仅供参考，请勿迷信。' })}
             </p>
-            <button
-              type="button"
-              onClick={handleExportChart}
-              disabled={exporting}
-              className="w-full mt-4 py-3 rounded-xl text-sm font-semibold tracking-wider transition-all disabled:opacity-50"
-              style={{
-                background: 'linear-gradient(135deg, hsla(var(--gold) / 0.35), hsla(var(--accent) / 0.25))',
-                border: '1px solid hsla(var(--gold) / 0.5)',
-                color: 'hsl(var(--gold))',
-                fontFamily: 'var(--font-serif)',
-              }}
-            >
-              {exporting ? t('divination.exporting', { defaultValue: '生成中…' }) : t('divination.exportChart', { defaultValue: '一键导出高清命盘' })}
-            </button>
+            <div className="flex flex-col gap-2 mt-4">
+              <button
+                type="button"
+                onClick={handleExportChart}
+                disabled={exporting}
+                className="export-btn w-full py-3.5 rounded-xl text-sm font-semibold tracking-wider transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                style={{
+                  background: 'linear-gradient(90deg, #6a2c8a, #4b0082)',
+                  border: '1px solid hsla(var(--gold) / 0.5)',
+                  color: '#fff',
+                  fontFamily: 'var(--font-serif)',
+                }}
+              >
+                {exporting ? (
+                  <>
+                    <span className="bazi-export-spinner w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>{t('divination.exporting', { defaultValue: '生成中…' })}</span>
+                  </>
+                ) : (
+                  t('divination.exportChart', { defaultValue: '一键导出高清命盘' })
+                )}
+              </button>
+              {premiumUnlock && (
+                <button
+                  type="button"
+                  onClick={handleSaveToGallery}
+                  disabled={exporting}
+                  className="w-full py-2.5 rounded-xl text-xs font-medium border transition-colors"
+                style={{ borderColor: 'hsla(var(--gold) / 0.5)', color: 'hsl(var(--gold))' }}
+                >
+                  {t('divination.saveToGallery', { defaultValue: '保存到相册' })}
+                </button>
+              )}
+            </div>
             {!premiumUnlock && (
               <p className="text-[10px] text-muted-foreground mt-2">
                 {t('divination.exportHint', { defaultValue: '解锁深度版可导出含流年详批与财富等级的长图' })}
