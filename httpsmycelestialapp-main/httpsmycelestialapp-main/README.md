@@ -71,4 +71,7 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-测试一下 Git 提交
+
+## 深度完整版支付 (¥19.9/次)
+
+在 Stripe 后台创建一次性价格（如 ¥19.9），在 Supabase Edge Functions 的 `create-payment` 环境变量中设置 `STRIPE_PRICE_REPORT_FULL` 为该 Price ID。未设置时将回退到现有默认价格。

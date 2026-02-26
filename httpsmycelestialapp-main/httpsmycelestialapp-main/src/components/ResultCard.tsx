@@ -1,9 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import html2canvas from "html2canvas";
 import type { DivinationInfo } from "./InputCard";
+import type { BaziApiResult } from "@/lib/baziApi";
+import { isToolUnlocked } from "@/lib/oracleModuleContent";
+import BaziChartImage from "./BaziChartImage";
 
 interface ResultCardProps {
   info: DivinationInfo;
+  baziResult?: BaziApiResult | null;
+  baziError?: string | null;
   onReset: () => void;
 }
 
@@ -12,8 +18,34 @@ function pick<T>(arr: T[], n: number): T[] {
   return shuffled.slice(0, n);
 }
 
-const ResultCard = ({ info, onReset }: ResultCardProps) => {
+const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) => {
   const { t } = useTranslation();
+  const exportRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+  const hasBazi = baziResult?.pillars && (baziResult.pillars.year || baziResult.pillars.month || baziResult.pillars.day || baziResult.pillars.hour);
+  const premiumUnlock = isToolUnlocked('bazi');
+
+  const handleExportChart = async () => {
+    if (!exportRef.current || !baziResult) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(exportRef.current, {
+        scale: 3,
+        backgroundColor: '#1a0b2e',
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = `天机命盘_${info.name || '命盘'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch {
+      // fallback: could toast
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // All content via i18n keys
   const fortuneKeys = Array.from({ length: 10 }, (_, i) => `divination.fortune${i + 1}`);
@@ -42,9 +74,33 @@ const ResultCard = ({ info, onReset }: ResultCardProps) => {
   }), []);
 
   const birthStr = `${info.year}-${info.month}-${info.day}`;
+  const wuxingLabels: Record<string, string> = {
+    wood: t('oracle.wood'),
+    fire: t('oracle.fire'),
+    earth: t('oracle.earth'),
+    metal: t('oracle.metal'),
+    water: t('oracle.water'),
+  };
 
   return (
     <div className="animate-fade-in flex flex-col items-center gap-5">
+      {/* 导出用长图（离屏渲染，供 html2canvas 捕获） */}
+      {hasBazi && (
+        <div
+          ref={exportRef}
+          className="absolute left-[-9999px] top-0 w-[375px]"
+          style={{ zIndex: -1 }}
+          aria-hidden
+        >
+          <BaziChartImage
+            info={info}
+            baziResult={baziResult!}
+            premium={premiumUnlock}
+            showQrCaption
+          />
+        </div>
+      )}
+
       <div className="relative text-center">
         <div className="absolute -inset-10 rounded-full blur-3xl" style={{ background: 'hsla(var(--accent) / 0.05)' }} />
         <div className="relative">
@@ -71,6 +127,85 @@ const ResultCard = ({ info, onReset }: ResultCardProps) => {
             </p>
           </div>
         </div>
+
+        {baziError && (
+          <div className="my-3 px-3 py-2 rounded-lg text-sm border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            {baziError}
+          </div>
+        )}
+
+        {hasBazi && (
+          <div className="my-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-primary text-sm">☰</span>
+              <span className="text-xs tracking-widest font-bold input-label">{t('divination.baziPillars', { defaultValue: '四柱' })}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {(['year', 'month', 'day', 'hour'] as const).map((key) => (
+                <div key={key} className="stat-cell text-center">
+                  <span className="stat-label block text-[10px]">{t(`divination.pillar${key.charAt(0).toUpperCase() + key.slice(1)}`, { defaultValue: key === 'year' ? '年柱' : key === 'month' ? '月柱' : key === 'day' ? '日柱' : '时柱' })}</span>
+                  <span className="stat-value text-gold-glow text-sm font-serif">{baziResult!.pillars[key] || '—'}</span>
+                </div>
+              ))}
+            </div>
+            {(baziResult!.dayMaster || baziResult!.xiyongshen) && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {baziResult!.dayMaster && (
+                  <div className="stat-cell">
+                    <span className="stat-label">{t('divination.dayMaster', { defaultValue: '日主' })}</span>
+                    <span className="stat-value text-gold-glow text-sm">{baziResult!.dayMaster}</span>
+                  </div>
+                )}
+                {baziResult!.xiyongshen && (
+                  <div className="stat-cell">
+                    <span className="stat-label">{t('divination.xiyongshen', { defaultValue: '喜用神' })}</span>
+                    <span className="stat-value text-sm" style={{ color: 'hsl(var(--accent))' }}>{baziResult!.xiyongshen}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {baziResult!.wuxing && Object.keys(baziResult!.wuxing).length > 0 && (
+              <div className="mt-2">
+                <span className="stat-label block mb-1">{t('divination.fiveElements')}</span>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(baziResult!.wuxing).map(([k, v]) => (
+                    <span key={k} className="yi-tag text-xs">
+                      {wuxingLabels[k] || k}: {typeof v === 'number' ? v : String(v)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {baziResult!.summary && (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <span className="stat-label block mb-1">{t('divination.baziSummary', { defaultValue: '命理解读' })}</span>
+                <p className="text-foreground text-sm leading-relaxed">{baziResult!.summary}</p>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-3 italic">
+              {t('divination.baziDisclaimer', { defaultValue: '命理结果仅供参考，请勿迷信。' })}
+            </p>
+            <button
+              type="button"
+              onClick={handleExportChart}
+              disabled={exporting}
+              className="w-full mt-4 py-3 rounded-xl text-sm font-semibold tracking-wider transition-all disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, hsla(var(--gold) / 0.35), hsla(var(--accent) / 0.25))',
+                border: '1px solid hsla(var(--gold) / 0.5)',
+                color: 'hsl(var(--gold))',
+                fontFamily: 'var(--font-serif)',
+              }}
+            >
+              {exporting ? t('divination.exporting', { defaultValue: '生成中…' }) : t('divination.exportChart', { defaultValue: '一键导出高清命盘' })}
+            </button>
+            {!premiumUnlock && (
+              <p className="text-[10px] text-muted-foreground mt-2">
+                {t('divination.exportHint', { defaultValue: '解锁深度版可导出含流年详批与财富等级的长图' })}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-center my-4">
           <div className={`luck-badge ${result.luck.color === "gold" ? "luck-gold" : "luck-purple"}`}>

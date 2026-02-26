@@ -9,12 +9,15 @@ interface InputCardProps {
   onDivine: (info: DivinationInfo) => void;
 }
 
+export type Gender = 'male' | 'female';
+
 export interface DivinationInfo {
   name: string;
   year: string;
   month: string;
   day: string;
   hour: string;
+  gender: Gender;
   region: string;
   useSolarTime: boolean;
   lat?: number;
@@ -34,6 +37,7 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [hour, setHour] = useState("");
+  const [gender, setGender] = useState<Gender>('male');
   const [selectedCity, setSelectedCity] = useState<CityEntry | null>(null);
   const [useSolarTime, setUseSolarTime] = useState(false);
 
@@ -42,7 +46,7 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
   const handleSubmit = () => {
     if (!isValid) return;
     onDivine({
-      name, year, month, day, hour,
+      name, year, month, day, hour, gender,
       region: selectedCity?.name || '',
       useSolarTime,
       lat: selectedCity?.lat,
@@ -122,6 +126,14 @@ const InputCard = ({ name, setName, onDivine }: InputCardProps) => {
             {HOUR_KEYS.map((key, i) => (
               <option key={key} value={String(i)}>{t(key)}</option>
             ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="input-label">{t('divination.gender', { defaultValue: '性别' })}</label>
+          <select className="glass-select" value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
+            <option value="male">{t('divination.genderMale', { defaultValue: '男' })}</option>
+            <option value="female">{t('divination.genderFemale', { defaultValue: '女' })}</option>
           </select>
         </div>
 
