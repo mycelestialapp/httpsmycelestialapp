@@ -12,6 +12,8 @@ const TOPUP_PRICES: Record<string, { priceId: string; dust: number }> = {
   dust_150: { priceId: "price_1T3uoYJl2234Nccs85IxiHK0", dust: 150 },
   dust_500: { priceId: "price_1T3uojJl2234Nccsupg68tDb", dust: 500 },
   plan_daily: { priceId: "price_1T4DflJl2234Nccsivm3ykKG", dust: 0 },
+  // 深度完整版 ¥19.9/次 — 请在 Stripe 后台创建对应 Price，将 ID 替换下方占位
+  report_full: { priceId: Deno.env.get("STRIPE_PRICE_REPORT_FULL") || "price_1T4DflJl2234Nccsivm3ykKG", dust: 0 },
 };
 
 serve(async (req) => {
@@ -31,7 +33,9 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { package: pkg } = await req.json();
+    const body = await req.json();
+    const pkg = body.package;
+    const tool = body.tool ?? "";
     const topup = TOPUP_PRICES[pkg];
     if (!topup) throw new Error("Invalid package");
 
@@ -47,6 +51,12 @@ serve(async (req) => {
 
     const BASE_URL = "https://mycelestial.app";
 
+    const successUrl = pkg === "report_full" && tool
+      ? `${BASE_URL}/payment-success?unlock=${encodeURIComponent(tool)}&session_id={CHECKOUT_SESSION_ID}`
+      : topup.dust > 0
+        ? `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`
+        : `${BASE_URL}/payment-success?plan=daily&session_id={CHECKOUT_SESSION_ID}`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -54,14 +64,13 @@ serve(async (req) => {
       mode: "payment",
       locale: "auto",
       automatic_tax: { enabled: false },
-      success_url: topup.dust > 0
-        ? `${BASE_URL}/payment-success?dust=${topup.dust}&session_id={CHECKOUT_SESSION_ID}`
-        : `${BASE_URL}/payment-success?plan=daily&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: successUrl,
       cancel_url: `${BASE_URL}/subscribe`,
       metadata: {
         user_id: user.id,
         dust_amount: topup.dust.toString(),
         package: pkg,
+        tool: tool,
       },
     });
 

@@ -12,6 +12,7 @@ import OracleLoadingRitual from '@/components/OracleLoadingRitual';
 import TimeSlider from '@/components/TimeSlider';
 import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
 import type { ElementEnergy, CelestialProfile } from '@/lib/fiveElements';
+import { getModuleContent, isToolUnlocked, setToolUnlocked } from '@/lib/oracleModuleContent';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,8 +52,11 @@ const OracleReadingPage = () => {
   const [showLoading, setShowLoading] = useState(false);
   const [sliderYear, setSliderYear] = useState(new Date().getFullYear());
   const [sliderEnergy, setSliderEnergy] = useState<ElementEnergy | null>(null);
+  const [unlocked, setUnlocked] = useState(() => isToolUnlocked(toolKey));
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => { setModalOpen(true); }, []);
+  useEffect(() => { setUnlocked(isToolUnlocked(toolKey)); }, [toolKey]);
 
   // Recalculate energy when slider year changes
   useEffect(() => {
@@ -181,14 +185,17 @@ const OracleReadingPage = () => {
 
   const handlePaymentUnlock = async () => {
     if (!user) { navigate('/auth'); return; }
+    setPaymentLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { priceId: 'price_1day_inspiration' },
+        body: { package: 'report_full', tool: toolKey },
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (e) {
       console.error('Payment error:', e);
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -251,6 +258,42 @@ const OracleReadingPage = () => {
             <div className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed text-muted-foreground">
               <ReactMarkdown>{reading}</ReactMarkdown>
             </div>
+            {/* 精华段：未来三年运势 — 支付墙 */}
+            {!isStreaming && profile && (() => {
+              const { premium } = getModuleContent(toolKey, profile);
+              if (!premium) return null;
+              if (unlocked) {
+                return (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <ReactMarkdown>{premium}</ReactMarkdown>
+                  </div>
+                );
+              }
+              return (
+                <div className="mt-4 pt-4 border-t border-white/10 relative">
+                  <div className="select-none blur-md pointer-events-none opacity-90 h-48 overflow-hidden" aria-hidden>
+                    <ReactMarkdown>{premium}</ReactMarkdown>
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-b-xl">
+                    <p className="text-xs text-muted-foreground mb-3 px-4 text-center">
+                      {t('oracle.paywallHint', { defaultValue: '未来三年运势精析与开运建议' })}
+                    </p>
+                    <button
+                      onClick={handlePaymentUnlock}
+                      disabled={paymentLoading}
+                      className="px-6 py-3 rounded-xl text-sm font-bold tracking-wider transition-all hover:scale-[1.03] active:scale-[0.98] disabled:opacity-70 shadow-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, #d4af37, #b8962e)',
+                        color: '#1a1a1a',
+                        boxShadow: '0 0 24px hsla(43, 74%, 49%, 0.5)',
+                      }}
+                    >
+                      {paymentLoading ? '...' : t('oracle.paywallBtn', { defaultValue: '支付解锁全书天机' })} · ¥19.9
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
             {isStreaming && (
               <div className="mt-3 flex items-center gap-2">
                 <div className="flex gap-1">
@@ -300,33 +343,36 @@ const OracleReadingPage = () => {
             {t('oracle.shareReading', { defaultValue: 'Share Reading' })}
           </button>
 
-          {/* Premium unlock */}
-          <div
-            className="rounded-2xl p-4 text-center"
-            style={{
-              background: 'linear-gradient(135deg, hsla(var(--accent) / 0.08), hsla(var(--gold) / 0.05))',
-              border: '1px solid hsla(var(--accent) / 0.2)',
-            }}
-          >
-            <Lock size={16} className="mx-auto mb-1.5" style={{ color: 'hsl(var(--accent))' }} />
-            <p className="text-xs font-semibold mb-1" style={{ color: 'hsl(var(--accent))' }}>
-              {t('oracle.unlockFull', { defaultValue: 'Unlock Full 2000-Word Report + Voice Commentary' })}
-            </p>
-            <p className="text-[10px] text-muted-foreground mb-2">
-              {t('oracle.unlockDesc', { defaultValue: 'Deep analysis across all 9 divination systems' })}
-            </p>
-            <button
-              onClick={handlePaymentUnlock}
-              className="px-6 py-2 rounded-full text-xs font-bold tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97]"
+          {/* Premium unlock — 深度完整版 ¥19.9 */}
+          {!unlocked && (
+            <div
+              className="rounded-2xl p-4 text-center"
               style={{
-                background: 'linear-gradient(135deg, hsl(var(--accent)), hsla(var(--gold) / 0.6))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 0 20px hsla(var(--accent) / 0.3)',
+                background: 'linear-gradient(135deg, hsla(var(--accent) / 0.08), hsla(var(--gold) / 0.05))',
+                border: '1px solid hsla(var(--accent) / 0.2)',
               }}
             >
-              $1.99 · {t('oracle.unlockNow', { defaultValue: 'Unlock Now' })}
-            </button>
-          </div>
+              <Lock size={16} className="mx-auto mb-1.5" style={{ color: 'hsl(var(--accent))' }} />
+              <p className="text-xs font-semibold mb-1" style={{ color: 'hsl(var(--accent))' }}>
+                {t('oracle.unlockFull', { defaultValue: '深度完整版 · 未来三年运势与开运建议' })}
+              </p>
+              <p className="text-[10px] text-muted-foreground mb-2">
+                {t('oracle.unlockDesc', { defaultValue: '解锁全书天机，各模块 2000+ 字专业解析' })}
+              </p>
+              <button
+                onClick={handlePaymentUnlock}
+                disabled={paymentLoading}
+                className="px-6 py-2 rounded-full text-xs font-bold tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-70"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(var(--accent)), hsla(var(--gold) / 0.6))',
+                  color: 'hsl(var(--primary-foreground))',
+                  boxShadow: '0 0 20px hsla(var(--accent) / 0.3)',
+                }}
+              >
+                ¥19.9 · {t('oracle.unlockNow', { defaultValue: '立即解锁' })}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

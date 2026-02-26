@@ -114,6 +114,49 @@ const OraclePage = () => {
         <p className="text-sm text-muted-foreground">{t('oracle.subtitle')}</p>
       </div>
 
+      {/* 服务介绍 - 合规门面 */}
+      <div
+        className="rounded-2xl p-4 text-left space-y-2"
+        style={{
+          background: 'linear-gradient(135deg, hsla(var(--gold) / 0.08), hsla(var(--card) / 0.3))',
+          border: '1px solid hsla(var(--gold) / 0.25)',
+        }}
+      >
+        <h3 className="text-sm font-semibold" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+          {t('oracle.serviceIntroTitle', { defaultValue: '服务介绍' })}
+        </h3>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {t('oracle.serviceIntroDesc', {
+            defaultValue: '本平台提供基于八字、紫微、奇门、六壬、塔罗、星象、梅花等传统的个性化命理分析报告。您可输入出生日期，获取各模块的深度解析与运势参考。内容仅供娱乐与文化学习，不构成医疗、法律或投资建议。',
+          })}
+        </p>
+      </div>
+
+      {/* 方案选择 - 价格透明 */}
+      <div
+        className="rounded-2xl p-4 space-y-3"
+        style={{
+          background: 'linear-gradient(135deg, hsla(var(--accent) / 0.06), hsla(var(--card) / 0.25))',
+          border: '1px solid hsla(var(--accent) / 0.2)',
+        }}
+      >
+        <h3 className="text-sm font-semibold text-center" style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)' }}>
+          {t('oracle.planTitle', { defaultValue: '方案选择' })}
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl p-3 text-center" style={{ background: 'hsla(var(--muted) / 0.2)', border: '1px solid hsla(var(--gold) / 0.2)' }}>
+            <p className="text-xs font-semibold text-foreground">{t('oracle.planBasic', { defaultValue: '基础版' })}</p>
+            <p className="text-lg font-bold mt-0.5" style={{ color: 'hsl(var(--gold))' }}>{t('oracle.planFree', { defaultValue: '免费' })}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{t('oracle.planBasicDesc', { defaultValue: '基础命理解读与部分内容' })}</p>
+          </div>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'hsla(var(--gold) / 0.12)', border: '1px solid hsla(var(--gold) / 0.35)' }}>
+            <p className="text-xs font-semibold text-foreground">{t('oracle.planFull', { defaultValue: '深度完整版' })}</p>
+            <p className="text-lg font-bold mt-0.5" style={{ color: 'hsl(var(--gold))' }}>¥19.9<span className="text-[10px] font-normal text-muted-foreground">/次</span></p>
+            <p className="text-[10px] text-muted-foreground mt-1">{t('oracle.planFullDesc', { defaultValue: '全书天机、未来三年运势等完整报告' })}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Energy Radar */}
       <EnergyRadar energy={energy} insight={insight} onRequestReading={() => setModalOpen(true)} />
 

@@ -52,15 +52,14 @@ serve(async (req) => {
     }
 
     const dustAmount = parseInt(session.metadata?.dust_amount || "0");
-    if (dustAmount <= 0) throw new Error("Invalid dust amount");
 
-    // Credit star dust using the database function
-    const { error: rpcError } = await supabaseAdmin.rpc("increment_star_dust", {
-      uid: user.id,
-      amount: dustAmount,
-    });
-
-    if (rpcError) throw new Error(`Failed to credit: ${rpcError.message}`);
+    if (dustAmount > 0) {
+      const { error: rpcError } = await supabaseAdmin.rpc("increment_star_dust", {
+        uid: user.id,
+        amount: dustAmount,
+      });
+      if (rpcError) throw new Error(`Failed to credit: ${rpcError.message}`);
+    }
 
     return new Response(JSON.stringify({ success: true, dust: dustAmount }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
