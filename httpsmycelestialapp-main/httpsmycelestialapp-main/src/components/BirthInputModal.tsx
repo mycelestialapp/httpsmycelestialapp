@@ -1,11 +1,22 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
+import CitySearch from '@/components/CitySearch';
+import type { CityEntry } from '@/lib/cities';
+
+export interface BirthInputResult {
+  year: number;
+  month: number;
+  day: number;
+  city: CityEntry | null;
+  useSolarTime: boolean;
+}
 
 interface BirthInputModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (year: number, month: number, day: number) => void;
+  /** 原 (y,m,d) 或新 (y,m,d,city?,useSolarTime?) 两种签名均兼容 */
+  onSubmit: (year: number, month: number, day: number, city?: CityEntry | null, useSolarTime?: boolean) => void;
 }
 
 const years = Array.from({ length: 100 }, (_, i) => 2025 - i);
@@ -17,6 +28,8 @@ const BirthInputModal = ({ open, onClose, onSubmit }: BirthInputModalProps) => {
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
   const [day, setDay] = useState('');
+  const [selectedCity, setSelectedCity] = useState<CityEntry | null>(null);
+  const [useSolarTime, setUseSolarTime] = useState(false);
 
   if (!open) return null;
 
@@ -24,7 +37,7 @@ const BirthInputModal = ({ open, onClose, onSubmit }: BirthInputModalProps) => {
 
   const handleSubmit = () => {
     if (!isValid) return;
-    onSubmit(Number(year), Number(month), Number(day));
+    onSubmit(Number(year), Number(month), Number(day), selectedCity ?? undefined, useSolarTime);
     onClose();
   };
 
@@ -80,6 +93,31 @@ const BirthInputModal = ({ open, onClose, onSubmit }: BirthInputModalProps) => {
                 <option value="">—</option>
                 {days.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
+            </div>
+          </div>
+
+          {/* 出生城市：全球国家/地区，可搜到城市（中国支持到县区见下方说明） */}
+          <div>
+            <label className="input-label">{t('divination.birthCity', { defaultValue: '出生城市' })}</label>
+            <CitySearch
+              value={selectedCity ? (selectedCity.nameZh ? `${selectedCity.nameZh} (${selectedCity.name})` : selectedCity.name) : ''}
+              onChange={setSelectedCity}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">{t('divination.birthCityHint', { defaultValue: '支持全球国家与地区，中国可精确到县区' })}</p>
+          </div>
+
+          {/* 真太阳时 */}
+          <div
+            className="flex items-center justify-between rounded-xl px-3 py-2.5 cursor-pointer transition-colors"
+            style={{ background: 'hsla(var(--muted) / 0.3)', border: '1px solid hsla(var(--border) / 0.5)' }}
+            onClick={() => setUseSolarTime(!useSolarTime)}
+          >
+            <div>
+              <p className="text-sm text-foreground">{t('divination.solarTime')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('divination.solarTimeDesc')}</p>
+            </div>
+            <div className={`toggle-switch ${useSolarTime ? 'active' : ''}`}>
+              <div className="toggle-knob" />
             </div>
           </div>
 

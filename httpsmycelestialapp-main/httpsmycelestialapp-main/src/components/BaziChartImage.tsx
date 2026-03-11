@@ -1,6 +1,6 @@
 /**
- * 命盘高清长图（Deep Purple 殿堂级 · 优化版）
- * 深紫渐变+噪点、干支脉冲发光、阶梯排版、二维码裂变、免费水印/付费完整
+ * 八字命盘 · 终极版（玄黑鎏金 + 宣纸肌理）
+ * 完全贴合 baziChartConfig 参数化配置，适配高清导出与 AI 调用
  */
 
 import React, { memo } from 'react';
@@ -8,28 +8,26 @@ import { QRCodeSVG } from 'qrcode.react';
 import type { BaziApiResult } from '@/lib/baziApi';
 import type { DivinationInfo } from './InputCard';
 import { getCharColor } from '@/lib/baziWuxingColors';
+import { BAZI_CHART_CONFIG as C } from '@/lib/baziChartConfig';
 import './BaziChartImage.css';
 
-const BG_GRADIENT = 'linear-gradient(180deg, #1a0b2e 0%, #2a1b4e 100%)';
-const TITLE_GOLD = '#ffd700';
-const BORDER_GOLD = '#e6c200';
-const LABEL_MUTED = 'rgba(232, 224, 208, 0.85)';
 const GLOW_CSS = (hex: string) =>
-  `0 0 8px ${hex}, 0 0 16px ${hex}, 0 0 24px ${hex}`;
+  `0 0 8px ${hex}, 0 0 16px ${hex}`;
 
-/* 极简噪点纹理 SVG data URL（深紫 0.5px 质感） */
-const NOISE_DATA_URL =
-  "data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E";
+/* 宣纸肌理 30% 透明 */
+const XUAN_PAPER_URL =
+  "data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E";
 
-function PillarChar({ char }: { char: string }) {
+function PillarChar({ char, interactive }: { char: string; interactive?: boolean }) {
   const color = getCharColor(char);
   return (
     <span
-      className="ganzhi-symbol"
+      className={interactive ? 'ganzhi-symbol interactive' : 'ganzhi-symbol'}
       style={{
         color,
         textShadow: GLOW_CSS(color),
         fontWeight: 700,
+        fontSize: 20,
       }}
     >
       {char}
@@ -37,35 +35,10 @@ function PillarChar({ char }: { char: string }) {
   );
 }
 
-function PillarRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 8,
-        padding: '10px 12px',
-        border: `1px solid ${BORDER_GOLD}`,
-        borderRadius: 8,
-      }}
-    >
-      <span style={{ color: LABEL_MUTED, fontSize: 12, width: 36 }}>{label}</span>
-      <span style={{ fontFamily: '"Noto Serif SC", serif', fontSize: 18, letterSpacing: 2 }}>
-        {value.split('').map((c, i) => (
-          <PillarChar key={i} char={c} />
-        ))}
-      </span>
-    </div>
-  );
-}
-
 export interface BaziChartImageProps {
   info: DivinationInfo;
   baziResult: BaziApiResult;
-  /** 是否包含付费内容：盲派流年详批、一生财富等级 */
   premium?: boolean;
-  /** 导出用：隐藏二维码旁文案在部分场景可省 */
   showQrCaption?: boolean;
 }
 
@@ -77,52 +50,71 @@ function BaziChartImageInner({
 }: BaziChartImageProps) {
   const p = baziResult.pillars;
   const birthStr = `${info.year}-${info.month}-${info.day}`;
+  const pillars: { label: string; value: string }[] = [
+    { label: '年柱', value: p.year || '—' },
+    { label: '月柱', value: p.month || '—' },
+    { label: '日柱', value: p.day || '—' },
+    { label: '时柱', value: p.hour || '—' },
+  ];
 
   return (
     <div
-      id="bazi-chart-export"
+      id="bazi-chart"
       className="bazi-chart-export"
       style={{
         width: 375,
         minHeight: 640,
-        background: BG_GRADIENT,
-        color: '#e8e0d0',
-        fontFamily: '"Noto Serif SC", "Source Han Serif SC", serif',
-        padding: '24px 20px 28px',
+        background: C.background.color,
+        color: '#e0e0e0',
+        fontFamily: C.font.content,
+        padding: C.container.padding,
         boxSizing: 'border-box',
         position: 'relative',
+        borderRadius: C.container.border_radius,
+        border: C.container.border,
+        boxShadow: C.container.shadow,
       }}
     >
-      {/* 深紫色噪点纹理叠加 */}
+      {/* 宣纸肌理 */}
       <div
         aria-hidden
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `url("${NOISE_DATA_URL}")`,
+          backgroundImage: `url("${XUAN_PAPER_URL}")`,
           backgroundSize: '256px 256px',
+          pointerEvents: 'none',
+          borderRadius: 'inherit',
+        }}
+      />
+      {/* 网格 */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `
+            linear-gradient(${C.background.grid.color} ${C.background.grid.opacity}, transparent 1px),
+            linear-gradient(90deg, ${C.background.grid.color} ${C.background.grid.opacity}, transparent 1px)
+          `,
+          backgroundSize: `${C.background.grid.size}px ${C.background.grid.size}px`,
           pointerEvents: 'none',
           borderRadius: 'inherit',
         }}
       />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* 顶部标题：思源宋体 Bold Italic 40px + 金色描边 */}
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 11, letterSpacing: 6, color: LABEL_MUTED, marginBottom: 8 }}>
-            ━━ CELESTIAL ORACLE ━━
-          </div>
+        {/* 标题：思源宋体 Bold Italic 48px */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <h1
             style={{
-              fontSize: 40,
+              fontSize: 28,
               fontWeight: 700,
               fontStyle: 'italic',
-              fontFamily: '"Noto Serif SC", "Source Han Serif SC", serif',
+              fontFamily: C.font.title,
               letterSpacing: 4,
-              color: TITLE_GOLD,
+              color: C.duanyu.text_color,
               margin: 0,
-              WebkitTextStroke: '1px #ffd700',
-              textShadow: GLOW_CSS(TITLE_GOLD),
             }}
           >
             天机洞察 · 四柱命盘
@@ -130,165 +122,183 @@ function BaziChartImageInner({
         </div>
 
         {/* 基本信息 */}
-        <div style={{ marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${BORDER_GOLD}` }}>
-          <div style={{ fontSize: 16, fontWeight: 600, color: TITLE_GOLD }}>{info.name}</div>
-          <div style={{ fontSize: 12, color: LABEL_MUTED, marginTop: 4 }}>
+        <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${C.qrcode.color}` }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: C.qrcode.text_color }}>{info.name}</div>
+          <div style={{ fontSize: 14, color: '#c0c0c0', marginTop: 6 }}>
             {birthStr} {info.region ? ` · ${info.region}` : ''}
           </div>
         </div>
 
-        {/* 盲派排盘：四柱（每柱 1px 浅金框） */}
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: LABEL_MUTED, marginBottom: 10 }}>
-            四柱 · 干支
-          </div>
-          <PillarRow label="年柱" value={p.year || '—'} />
-          <PillarRow label="月柱" value={p.month || '—'} />
-          <PillarRow label="日柱" value={p.day || '—'} />
-          <PillarRow label="时柱" value={p.hour || '—'} />
+        {/* 四列命盘核心区：天干(28px 脉冲) + 地支(24px) */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 10,
+            marginBottom: 20,
+            flexWrap: 'wrap',
+          }}
+        >
+          {pillars.map(({ label, value }) => (
+            <div
+              key={label}
+              className="bazi-pillar-column"
+              style={{
+                width: 84,
+                minWidth: 84,
+              }}
+            >
+              <div style={{ fontSize: 12, color: '#909090', marginBottom: 6 }}>{label}</div>
+              <div style={{ fontFamily: C.font.title, letterSpacing: 2 }}>
+                {value && value.length >= 2 ? (
+                  <>
+                    <PillarChar char={value[0]} interactive />
+                    <span style={{ fontSize: 16, color: C.columns.elements.earthly_branch.color, marginLeft: 4, marginTop: C.columns.elements.earthly_branch.margin_top, fontFamily: C.font.content }}>{value[1]}</span>
+                  </>
+                ) : (
+                  value.split('').map((c, i) => <PillarChar key={i} char={c} interactive />)
+                )}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* 阶梯式：藏干 2px / 十神 4px / 纳音 6px */}
-        <div style={{ marginBottom: 16, fontSize: 13 }}>
-          <div style={{ marginBottom: 8, paddingLeft: 2, color: LABEL_MUTED }}>
+        {/* 藏干 / 十神 / 纳音：阶梯式 */}
+        <div style={{ marginBottom: 20, fontSize: C.font.content_size }}>
+          <div style={{ paddingLeft: C.columns.elements.hidden_stems.indent, color: C.columns.elements.hidden_stems.color, marginBottom: 8, fontSize: C.columns.elements.hidden_stems.font_size }}>
             <span style={{ marginRight: 8 }}>藏干</span>
-            <span style={{ color: 'rgba(232,224,208,0.9)' }}>
-              {baziResult.canggan || '地支藏干见四柱，详参站内完整排盘'}
-            </span>
+            {baziResult.canggan || '地支藏干见四柱'}
           </div>
           {baziResult.dayMaster && (
-            <div style={{ marginBottom: 6, paddingLeft: 2 }}>
-              <span style={{ color: LABEL_MUTED }}>日主 </span>
-              <span
-                className="ganzhi-symbol"
-                style={{
-                  color: getCharColor(baziResult.dayMaster),
-                  textShadow: GLOW_CSS(getCharColor(baziResult.dayMaster)),
-                  fontWeight: 700,
-                }}
-              >
+            <div style={{ paddingLeft: C.columns.elements.hidden_stems.indent, marginBottom: 6 }}>
+              <span style={{ color: '#909090' }}>日主 </span>
+              <span style={{ color: getCharColor(baziResult.dayMaster), textShadow: GLOW_CSS(getCharColor(baziResult.dayMaster)), fontWeight: 700 }}>
                 {baziResult.dayMaster}
               </span>
             </div>
           )}
           {baziResult.xiyongshen && (
-            <div style={{ marginBottom: 6, paddingLeft: 4 }}>
-              <span style={{ color: LABEL_MUTED }}>喜用神 </span>
-              <span style={{ color: '#00ffcc' }}>{baziResult.xiyongshen}</span>
+            <div style={{ paddingLeft: C.columns.elements.ten_gods.indent, marginBottom: 6, color: '#00ffcc' }}>
+              <span style={{ color: '#909090' }}>喜用神 </span>
+              {baziResult.xiyongshen}
             </div>
           )}
-          {baziResult.nayin && (
-            <div style={{ marginBottom: 6, paddingLeft: 6 }}>
-              <span style={{ color: LABEL_MUTED }}>纳音 </span>
-              <span>{baziResult.nayin}</span>
-            </div>
-          )}
-          {baziResult.shishen && (
-            <div style={{ paddingLeft: 6 }}>
-              <span style={{ color: LABEL_MUTED }}>十神 </span>
-              <span>{baziResult.shishen}</span>
-            </div>
-          )}
-        </div>
-
-        {/* 盲派核心断语：背景 #0d0618，思源黑体 Light 14px 行高 1.8 */}
-        <div
-          style={{
-            marginBottom: 20,
-            padding: 16,
-            background: '#0d0618',
-            borderRadius: 8,
-            border: `1px solid rgba(230,194,0,0.3)`,
-          }}
-        >
-          <div style={{ fontSize: 11, letterSpacing: 2, color: TITLE_GOLD, marginBottom: 10 }}>
-            盲派核心断语
+          <div style={{ paddingLeft: C.columns.elements.ten_gods.indent, color: C.columns.elements.ten_gods.color, fontSize: 12, marginBottom: 6, borderBottom: `${C.columns.elements.ten_gods.underline_thickness}px solid ${C.columns.elements.ten_gods.underline_color}`, paddingBottom: 4 }}>
+            <span style={{ marginRight: 8 }}>十神</span>
+            {baziResult.shishen || '—'}
           </div>
-          <p
-            style={{
-              fontSize: 14,
-              lineHeight: 1.8,
-              margin: 0,
-              color: '#e0e0e0',
-              fontFamily: '"Noto Sans SC", "Source Han Sans SC", sans-serif',
-              fontWeight: 300,
-            }}
-          >
-            {baziResult.summary || '命盘已显，宜顺势而为，修心养性。'}
-          </p>
-        </div>
-
-        {/* 免费用户水印：半透明金色 */}
-        {!premium && (
           <div
             style={{
-              textAlign: 'center',
-              fontSize: 12,
-              color: 'rgba(255, 215, 0, 0.35)',
-              marginBottom: 16,
-              fontFamily: '"Noto Sans SC", sans-serif',
+              paddingLeft: C.columns.elements.na_yin.indent,
+              color: C.columns.elements.na_yin.color,
+              fontSize: 11,
+              background: 'linear-gradient(90deg, transparent, rgba(230,194,0,0.1))',
+              padding: '8px 0',
             }}
           >
+            <span style={{ marginRight: 8 }}>纳音</span>
+            {baziResult.nayin || '—'}
+          </div>
+        </div>
+
+        {/* 断语区：dashed border-top, line-height 2, text #e6c200 */}
+        <div
+          style={{
+            marginTop: C.duanyu.margin_top,
+            borderTop: C.duanyu.border_top,
+            padding: C.duanyu.padding,
+            lineHeight: C.duanyu.line_height,
+            textIndent: C.duanyu.first_line_indent,
+            color: C.duanyu.text_color,
+            fontFamily: C.font.content,
+            fontSize: 14,
+            fontWeight: 300,
+          }}
+        >
+          {baziResult.summary || '命盘已显，宜顺势而为，修心养性。'}
+        </div>
+
+        {!premium && (
+          <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(230,194,0,0.4)', marginTop: 16 }}>
             仅展示基础排盘，解锁完整报告需升级高级版
           </div>
         )}
 
-        {/* 付费：流年详批 + 财富等级 */}
         {premium && (
-          <div
-            style={{
-              marginBottom: 20,
-              padding: 14,
-              background: 'rgba(0,255,204,0.06)',
-              borderRadius: 8,
-              border: '1px solid rgba(0,255,204,0.25)',
-            }}
-          >
-            <div style={{ fontSize: 11, letterSpacing: 2, color: '#00ffcc', marginBottom: 8 }}>
-              盲派流年详批
-            </div>
-            <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, color: LABEL_MUTED }}>
-              近年运势起伏已显于四柱大运，宜把握贵人流年，规避刑冲岁运。具体流年吉凶可于站内「深度完整版」查看。
-            </p>
-            <div style={{ fontSize: 11, letterSpacing: 2, color: '#ffcc33', marginTop: 12, marginBottom: 6 }}>
-              一生财富等级
-            </div>
-            <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, color: LABEL_MUTED }}>
-              财星得地者中上，食伤生财者多利技艺与口才求财；官杀护财者易得权贵之助。完整财富层级见深度报告。
-            </p>
+          <div style={{ marginTop: 20, padding: 14, background: 'rgba(0,255,204,0.06)', borderRadius: 8, border: '1px solid rgba(0,255,204,0.25)' }}>
+            <div style={{ fontSize: 12, color: '#00ffcc', marginBottom: 6 }}>盲派流年详批</div>
+            <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, color: '#c0c0c0' }}>近年运势起伏已显于四柱大运，宜把握贵人流年。完整流年可于站内「深度完整版」查看。</p>
+            <div style={{ fontSize: 12, color: '#ffcc33', marginTop: 10, marginBottom: 4 }}>一生财富等级</div>
+            <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, color: '#c0c0c0' }}>财星得地者中上，食伤生财者多利技艺求财。完整层级见深度报告。</p>
           </div>
         )}
 
-        {/* 免责 */}
-        <div style={{ fontSize: 10, color: 'rgba(232,224,208,0.5)', fontStyle: 'italic', marginBottom: 24 }}>
+        <div style={{ fontSize: 10, color: 'rgba(224,224,224,0.5)', fontStyle: 'italic', marginTop: 20 }}>
           命理结果仅供参考，请勿迷信。
         </div>
 
-        {/* 底部：矢量二维码(SVG) + 金框 + 吸粉文案 */}
+        {/* 二维码 + 文案：size 120, border 2px #e6c200, 思源黑体 Medium 14px */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: 16,
-            borderTop: `1px solid ${BORDER_GOLD}`,
+            marginTop: C.qrcode.margin_top,
+            paddingTop: 20,
+            borderTop: `1px solid ${C.qrcode.color}`,
           }}
         >
-          <div className="bazi-qr-wrap">
+          <div
+            className="bazi-qr-wrap"
+            style={{
+              border: C.qrcode.border,
+              borderRadius: 12,
+              padding: 8,
+              display: 'inline-block',
+            }}
+          >
             <QRCodeSVG
-              value="https://mycelestial.app"
-              size={140}
+              value={C.qrcode.url}
+              size={88}
               level="H"
               includeMargin={false}
-              fgColor="#ffd700"
-              bgColor="transparent"
+              fgColor={C.qrcode.color}
+              bgColor={C.qrcode.bg_color}
             />
           </div>
           {showQrCaption && (
-            <div className="bazi-qr-caption" style={{ marginTop: 14 }}>
-              扫码解锁专属天机报告
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 13,
+                fontWeight: C.qrcode.text_weight,
+                color: C.qrcode.text_color,
+                fontFamily: C.qrcode.text_font,
+                textAlign: 'center',
+                whiteSpace: 'pre-line',
+              }}
+            >
+              {C.qrcode.text}
             </div>
           )}
+        </div>
+
+        {/* 水印：bottom_right, opacity 0.15, angle -15 */}
+        <div
+          aria-hidden
+          className="bazi-watermark"
+          style={{
+            position: 'absolute',
+            right: 20,
+            bottom: 16,
+            fontSize: C.watermark.font_size,
+            color: C.watermark.color,
+            fontFamily: C.watermark.font,
+            opacity: C.watermark.opacity,
+            transform: `rotate(${C.watermark.angle}deg)`,
+            pointerEvents: 'none',
+          }}
+        >
+          {C.watermark.text}
         </div>
       </div>
     </div>

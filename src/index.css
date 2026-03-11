@@ -1,55 +1,484 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Orbitron:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .font-digit {
+    font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  }
+}
+
 @layer base {
   :root {
-    --background: 228 30% 5%;
-    --foreground: 45 30% 90%;
+    /* 星際：深海藍 + 暖金，背景貼近組圖藍 */
+    --background: 222 45% 6%;
+    --foreground: 48 24% 92%;
 
-    --card: 228 30% 7%;
-    --card-foreground: 45 30% 90%;
+    --card: 222 38% 9%;
+    --card-foreground: 48 24% 92%;
 
-    --popover: 225 45% 7%;
-    --popover-foreground: 45 30% 90%;
+    --popover: 222 38% 8%;
+    --popover-foreground: 48 24% 92%;
 
-    --primary: 51 100% 50%;
-    --primary-foreground: 225 50% 4%;
+    --primary: 47 90% 70%;             /* 低饱和暖金 */
+    --primary-foreground: 222 40% 6%;
 
-    --secondary: 225 35% 14%;
-    --secondary-foreground: 45 30% 90%;
+    --secondary: 218 26% 15%;
+    --secondary-foreground: 48 24% 92%;
 
-    --muted: 225 25% 12%;
-    --muted-foreground: 225 15% 50%;
+    --muted: 220 22% 13%;
+    --muted-foreground: 220 12% 68%;
 
-    --accent: 270 50% 55%;
-    --accent-foreground: 45 30% 95%;
+    --accent: 205 70% 62%;             /* 少量青蓝点缀 */
+    --accent-foreground: 222 40% 6%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 70% 54%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 51 40% 20%;
-    --input: 225 30% 10%;
-    --ring: 51 100% 50%;
+    --border: 218 32% 26%;
+    --input: 220 28% 14%;
+    --ring: 47 90% 70%;
 
     --radius: 0.75rem;
 
-    --gold: 51 100% 50%;
-    --gold-dim: 43 50% 35%;
-    --midnight: 228 30% 5%;
-    --deep-space: 230 25% 4%;
+    --gold: 47 90% 70%;
+    --gold-dim: 43 45% 42%;
+    --midnight: 222 48% 5%;
+    --deep-space: 222 40% 8%;
 
-    --sidebar-background: 225 50% 4%;
-    --sidebar-foreground: 45 30% 90%;
-    --sidebar-primary: 51 100% 50%;
-    --sidebar-primary-foreground: 225 50% 4%;
-    --sidebar-accent: 225 35% 14%;
-    --sidebar-accent-foreground: 45 30% 90%;
-    --sidebar-border: 51 40% 20%;
-    --sidebar-ring: 51 100% 50%;
+    --sidebar-background: 222 40% 4%;
+    --sidebar-foreground: 48 24% 92%;
+    --sidebar-primary: 47 90% 70%;
+    --sidebar-primary-foreground: 222 40% 6%;
+    --sidebar-accent: 220 26% 16%;
+    --sidebar-accent-foreground: 48 24% 92%;
+    --sidebar-border: 218 32% 26%;
+    --sidebar-ring: 47 90% 70%;
+    --theme-tint: 222 50% 40%;
+    /* 字體顏色：正文/副標高對比（對齊主流可讀性，避免灰字過淡） */
+    --text-heading: 47 90% 72%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 47 90% 72%;
 
-    --font-serif: 'Playfair Display', 'Noto Serif SC', serif;
-    --font-sans: 'Inter', system-ui, sans-serif;
+    /* 硬核重構：僅用系統襯線/無襯線，禁止外部字體請求 */
+    --font-serif: 'Baskerville', 'Georgia', serif;
+    --font-sans: system-ui, -apple-system, sans-serif;
+
+    /* 雷諾曼板塊專用：深淵黑 + 燙金 + 星雲紫 */
+    --color-void: #030305;
+    --color-gold-leaf: #D4AF37;
+    --color-nebula: #1A1A2E;
+    --glow-intensity: 0 0 15px rgba(212, 175, 55, 0.4);
+
+    /* --- UI Tokens（塔羅流程優先使用）：用「同一把尺」做出成熟質感 --- */
+    --ui-radius-xl: 18px;
+    --ui-radius-lg: 14px;
+    --ui-surface-1: radial-gradient(circle at 0 0, rgba(250,244,214,0.06) 0, transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(195,173,255,0.10) 0, transparent 60%),
+      hsla(var(--card) / 0.92);
+    --ui-surface-2: linear-gradient(135deg, rgba(22,14,40,0.88), rgba(10,8,28,0.98));
+    --ui-border-soft: hsla(var(--gold) / 0.28);
+    --ui-border-strong: hsla(var(--gold) / 0.55);
+    --ui-shadow-1: 0 14px 34px rgba(0,0,0,0.40);
+    --ui-shadow-2: 0 18px 44px rgba(0,0,0,0.48);
+    --ui-focus: 0 0 0 2px hsla(var(--gold) / 0.30);
+    --ui-text-weak: hsla(var(--foreground) / 0.70);
+    --ui-text-muted: hsla(var(--foreground) / 0.82);
+    --ui-text-strong: hsla(var(--foreground) / 0.94);
+
+    /* 排版尺子：标题/正文/说明固定阶梯（塔罗流程优先） */
+    --ui-font-title: 28px;
+    --ui-font-title-sm: 34px;
+    --ui-font-body: 16px;
+    --ui-font-body-lg: 18px;
+    --ui-font-note: 14px;
+    --ui-leading-body: 1.75;
+    --ui-leading-note: 1.65;
+
+    /* 间距尺子：避免每个页面各自乱调 */
+    --ui-gap-section: 24px;
+    --ui-gap-block: 16px;
+  }
+
+  /* 占卜工具数字统一：日期、数字输入使用规整数字字体 */
+  input[type="date"],
+  input[type="number"] {
+    font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  }
+  /* 深色主题下 native select 下拉选项可见：深底白字 */
+  select option {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  /* 全局字体与排版基础 + 全專案字體改進：正文與介面統一可讀 */
+  html {
+    @apply font-sans antialiased;
+    font-size: 16px;
+  }
+  body {
+    @apply bg-cosmic text-white text-body;
+    font-size: 1rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+  /* 数字类：自动应用 font-digit */
+  .number,
+  [class*="font-digit"] {
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+  }
+  p {
+    @apply text-body;
+  }
+  /* 強制全專案任意小字號升至可讀：10/11/12/13px → 14px，統一視覺 */
+  [class*="text-[10px]"],
+  [class*="text-[11px]"],
+  [class*="text-[12px]"],
+  [class*="text-[13px]"] {
+    font-size: 0.875rem !important;
+  }
+
+  @keyframes sandFlux {
+    from { opacity: 0; filter: blur(10px); transform: translateY(10px); }
+    to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+  .sand-flux-reveal {
+    animation: sandFlux 1.2s ease-out both;
+  }
+
+  /* 雷諾曼：牌面被 Synthesis 提及時的金色脈衝 */
+  @keyframes lenormand-card-pulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 28px rgba(212, 175, 55, 0.85), 0 0 40px rgba(212, 175, 55, 0.5); }
+  }
+  .lenormand-card-pulse {
+    animation: lenormand-card-pulse 1.2s ease-out;
+  }
+
+  /* 雷諾曼：免費區 */
+  .free-zone {
+    color: rgba(212, 175, 55, 0.95);
+  }
+
+  /* 雷諾曼：解鎖後正常顯示 */
+  .revealed-content {
+    position: relative;
+  }
+
+  /* 雷諾曼：鎖定區磨砂與流光 */
+  .locked-content {
+    position: relative;
+    filter: blur(15px);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 80%);
+    user-select: none;
+    pointer-events: none;
+  }
+  .locked-content + .lenormand-unlock-overlay {
+    pointer-events: auto;
+  }
+
+  /* 金色印章按鈕：大師級質感 */
+  .master-seal-button {
+    background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+    border: 1.5px solid #D4AF37;
+    color: #D4AF37;
+    padding: 15px 30px;
+    border-radius: 50px;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    font-family: serif;
+    letter-spacing: 2px;
+    transition: all 0.5s ease;
+    cursor: pointer;
+  }
+  .master-seal-button:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+    background: #D4AF37;
+    color: #030305;
+  }
+
+  /* 雷諾曼/牌面圖標：金色自發光 */
+  .card-icon {
+    font-size: 3rem;
+    color: #D4AF37;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.8));
+  }
+  .card-icon-sm {
+    color: #D4AF37;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.7));
+  }
+
+  /* 主題二：森林 · 墨綠琥珀，再綠一點 */
+  [data-theme="forest"] {
+    --background: 152 52% 9%;
+    --foreground: 45 25% 90%;
+    --card: 152 45% 11%;
+    --card-foreground: 45 25% 90%;
+    --popover: 152 48% 9%;
+    --popover-foreground: 45 25% 90%;
+    --primary: 35 85% 55%;
+    --primary-foreground: 152 40% 6%;
+    --secondary: 152 35% 15%;
+    --secondary-foreground: 45 25% 90%;
+    --muted: 152 32% 13%;
+    --muted-foreground: 152 10% 55%;
+    --accent: 55 55% 52%;
+    --accent-foreground: 152 40% 6%;
+    --border: 152 28% 24%;
+    --input: 152 30% 14%;
+    --ring: 35 85% 55%;
+    --gold: 35 85% 55%;
+    --gold-dim: 35 50% 40%;
+    --midnight: 152 58% 6%;
+    --deep-space: 152 48% 11%;
+    --sidebar-background: 152 52% 9%;
+    --sidebar-foreground: 45 25% 90%;
+    --sidebar-primary: 35 85% 55%;
+    --sidebar-primary-foreground: 152 40% 6%;
+    --sidebar-accent: 152 30% 15%;
+    --sidebar-accent-foreground: 45 25% 90%;
+    --sidebar-border: 152 28% 24%;
+    --sidebar-ring: 35 85% 55%;
+    --theme-tint: 152 55% 35%;
+    --text-heading: 35 88% 58%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 35 85% 55%;
+  }
+
+  /* 主題三：皇室 · 深紫銀，背景貼近組圖紫 */
+  [data-theme="royal"] {
+    --background: 270 50% 8%;
+    --foreground: 0 0% 92%;
+    --card: 270 42% 10%;
+    --card-foreground: 0 0% 92%;
+    --popover: 270 35% 7%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 0 0% 78%;
+    --primary-foreground: 270 40% 6%;
+    --secondary: 270 25% 14%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 270 22% 12%;
+    --muted-foreground: 270 12% 58%;
+    --accent: 280 55% 65%;
+    --accent-foreground: 270 40% 6%;
+    --border: 270 25% 24%;
+    --input: 270 20% 13%;
+    --ring: 0 0% 78%;
+    --gold: 0 0% 78%;
+    --gold-dim: 0 0% 55%;
+    --midnight: 270 40% 5%;
+    --deep-space: 270 32% 8%;
+    --sidebar-background: 270 40% 5%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 0 0% 78%;
+    --sidebar-primary-foreground: 270 40% 6%;
+    --sidebar-accent: 270 28% 14%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 270 25% 24%;
+    --sidebar-ring: 0 0% 78%;
+    --theme-tint: 270 55% 35%;
+    --text-heading: 0 0% 92%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 0 0% 82%;
+  }
+
+  /* 主題四：暖炭 · 琥珀橙，背景貼近組圖暖橙灰 */
+  [data-theme="ember"] {
+    --background: 28 35% 9%;
+    --foreground: 40 20% 92%;
+    --card: 25 28% 11%;
+    --card-foreground: 40 20% 92%;
+    --popover: 25 16% 7%;
+    --popover-foreground: 40 20% 92%;
+    --primary: 25 90% 55%;
+    --primary-foreground: 25 18% 6%;
+    --secondary: 25 15% 14%;
+    --secondary-foreground: 40 20% 92%;
+    --muted: 25 15% 12%;
+    --muted-foreground: 25 10% 55%;
+    --accent: 35 85% 55%;
+    --accent-foreground: 25 18% 6%;
+    --border: 25 12% 24%;
+    --input: 25 14% 13%;
+    --ring: 25 90% 55%;
+    --gold: 25 90% 55%;
+    --gold-dim: 25 55% 40%;
+    --midnight: 25 18% 6%;
+    --deep-space: 25 14% 9%;
+    --sidebar-background: 25 18% 6%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 25 90% 55%;
+    --sidebar-primary-foreground: 25 18% 6%;
+    --sidebar-accent: 25 12% 14%;
+    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-border: 25 12% 24%;
+    --sidebar-ring: 25 90% 55%;
+    --theme-tint: 28 60% 40%;
+    --text-heading: 28 90% 60%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 25 90% 55%;
+  }
+
+  /* 主題五：赤焰 · 深紅金，再紅一點 */
+  [data-theme="crimson"] {
+    --background: 0 65% 10%;
+    --foreground: 30 25% 92%;
+    --card: 0 58% 12%;
+    --card-foreground: 30 25% 92%;
+    --popover: 0 55% 10%;
+    --popover-foreground: 30 25% 92%;
+    --primary: 8 92% 58%;
+    --primary-foreground: 0 45% 6%;
+    --secondary: 0 45% 15%;
+    --secondary-foreground: 30 25% 92%;
+    --muted: 0 40% 13%;
+    --muted-foreground: 0 15% 55%;
+    --accent: 15 88% 55%;
+    --accent-foreground: 0 45% 6%;
+    --border: 0 35% 25%;
+    --input: 0 38% 14%;
+    --ring: 8 92% 58%;
+    --gold: 8 92% 58%;
+    --gold-dim: 8 58% 42%;
+    --midnight: 0 70% 7%;
+    --deep-space: 0 60% 12%;
+    --sidebar-background: 0 65% 10%;
+    --sidebar-foreground: 30 25% 92%;
+    --sidebar-primary: 15 90% 58%;
+    --sidebar-primary-foreground: 0 45% 6%;
+    --sidebar-accent: 0 32% 14%;
+    --sidebar-accent-foreground: 30 25% 92%;
+    --sidebar-border: 0 25% 24%;
+    --sidebar-ring: 15 90% 58%;
+    --theme-tint: 0 65% 45%;
+    --text-heading: 8 92% 65%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 8 92% 58%;
+  }
+
+  /* 主題六：櫻粉 · 深粉玫瑰金，再粉一點 */
+  [data-theme="blossom"] {
+    --background: 335 62% 11%;
+    --foreground: 30 20% 92%;
+    --card: 335 52% 14%;
+    --card-foreground: 30 20% 92%;
+    --popover: 335 55% 12%;
+    --popover-foreground: 30 20% 92%;
+    --primary: 345 68% 74%;
+    --primary-foreground: 335 45% 8%;
+    --secondary: 335 42% 16%;
+    --secondary-foreground: 30 20% 92%;
+    --muted: 335 38% 13%;
+    --muted-foreground: 335 12% 55%;
+    --accent: 340 62% 72%;
+    --accent-foreground: 335 45% 8%;
+    --border: 335 32% 26%;
+    --input: 335 35% 14%;
+    --ring: 345 68% 74%;
+    --gold: 345 68% 74%;
+    --gold-dim: 345 48% 50%;
+    --midnight: 335 65% 8%;
+    --deep-space: 335 55% 14%;
+    --sidebar-background: 335 62% 11%;
+    --sidebar-foreground: 30 20% 92%;
+    --sidebar-primary: 350 65% 72%;
+    --sidebar-primary-foreground: 330 40% 7%;
+    --sidebar-accent: 330 28% 14%;
+    --sidebar-accent-foreground: 30 20% 92%;
+    --sidebar-border: 330 22% 24%;
+    --sidebar-ring: 350 65% 72%;
+    --theme-tint: 335 55% 45%;
+    --text-heading: 345 70% 78%;
+    --text-body: 0 0% 97%;
+    --text-subtitle: 0 0% 90%;
+    --text-accent: 345 68% 74%;
+  }
+
+  /* 主題七：黑白經典 · 象牙白 + 亞光黑 */
+  [data-theme="classic"] {
+    --background: 0 0% 7%;
+    --foreground: 48 12% 96%;
+    --card: 0 0% 9%;
+    --card-foreground: 48 12% 96%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 48 12% 96%;
+    --primary: 48 10% 94%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 48 12% 96%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 48 8% 62%;
+    --accent: 48 8% 88%;
+    --accent-foreground: 0 0% 8%;
+    --border: 0 0% 18%;
+    --input: 0 0% 11%;
+    --ring: 48 10% 75%;
+    --gold: 48 10% 92%;
+    --gold-dim: 48 5% 50%;
+    --midnight: 0 0% 5%;
+    --deep-space: 0 0% 8%;
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 48 12% 96%;
+    --sidebar-primary: 48 10% 94%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 0 0% 13%;
+    --sidebar-accent-foreground: 48 12% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 48 10% 75%;
+    --theme-tint: 48 6% 48%;
+    --text-heading: 48 12% 98%;
+    --text-body: 48 10% 95%;
+    --text-subtitle: 48 8% 72%;
+    --text-accent: 48 10% 92%;
+  }
+
+  /* 主題八：宇宙 · 與「今日宇宙／隱藏星座」頁面一模一樣的配色：深藍紫 + 金/紅點綴 */
+  [data-theme="cosmic"] {
+    /* 與 CosmicMessagePage COSMIC_THEME 完全一致：金 #fbd34c(251,211,76) / 紅 #f87171(248,113,113) / 副文 #e2e8f0(226,232,240) / 腳注 #94a3b8(148,163,184) / 卡片紫 rgba(42,26,72) */
+    --background: 264 55% 4%;
+    --foreground: 43 96% 89%;
+    --card: 264 47% 19%;
+    --card-foreground: 43 86% 96%;
+    --popover: 264 42% 10%;
+    --popover-foreground: 43 96% 89%;
+    --primary: 43 96% 64%;
+    --primary-foreground: 264 50% 4%;
+    --secondary: 264 35% 16%;
+    --secondary-foreground: 43 96% 89%;
+    --muted: 264 38% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 0 88% 71%;
+    --accent-foreground: 264 50% 4%;
+    --border: 261 35% 24%;
+    --input: 264 32% 14%;
+    --ring: 43 96% 64%;
+    --gold: 43 96% 64%;
+    --gold-dim: 43 55% 48%;
+    --midnight: 264 60% 2%;
+    --deep-space: 264 48% 6%;
+    --sidebar-background: 264 55% 3%;
+    --sidebar-foreground: 43 96% 89%;
+    --sidebar-primary: 43 96% 64%;
+    --sidebar-primary-foreground: 264 50% 4%;
+    --sidebar-accent: 264 32% 12%;
+    --sidebar-accent-foreground: 43 96% 89%;
+    --sidebar-border: 261 35% 24%;
+    --sidebar-ring: 43 96% 64%;
+    --theme-tint: 263 55% 38%;
+    --text-heading: 43 96% 64%;
+    --text-body: 43 86% 96%;
+    --text-subtitle: 214 32% 91%;
+    --text-accent: 43 96% 64%;
+    --cosmic-accent-red: 0 88% 71%;
+    --cosmic-card-border: 43 96% 64% / 0.4;
   }
 }
 
@@ -58,15 +487,35 @@
     @apply border-border;
   }
 
+  /* 避免白屏：html/body/#root 預設深色背景，在 JS 載入前就生效 */
+  html, body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: #0d1117;
+  }
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  #root {
+    min-height: 100vh;
+    background-color: hsl(var(--background, 222 45% 6%));
+  }
 
   h1, h2, h3, h4 {
     font-family: var(--font-serif);
+  }
+
+  /* 宇宙主題：與今日宇宙頁面一模一樣的深藍紫漸變 + 紫暈 + 紅暈（三層疊加） */
+  [data-theme="cosmic"] body {
+    background:
+      radial-gradient(ellipse 70% 40% at 75% 20%, rgba(248, 113, 113, 0.15) 0%, transparent 55%),
+      radial-gradient(ellipse 95% 55% at 50% 12%, rgba(99, 42, 150, 0.28) 0%, rgba(55, 28, 95, 0.12) 35%, transparent 65%),
+      linear-gradient(180deg, #080510 0%, #0d0a18 10%, #12102a 25%, #1a1442 45%, #1f1852 60%, #151032 78%, #0a0616 100%);
+    background-attachment: fixed;
   }
 }
 
@@ -74,22 +523,93 @@
   /* Glass card */
   .glass-card {
     @apply relative rounded-2xl p-6;
-    background: hsla(var(--card) / 0.45);
-    border: 1px solid hsla(var(--gold) / 0.2);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: hsla(var(--card) / 0.9);
+    border: 1px solid hsla(var(--border) / 0.7);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
   }
 
   .glass-card-highlight {
     @apply glass-card;
-    border-color: hsla(var(--gold) / 0.3);
-    box-shadow: 0 0 40px hsla(var(--gold) / 0.06), inset 0 1px 0 hsla(var(--gold) / 0.1);
+    border-color: hsla(var(--gold) / 0.5);
+    box-shadow:
+      0 18px 40px hsla(222 60% 2% / 0.95),
+      0 0 26px hsla(var(--gold) / 0.18);
   }
 
   /* Gold accent text */
   .text-gold-glow {
     color: hsl(var(--gold));
     text-shadow: 0 0 12px hsla(var(--gold) / 0.4);
+  }
+
+  /* 字體顏色獨立且突出：高對比 + 輕微描邊/陰影，不融入背景 */
+  .text-heading {
+    color: hsl(var(--text-heading));
+    text-shadow: 0 0 24px hsla(var(--text-heading) / 0.5), 0 1px 2px rgba(0,0,0,0.35);
+  }
+  .text-body {
+    color: hsl(var(--text-body));
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  }
+  .text-subtitle {
+    color: hsl(var(--text-subtitle));
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .text-accent {
+    color: hsl(var(--text-accent));
+    text-shadow: 0 0 12px hsla(var(--text-accent) / 0.35);
+  }
+  .text-heading-glow {
+    color: hsl(var(--text-heading));
+    text-shadow: 0 0 24px hsla(var(--text-heading) / 0.55), 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  /* 水晶質感字體：用獨立字體色變量，隨主題變化 */
+  .text-crystal {
+    background: linear-gradient(165deg, hsl(var(--text-body)) 0%, hsla(var(--text-body) / 0.9) 50%, hsl(var(--text-heading)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 6px hsla(var(--text-heading) / 0.25)) drop-shadow(0 1px 2px hsla(0, 0%, 0%, 0.2));
+  }
+  .text-crystal::selection {
+    -webkit-text-fill-color: hsl(var(--text-body));
+  }
+
+  /* 主題選擇區：細膩背景（玻璃 + 微漸層 + 細點） */
+  .theme-selector-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, hsla(var(--card) / 0.7) 0%, hsla(var(--background) / 0.85) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsla(var(--gold) / 0.15);
+    box-shadow:
+      0 0 0 1px hsla(0, 0%, 100%, 0.03) inset,
+      0 4px 28px hsla(0, 0%, 0%, 0.25),
+      0 0 48px hsla(var(--gold) / 0.05);
+  }
+  .theme-selector-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: radial-gradient(circle at 50% 50%, hsla(var(--gold) / 0.04) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+  }
+
+  .border-gold-strong {
+    border-color: hsla(var(--gold) / 0.95);
+  }
+
+  .text-gold-strong {
+    color: hsl(var(--gold));
+  }
+
+  .bg-gold-soft {
+    background: radial-gradient(circle at 30% 0%, hsla(var(--gold) / 0.26), hsla(var(--card) / 0.95));
   }
 
   /* Glass inputs */
@@ -105,10 +625,46 @@
     box-shadow: 0 0 16px hsla(var(--gold) / 0.1);
   }
 
+  /* 登录页：统一柔和金/灰，避免刺眼品牌色 */
+  .auth-provider-btn {
+    background: hsla(var(--card) / 0.6);
+    border: 1px solid hsla(var(--gold) / 0.18);
+    color: hsla(var(--foreground) / 0.95);
+    backdrop-filter: blur(10px);
+  }
+  .auth-provider-btn-text {
+    color: inherit;
+  }
+  .auth-provider-btn--disabled {
+    background: hsla(var(--muted) / 0.25);
+    border-style: dashed;
+    border-color: hsla(var(--gold) / 0.12);
+    opacity: 0.85;
+  }
+  .auth-coming-soon-btn {
+    background: hsla(var(--card) / 0.4);
+    border: 1px dashed hsla(var(--gold) / 0.12);
+    color: hsla(var(--foreground) / 0.82);
+  }
+  .auth-coming-soon-label {
+    color: inherit;
+    font-weight: 500;
+  }
+  .auth-entry-cell {
+    min-height: 4.25rem;
+  }
+  .auth-divider-line {
+    background: hsla(var(--gold) / 0.12);
+  }
+  .auth-coming-soon-box {
+    border: 1px dashed hsl(var(--gold) / 0.4);
+    background: hsl(var(--card) / 0.6);
+  }
+
   .glass-select {
     @apply w-full rounded-lg border px-3 py-3 text-sm text-foreground outline-none transition-all appearance-none cursor-pointer;
-    background: hsla(var(--input) / 0.5);
-    border-color: hsla(var(--gold) / 0.15);
+    background: radial-gradient(circle at top, hsla(222 28% 18% / 0.95), hsla(var(--input) / 1));
+    border-color: hsla(var(--border) / 0.9);
     backdrop-filter: blur(8px);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a227' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -116,13 +672,19 @@
   }
 
   .glass-select:focus {
-    border-color: hsla(var(--gold) / 0.4);
-    box-shadow: 0 0 16px hsla(var(--gold) / 0.1);
+    border-color: hsla(var(--gold) / 0.8);
+    box-shadow: 0 0 22px hsla(var(--gold) / 0.22);
   }
 
   .glass-select option {
     background: hsl(var(--card));
     color: hsl(var(--foreground));
+  }
+
+  /* 出生表單：年份/月份/日期/時辰下拉使用等寬數字字體，與 .font-digit 一致，不覆蓋 */
+  .birth-form-select.glass-select,
+  .birth-form-select.glass-select option {
+    font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
   }
 
   .input-label {
@@ -232,13 +794,63 @@
     color: hsl(var(--accent));
   }
 
-  /* Star field */
+  /* Star field：隨主題變色 + 一層主題色罩（貼近展示圖的整體色感） */
   .starfield {
     position: fixed;
     inset: 0;
     overflow: hidden;
     z-index: 0;
-    background: radial-gradient(ellipse at 50% 0%, hsl(228 30% 8%), hsl(228 30% 5%) 50%, hsl(230 25% 4%));
+    background: radial-gradient(ellipse 120% 80% at 50% 0%, hsl(var(--card)), hsl(var(--background)) 45%, hsl(var(--midnight)));
+  }
+  /* 宇宙主題：與今日宇宙頁一模一樣的深藍紫漸變 + 紫暈 + 紅暈 */
+  [data-theme="cosmic"] .starfield {
+    background:
+      radial-gradient(ellipse 70% 40% at 75% 20%, rgba(248, 113, 113, 0.15) 0%, transparent 55%),
+      radial-gradient(ellipse 95% 55% at 50% 12%, rgba(99, 42, 150, 0.28) 0%, rgba(55, 28, 95, 0.12) 35%, transparent 65%),
+      linear-gradient(180deg, #080510 0%, #0d0a18 10%, #12102a 25%, #1a1442 45%, #1f1852 60%, #151032 78%, #0a0616 100%);
+  }
+  /* 主題色罩：讓整頁帶一層主題色，與展示圖的整體色感一致 */
+  .starfield::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: hsl(var(--theme-tint) / 0.16);
+    pointer-events: none;
+  }
+  [data-theme="cosmic"] .starfield::after {
+    background: transparent;
+  }
+
+  /* 示意圖同款：金色星座連線層 */
+  .starfield-constellation {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    color: hsl(var(--gold));
+    opacity: 0.22;
+  }
+  .starfield-constellation path {
+    stroke: currentColor;
+  }
+
+  /* 星雲層：更強一點的遠處星塵/霧感 */
+  .starfield-nebula {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 85% 55% at 20% 25%, hsl(var(--theme-tint) / 0.2) 0%, transparent 50%),
+      radial-gradient(ellipse 75% 65% at 85% 55%, hsl(var(--theme-tint) / 0.16) 0%, transparent 48%),
+      radial-gradient(ellipse 65% 45% at 50% 88%, hsl(var(--card) / 0.28) 0%, transparent 42%),
+      radial-gradient(ellipse 50% 35% at 55% 15%, hsl(var(--theme-tint) / 0.1) 0%, transparent 45%);
+  }
+  [data-theme="cosmic"] .starfield-nebula {
+    background:
+      radial-gradient(ellipse 85% 55% at 20% 25%, rgba(99, 42, 150, 0.18) 0%, transparent 50%),
+      radial-gradient(ellipse 75% 65% at 85% 55%, rgba(248, 113, 113, 0.08) 0%, transparent 48%),
+      radial-gradient(ellipse 50% 35% at 55% 15%, rgba(251, 211, 76, 0.06) 0%, transparent 45%);
   }
 
   .star {
@@ -247,10 +859,19 @@
     background: white;
     animation: twinkle var(--duration) ease-in-out infinite alternate;
   }
+  .star--sparkle {
+    animation: twinkle-sparkle var(--duration, 2.2s) ease-in-out infinite;
+    box-shadow: 0 0 6px 1px currentColor;
+  }
 
   @keyframes twinkle {
-    0% { opacity: 0.15; transform: scale(0.8); }
-    100% { opacity: 0.9; transform: scale(1.2); }
+    0% { opacity: 0.25; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1.15); }
+  }
+  @keyframes twinkle-sparkle {
+    0% { opacity: 0.15; transform: scale(0.7); filter: brightness(0.7); }
+    50% { opacity: 1; transform: scale(1.3); filter: brightness(1.2); }
+    100% { opacity: 0.2; transform: scale(0.8); filter: brightness(0.8); }
   }
 
   @keyframes spin-slow {
@@ -280,6 +901,29 @@
     animation: float 3s ease-in-out infinite;
   }
 
+  /* 数字命理 · 空灵之境 */
+  @keyframes numerology-breathing-glow {
+    0%, 100% { opacity: 0.4; transform: scale(1); filter: blur(40px); }
+    50% { opacity: 0.8; transform: scale(1.02); filter: blur(50px); }
+  }
+  @keyframes numerology-stardust {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes numerology-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  .animate-numerology-breathing {
+    animation: numerology-breathing-glow 4s ease-in-out infinite;
+  }
+  .animate-numerology-stardust {
+    animation: numerology-stardust 8s linear infinite;
+  }
+  .animate-numerology-shimmer {
+    animation: numerology-shimmer 3s ease-in-out infinite;
+  }
+
   /* Bottom nav */
   .bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around;
@@ -293,7 +937,7 @@
   .bottom-nav-item {
     @apply flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-lg transition-all text-muted-foreground;
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.875rem;
     letter-spacing: 0.05em;
   }
 
@@ -359,5 +1003,51 @@
     @apply mt-2 text-xs tracking-[0.3em] uppercase;
     color: hsla(var(--gold) / 0.35);
     font-family: var(--font-serif);
+  }
+}
+
+/* 八字解读区：大标题强制金色，与正文区分（避免被继承覆盖） */
+.bazi-panel .bazi-reading-title,
+.bazi-reading-content .bazi-reading-title {
+  color: #e6c200 !important;
+  -webkit-text-fill-color: #e6c200 !important;
+  font-family: var(--font-serif);
+  text-shadow: 0 0 14px rgba(230,194,0,0.4);
+}
+.tarot-card {
+    width: 300px;
+    height: 520px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px); /* 磨砂效果 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); /* 深邃阴影 */
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarot-card:hover {
+    transform: translateY(-20px) scale(1.05);
+    box-shadow: 0 15px 45px rgba(138, 43, 226, 0.4); /* 紫色神秘光晕 */
+}
+
+/* 隱藏橫向/縱向滾動條，去掉「左右移動的線」 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 塔羅牌陣解讀區 slideIn 動畫 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

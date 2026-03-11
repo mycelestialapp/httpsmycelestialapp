@@ -25,7 +25,7 @@ const DivinationApp = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-8">
+    <div className="relative min-h-screen flex items-start justify-center overflow-x-hidden overflow-y-auto px-4 pt-32 md:pt-40 lg:pt-48 pb-16">
       <Starfield />
 
       <div className="relative z-10 w-full max-w-md">

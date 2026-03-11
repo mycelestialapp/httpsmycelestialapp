@@ -5,8 +5,14 @@ const Disclaimer = () => {
 
   return (
     <footer className="brand-footer">
-      <p>{t('common.disclaimer')}</p>
-      <p className="brand-sig">✦ Made with Cosmic Energy ✦</p>
+      <p className="font-semibold text-sm text-foreground/95 mb-1">
+        {t('oracle.astrologyNatalTitle', { defaultValue: '本命盤' })}
+      </p>
+      <p>
+        {t('oracle.astrologyDisclaimerTop', {
+          defaultValue: '本頁占星解讀僅供娛樂與自我覺察，不構成醫學、法律、投資或人生決策建議，請以理性判斷與現實情況為準。',
+        })}
+      </p>
     </footer>
   );
 };

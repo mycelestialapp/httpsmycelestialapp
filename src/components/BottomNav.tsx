@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, Users, Flame, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Sparkles, Heart, Calendar, BookOpen } from 'lucide-react';
 
 const tabs = [
-  { key: 'oracle', path: '/', icon: Sparkles },
-  { key: 'tribe', path: '/tribe', icon: Users },
-  { key: 'altar', path: '/altar', icon: Flame },
+  { key: 'blueprint', path: '/', icon: LayoutDashboard },
+  { key: 'tools', path: '/tools', icon: Sparkles },
+  { key: 'relationships', path: '/relationships', icon: Heart },
+  { key: 'rhythm', path: '/rhythm', icon: Calendar },
   { key: 'library', path: '/library', icon: BookOpen },
 ] as const;
 
@@ -14,9 +15,13 @@ const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const pathname = location.pathname;
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/' || location.pathname.startsWith('/oracle');
-    return location.pathname.startsWith(path);
+    // 首頁（星圖）：在首頁或任一 oracle 閱讀頁（占星/八字）時都高亮，從星圓點進占星後底下仍顯示星圖
+    if (path === '/') return pathname === '/' || pathname.startsWith('/oracle/');
+    // 天啟：僅在工具列表頁 /tools 高亮
+    if (path === '/tools') return pathname === '/tools';
+    return pathname.startsWith(path);
   };
 
   return (
@@ -27,7 +32,7 @@ const BottomNav = () => {
           onClick={() => navigate(path)}
           className={`bottom-nav-item ${isActive(path) ? 'active' : ''}`}
         >
-          <Icon size={22} strokeWidth={1.8} />
+          <Icon size={20} strokeWidth={1.8} />
           <span>{t(`nav.${key}`)}</span>
         </button>
       ))}

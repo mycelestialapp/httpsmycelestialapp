@@ -1,0 +1,15 @@
+---
+description: 塔羅感情類只顯示愛情維度，絕不顯示事業、財運
+globs: src/components/TarotPanel.tsx, src/lib/tarotMasterReading.ts, src/lib/questionGuidanceTopics.ts, src/lib/questionCategoryKeywords.ts
+alwaysApply: false
+---
+
+# 感情類塔羅解讀：只顯示愛情，不顯示事業／財運
+
+- **感情類**（問題分類為「感情婚姻」或 topic 為 love / marriage / relationship）時：
+  - 只使用並顯示 **愛情** 維度（`card.love` 或對應牌意）。
+  - **絕不**顯示「事業」「財運」的區塊或解釋。
+- 實作位置：
+  - `TarotPanel.tsx`：ReadingBlock、SpreadSummary 依 `topic` / `effectiveDisplayTopic` 只渲染對應維度；感情類只渲染「愛情」。
+  - `tarotMasterReading.ts`：`getTopicSection`、`effectiveTopic` 與 `freeTier.cardMeaning` 依問題分類取維度；感情類只用愛情牌意。
+- 新增或修改塔羅解讀 UI、牌意組裝邏輯時，不得讓感情類問題出現事業或財運的解釋。

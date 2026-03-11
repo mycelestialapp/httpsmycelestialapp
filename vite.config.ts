@@ -7,7 +7,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 8081,
+    strictPort: false, // 8081 若也被占用會自動試 8082，避免與佔用 8080 的程式衝突
     hmr: {
       overlay: false,
     },

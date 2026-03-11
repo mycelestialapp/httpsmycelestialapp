@@ -18,7 +18,7 @@ const languages = [
 ];
 
 const LanguageSwitcher = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,16 +39,18 @@ const LanguageSwitcher = () => {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all"
+        className="flex items-center gap-1.5 min-h-[44px] px-3 py-2 rounded-full text-xs font-medium tracking-wide transition-all"
         style={{
           background: 'hsla(var(--card) / 0.5)',
           border: '1px solid hsla(var(--gold) / 0.2)',
           color: 'hsl(var(--gold))',
           backdropFilter: 'blur(12px)',
         }}
+        aria-label={t('settings.language', { defaultValue: 'Language' })}
+        aria-expanded={open}
       >
-        <Globe size={14} />
-        {current}
+        <Globe size={16} className="shrink-0" />
+        <span className="whitespace-nowrap">{current}</span>
       </button>
 
       {open && (

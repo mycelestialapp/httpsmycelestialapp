@@ -1,46 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Compass, Star, Layers, BookOpen, Orbit, Shield, Wind, Flower2, Hexagon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import EnergyRadar from '@/components/EnergyRadar';
+import CosmicTeaserCard from '@/components/CosmicTeaserCard';
 import BirthInputModal from '@/components/BirthInputModal';
-import DailyWisdom from '@/components/DailyWisdom';
-import DailyCheckin from '@/components/DailyCheckin';
+import DailyYijiMoonCard from '@/components/DailyYijiMoonCard';
+import DailyNumerologyCard from '@/components/DailyNumerologyCard';
+import DailyOneCard from '@/components/DailyOneCard';
 import CreateCardCTA from '@/components/CreateCardCTA';
 
-import { useNavigate } from 'react-router-dom';
-import { calculateElementEnergy, generateInsight } from '@/lib/fiveElements';
-import type { ElementEnergy, CelestialProfile } from '@/lib/fiveElements';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ChevronRight, Flower2, Layers, Moon, LayoutGrid, BookOpen, Hash } from 'lucide-react';
+import { toast } from 'sonner';
+import { calculateElementEnergy } from '@/lib/fiveElements';
+import { getSunSignFromDate, type ZodiacSignKey } from '@/lib/astrologyChart';
+import solarlunar from 'solarlunar';
+import type { CelestialProfile } from '@/lib/fiveElements';
+import { saveToArchivesIfNeeded, saveLastBirth, loadLastBirth, updateArchiveBirthData } from '@/lib/archives';
 import { useAuth } from '@/hooks/useAuth';
+import { useOpenBirthModalWhenRequested } from '@/hooks/useOpenBirthModal';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 
-const tools = [
-  { key: 'bazi', icon: Compass },
-  { key: 'ziwei', icon: Star },
-  { key: 'qimen', icon: Shield },
-  { key: 'liuren', icon: Orbit },
-  { key: 'xiaoliuren', icon: Wind },
-  { key: 'xuankong', icon: Hexagon },
-  { key: 'tarot', icon: Layers },
+/** 星圖板塊 · 西方主流占卜方式（占星、塔羅、神諭卡、雷諾曼、符文、數字命理） */
+const WESTERN_DIVINATION = [
   { key: 'astrology', icon: Flower2 },
-  { key: 'meihua', icon: BookOpen },
+  { key: 'tarot', icon: Layers },
+  { key: 'oracle', icon: Moon },
+  { key: 'lenormand', icon: LayoutGrid },
+  { key: 'runes', icon: BookOpen },
+  { key: 'numerology', icon: Hash },
 ] as const;
 
-const AWAKENED_KEY = 'celestial_awakened_tools';
-const getAwakened = (): string[] => {
-  try { return JSON.parse(localStorage.getItem(AWAKENED_KEY) || '[]'); } catch { return []; }
-};
+/** 星圖板塊 · 純西方占星（今日一句、靈魂原型、占卜工具） */
+type ForArchiveContext = { id: string; name: string; group: string } | null;
+
+/** 尚未實現的占卜方式：入口顯示「即將推出」，不跳轉（靈擺已解鎖，板塊內容清空待後續上線） */
+const COMING_SOON_TOOLS: string[] = [];
 
 const OraclePage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
-  const [energy, setEnergy] = useState<ElementEnergy | null>(null);
-  const [insight, setInsight] = useState('');
+  const divinationSectionRef = useRef<HTMLElement | null>(null);
+  const [forArchive, setForArchive] = useState<ForArchiveContext>(null);
+  const [profile, setProfile] = useState<CelestialProfile | null>(null);
+  /** 太陽星座（占星星盤 L1）：用於靈魂原型卡與金句 */
+  const [sunSign, setSunSign] = useState<ZodiacSignKey | null>(null);
   const [compareSoul, setCompareSoul] = useState<string | null>(null);
-  const [awakened] = useState<string[]>(getAwakened);
-  const [tappedTool, setTappedTool] = useState<string | null>(null);
+
+  /** 從關係頁「補充出生資料」跳轉時，把檔案 id/name/group 存到 state，避免 navigate replace 後丟失 */
+  useEffect(() => {
+    const s = location.state as { forArchiveId?: string; forArchiveName?: string; forArchiveGroup?: string; scrollToDivination?: boolean } | null;
+    if (s?.forArchiveId) {
+      setForArchive({
+        id: s.forArchiveId,
+        name: s.forArchiveName ?? '',
+        group: s.forArchiveGroup ?? 'self',
+      });
+    }
+    if (s?.scrollToDivination && divinationSectionRef.current) {
+      requestAnimationFrame(() => {
+        divinationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      navigate(location.pathname, { replace: true, state: undefined });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   useEffect(() => {
     const soul = localStorage.getItem('celestial_compare_soul');
@@ -50,30 +75,175 @@ const OraclePage = () => {
     }
   }, []);
 
-  const handleBirthSubmit = async (year: number, month: number, day: number) => {
-    const profile: CelestialProfile = calculateElementEnergy(year, month, day);
-    setEnergy(profile.energy);
-    setInsight(generateInsight(profile, i18n.language, t));
+  /** 進入時：登入則先從帳號讀取生日，否則從 localStorage 恢復 */
+  useEffect(() => {
+    if (user?.id) {
+      supabase
+        .from('profiles')
+        .select('birthday, birth_chart_name')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.birthday) {
+            const [y, m, d] = data.birthday.split('-').map(Number);
+            if (y && m && d) {
+              const p = calculateElementEnergy(y, m, d);
+              setProfile(p);
+              setSunSign(getSunSignFromDate(y, m, d));
+              saveLastBirth({
+                year: y,
+                month: m,
+                day: d,
+                name: data.birth_chart_name?.trim() || undefined,
+              });
+            }
+            return;
+          }
+          const last = loadLastBirth();
+          if (!last) return;
+          const p = calculateElementEnergy(last.year, last.month, last.day);
+          setProfile(p);
+          setSunSign(getSunSignFromDate(last.year, last.month, last.day));
+        })
+        .catch(() => {
+          const last = loadLastBirth();
+          if (!last) return;
+          const p = calculateElementEnergy(last.year, last.month, last.day);
+          setProfile(p);
+          setSunSign(getSunSignFromDate(last.year, last.month, last.day));
+        });
+    } else {
+      const last = loadLastBirth();
+      if (!last) return;
+      const p = calculateElementEnergy(last.year, last.month, last.day);
+      setProfile(p);
+      setSunSign(getSunSignFromDate(last.year, last.month, last.day));
+    }
+  }, [user?.id]);
+
+  useOpenBirthModalWhenRequested(setModalOpen);
+
+  const handleBirthSubmit = async (
+    year: number,
+    month: number,
+    day: number,
+    city?: import('@/lib/cities').CityEntry | null,
+    useSolarTime?: boolean,
+    hourIndex?: number,
+    gender?: 'male' | 'female',
+    calendarType: 'solar' | 'lunar' = 'solar',
+    _group?: string,
+    _name?: string,
+  ) => {
+    const forArchiveId = forArchive?.id ?? (location.state as { forArchiveId?: string } | null)?.forArchiveId;
+    if (forArchiveId) {
+      let solarYear = year;
+      let solarMonth = month;
+      let solarDay = day;
+      if (calendarType === 'lunar') {
+        try {
+          const converted = solarlunar.lunar2solar(year, month, day, false);
+          solarYear = converted.cYear;
+          solarMonth = converted.cMonth;
+          solarDay = converted.cDay;
+        } catch {
+          solarYear = year;
+          solarMonth = month;
+          solarDay = day;
+        }
+      }
+      updateArchiveBirthData(forArchiveId, {
+        solarYear,
+        solarMonth,
+        solarDay,
+        hourIndex: hourIndex ?? 6,
+        gender,
+        useSolarTime,
+        calendarType,
+        city: city ?? null,
+      });
+      toast.success(t('relationships.birthDataAdded', { defaultValue: '已補充出生資料，可查看靈魂原型、今日一句與命盤' }));
+      setForArchive(null);
+      setModalOpen(false);
+      navigate('/relationships', { replace: true, state: {} });
+      return;
+    }
+
+    let solarYear = year;
+    let solarMonth = month;
+    let solarDay = day;
+
+    if (calendarType === 'lunar') {
+      try {
+        const converted = solarlunar.lunar2solar(year, month, day, false);
+        solarYear = converted.cYear;
+        solarMonth = converted.cMonth;
+        solarDay = converted.cDay;
+      } catch {
+        solarYear = year;
+        solarMonth = month;
+        solarDay = day;
+      }
+    }
+
+    const p: CelestialProfile = calculateElementEnergy(solarYear, solarMonth, solarDay);
+    setProfile(p);
+    /** 靈魂原型嚴格依「出生日期（公曆）」→ 太陽星座，不可改為按今日或其它邏輯 */
+    setSunSign(getSunSignFromDate(solarYear, solarMonth, solarDay));
+
+    saveLastBirth({
+      year: solarYear,
+      month: solarMonth,
+      day: solarDay,
+      name: _name?.trim() || undefined,
+      hourIndex: hourIndex ?? 6,
+      gender,
+      useSolarTime,
+      city: city ? { name: city.name, nameZh: city.nameZh, country: city.country, lat: city.lat, lng: city.lng } : undefined,
+    });
 
     if (user) {
-      await supabase.from('profiles').update({
-        birthday: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-        wood: profile.energy.wood, fire: profile.energy.fire, earth: profile.energy.earth,
-        metal: profile.energy.metal, water: profile.energy.water,
-        dominant_element: profile.dominantElement,
+      const { error } = await supabase.from('profiles').update({
+        birthday: `${solarYear}-${String(solarMonth).padStart(2, '0')}-${String(solarDay).padStart(2, '0')}`,
+        birth_chart_name: _name?.trim() || null,
+        wood: p.energy.wood, fire: p.energy.fire, earth: p.energy.earth,
+        metal: p.energy.metal, water: p.energy.water,
+        dominant_element: p.dominantElement,
       }).eq('id', user.id);
+      if (!error) toast.success(t('oracle.savedToAccount', { defaultValue: '已保存至你的帳號' }));
     }
-  };
 
-  const handleToolTap = (key: string) => {
-    setTappedTool(key);
-    setTimeout(() => {
-      navigate(`/oracle/reading?tool=${key}`);
-    }, 700);
+    saveToArchivesIfNeeded(_group, _name, {
+      solarYear,
+      solarMonth,
+      solarDay,
+      hourIndex: hourIndex ?? 6,
+      gender,
+      useSolarTime,
+      calendarType,
+      city: city ?? null,
+    });
+
+    navigate('/oracle/soul');
   };
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
+      {/* 星圖頁標：與底部 Tab「星圖」對應，強化品牌感 */}
+      <motion.header
+        className="text-center space-y-0.5 pb-1"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <h1 className="text-body-sm font-semibold tracking-[0.35em] uppercase text-heading">
+          {t('oracle.starChartPageTitle', { defaultValue: '星圖' })}
+        </h1>
+        <p className="text-caption tracking-widest text-subtitle">
+          {t('oracle.starChartPageSubtitle', { defaultValue: '本命星圖 · 今日一句與靈魂原型' })}
+        </p>
+      </motion.header>
+
       {/* Challenge Banner */}
       {compareSoul && (
         <div
@@ -83,22 +253,21 @@ const OraclePage = () => {
             border: '1px solid hsla(var(--gold) / 0.25)',
           }}
         >
-          <span className="text-lg">⚔️</span>
+          <span className="text-body-lg">⚔️</span>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold" style={{ color: 'hsl(var(--gold))' }}>
-              ⚡ Comparing your soul with Soul #{compareSoul.slice(0, 8)}...
+            <p className="text-caption font-semibold text-heading">
+              ⚡ {t('oracle.challengeTitle')}
             </p>
-            <p className="text-[10px] text-muted-foreground truncate">
-              Begin your reading to see who vibrates higher!
+            <p className="text-[10px] text-subtitle truncate">
+              {t('oracle.challengeDesc', { soulId: compareSoul.slice(0, 8) })}
             </p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="text-[10px] px-3 py-1.5 rounded-full font-semibold whitespace-nowrap"
+            className="text-accent text-caption px-3 py-1.5 rounded-full font-semibold whitespace-nowrap"
             style={{
               background: 'hsla(var(--gold) / 0.2)',
               border: '1px solid hsla(var(--gold) / 0.3)',
-              color: 'hsl(var(--gold))',
             }}
           >
             {t('oracle.startReading')}
@@ -106,159 +275,178 @@ const OraclePage = () => {
         </div>
       )}
 
-      {/* Hero */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-serif)', color: 'hsl(var(--gold))', textShadow: '0 0 24px hsla(var(--gold) / 0.3)' }}>
-          {t('oracle.title')}
+      {/* Hero：首屏鉤子 + 裝飾線（一眼抓住） */}
+      <motion.div
+        className="text-center space-y-3"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-h3 sm:text-h2 font-bold leading-snug px-1 text-crystal font-display">
+          {t('oracle.heroHook', { defaultValue: '宇宙在你出生那一刻，已經寫好了你的密碼。' })}
         </h2>
-        <p className="text-sm text-muted-foreground">{t('oracle.subtitle')}</p>
+        <p className="text-body-sm text-subtitle max-w-sm mx-auto">
+          {t('oracle.heroSub', { defaultValue: '解開它，看見今日一句與靈魂原型。' })}
+        </p>
+        <div className="flex justify-center gap-1.5 pt-1" aria-hidden>
+          <span className="w-1 h-1 rounded-full bg-gold-strong/50" />
+          <span className="w-1.5 h-1 rounded-full bg-gold-strong/70" />
+          <span className="w-1 h-1 rounded-full bg-gold-strong/50" />
+        </div>
+      </motion.div>
+
+      {/* 輸入出生日期的入口：始終顯示在 Hero 下方。未填＝大按鈕；已填＝切換星盤 */}
+      <motion.div
+        className="space-y-4"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.45 }}
+      >
+        {!profile ? (
+          <>
+            <p className="text-[11px] tracking-[0.2em] uppercase text-subtitle text-center">
+              {t('oracle.yourArchetype')}
+            </p>
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="w-full py-5 px-6 rounded-2xl text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, hsla(var(--gold) / 0.22), hsla(var(--accent) / 0.12))',
+                border: '1px solid hsla(var(--gold) / 0.5)',
+                boxShadow: '0 0 32px hsla(var(--gold) / 0.18), inset 0 1px 0 hsla(var(--gold) / 0.15)',
+              }}
+            >
+              <p className="text-body-lg font-semibold tracking-wide text-heading font-display">
+                ✦ {t('oracle.ctaReveal', { defaultValue: '解開我的星圖' })} ✦
+              </p>
+              <p className="text-caption text-subtitle mt-2 max-w-xs mx-auto opacity-90">
+                {t('oracle.ctaRevealHint', { defaultValue: '填寫出生日期，約 10 秒。解開後將顯示你的靈魂原型（可截圖）。' })}
+              </p>
+            </button>
+            <p className="text-center text-xs text-subtitle/90 max-w-sm mx-auto">
+              {t('oracle.ctaPayoff', { defaultValue: '解開後，專屬於你的靈魂原型與金句將揭曉。' })}
+            </p>
+          </>
+        ) : (
+          <>
+            {/* 已填寫：三塊同寬同高，統一 80px 高 */}
+            <div className="w-full max-w-md mx-auto mt-2 flex flex-col gap-3">
+              <CosmicTeaserCard />
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="h-[80px] w-full rounded-2xl text-body-sm font-semibold border border-gold-strong hover:opacity-90 transition-opacity bg-gold-soft text-gold-strong flex items-center justify-center"
+              >
+                {t('oracle.viewSoulArchetype', { defaultValue: '查看靈魂原型' })}
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="h-[80px] w-full rounded-2xl text-body-sm font-semibold border border-gold-strong/60 hover:opacity-90 transition-opacity bg-transparent text-gold-strong flex items-center justify-center"
+              >
+                {t('oracle.switchChart', { defaultValue: '切換星盤' })}
+              </button>
+            </div>
+          </>
+        )}
+      </motion.div>
+
+      {/* 未填寫時：今日一句入口單獨一區；已填寫時上方已有 CosmicTeaserCard，此處加「查看完整日運」入口 */}
+      {!profile && (
+        <div className="w-full max-w-md mx-auto mt-2">
+          <CosmicTeaserCard />
+        </div>
+      )}
+      {profile && (
+        <button
+          type="button"
+          onClick={() => navigate('/rhythm?tab=daily')}
+          className="w-full max-w-md mx-auto mt-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-body font-medium border border-gold-strong/40 text-gold-strong/90 hover:bg-gold-soft/50 transition-colors"
+        >
+          {t('oracle.viewFullDaily', { defaultValue: '查看完整日運' })}
+          <ChevronRight size={16} />
+        </button>
+      )}
+
+      {/* 今日宜忌 · 月相（B+D） */}
+      <DailyYijiMoonCard />
+
+      {/* 今日数字：幸运数 / 幸运色 / 一句话 */}
+      <div className="w-full max-w-md mx-auto">
+        <DailyNumerologyCard />
       </div>
 
-      {/* Energy Radar */}
-      <EnergyRadar energy={energy} insight={insight} onRequestReading={() => setModalOpen(true)} />
-
-      {/* Daily Check-in */}
-      <DailyCheckin />
+      {/* 每日一牌：日期種子固定一張塔羅 + 短解讀 */}
+      <div className="w-full max-w-md mx-auto">
+        <DailyOneCard />
+      </div>
 
       {/* CTA for new users */}
       <CreateCardCTA />
 
-      {/* Today's Wisdom */}
-      <DailyWisdom />
-
-      {/* Tools grid with enhanced animations */}
-      <div>
-        <h3 className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
-          {t('oracle.tools')}
+      {/* 星圖板塊最下面：占卜方式（星盤 · 西方・本命與問事） */}
+      <section ref={divinationSectionRef} className="space-y-3">
+        <div>
+          <h2 className="text-h4 font-bold tracking-[0.2em] text-heading text-center" style={{ fontFamily: 'var(--font-serif)' }}>
+            {t('oracle.toolsPageTitle', { defaultValue: '星盤' })}
+          </h2>
+          <p className="text-body-sm text-subtitle text-center mt-0.5">
+            {t('oracle.toolsPageSubtitle', { defaultValue: '西方・本命與問事' })}
+          </p>
+          <div
+            className="w-16 h-px mx-auto mt-2"
+            style={{ background: 'linear-gradient(90deg, transparent, hsla(var(--gold) / 0.7), transparent)' }}
+          />
+        </div>
+        <h3 className="text-body-sm font-semibold tracking-widest uppercase text-heading" style={{ fontFamily: 'var(--font-sans)' }}>
+          {t('oracle.divinationMethods', { defaultValue: '占卜方式' })}
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {tools.map(({ key, icon: Icon }, index) => {
-            const isAwakened = awakened.includes(key);
-            const isTapped = tappedTool === key;
-
+        <ul className="space-y-2.5">
+          {WESTERN_DIVINATION.map(({ key, icon: Icon }) => {
+            const isComingSoon = COMING_SOON_TOOLS.includes(key);
             return (
-              <motion.button
-                key={key}
-                onClick={() => handleToolTap(key)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{
-                  opacity: isTapped ? 0 : 1,
-                  y: 0,
-                  scale: isTapped ? 0.3 : 1,
-                }}
-                transition={{
-                  delay: index * 0.05,
-                  duration: isTapped ? 0.5 : 0.4,
-                  ease: isTapped ? 'easeIn' : 'easeOut',
-                }}
-                className="glass-card text-center p-3 relative overflow-hidden"
-                style={{
-                  border: isAwakened ? '1px solid hsla(var(--gold) / 0.6)' : undefined,
-                  boxShadow: isAwakened
-                    ? '0 0 16px hsla(var(--gold) / 0.25), inset 0 0 10px hsla(var(--gold) / 0.08)'
-                    : undefined,
-                }}
-              >
-                {/* Breathing border glow - flowing linear light */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl pointer-events-none"
+              <li key={key}>
+                <button
+                  type="button"
+                  onClick={() => !isComingSoon && navigate(`/oracle/reading?tool=${key}`)}
+                  disabled={isComingSoon}
+                  className={`w-full flex items-center gap-4 rounded-xl px-4 py-3.5 text-left transition-all border border-gold-strong/30 ${isComingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-95 active:scale-[0.99]'}`}
                   style={{
-                    background: 'conic-gradient(from 0deg, transparent, hsla(var(--gold) / 0.15), transparent, hsla(var(--gold) / 0.1), transparent)',
-                    maskImage: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMaskComposite: 'xor',
-                    padding: 1,
+                    background: 'hsla(var(--card) / 0.85)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
                   }}
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ repeat: Infinity, duration: 4 + index * 0.3, ease: 'linear' }}
-                />
-
-                {/* Breathing inner glow */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl pointer-events-none"
-                  animate={{
-                    boxShadow: [
-                      'inset 0 0 6px hsla(var(--gold) / 0.02)',
-                      'inset 0 0 18px hsla(var(--gold) / 0.1)',
-                      'inset 0 0 6px hsla(var(--gold) / 0.02)',
-                    ],
-                  }}
-                  transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                />
-
-                {/* Awakened badge */}
-                {isAwakened && (
-                  <div className="absolute top-1.5 right-1.5">
-                    <motion.div
-                      className="w-2 h-2 rounded-full"
-                      style={{ background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold))' }}
-                      animate={{ opacity: [0.5, 1, 0.5], scale: [0.8, 1.1, 0.8] }}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                    />
+                >
+                  <div
+                    className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ background: 'hsla(var(--gold) / 0.12)', border: '1px solid hsla(var(--gold) / 0.25)' }}
+                  >
+                    <Icon size={22} className="text-heading" style={{ filter: 'drop-shadow(0 0 6px hsla(var(--gold) / 0.35))' }} />
                   </div>
-                )}
-
-                <Icon size={18} className="mb-1.5 mx-auto relative z-10" style={{ color: 'hsl(var(--gold))', filter: 'drop-shadow(0 0 6px hsla(var(--gold) / 0.4))' }} />
-                <div className="text-xs font-semibold text-foreground relative z-10" style={{ fontFamily: 'var(--font-serif)' }}>
-                  {t(`oracle.${key}`)}
-                </div>
-                <div className="text-[9px] text-muted-foreground mt-0.5 leading-tight relative z-10">
-                  {t(`oracle.${key}Desc`)}
-                </div>
-              </motion.button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-body font-semibold text-heading truncate" style={{ fontFamily: 'var(--font-serif)' }}>
+                      {t(`oracle.${key}`)}
+                    </p>
+                    <p className="text-body-sm text-subtitle mt-0.5 truncate">
+                      {isComingSoon ? t('settings.comingSoon', { defaultValue: '即將推出' }) : t(`oracle.${key}Desc`)}
+                    </p>
+                  </div>
+                  {!isComingSoon && <ChevronRight size={18} className="shrink-0 text-heading opacity-80" />}
+                </button>
+              </li>
             );
           })}
-        </div>
-      </div>
-
-      {/* Collapse particle overlay when a tool is tapped */}
-      <AnimatePresence>
-        {tappedTool && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            {/* Golden particle burst */}
-            {Array.from({ length: 32 }).map((_, i) => {
-              const angle = (Math.PI * 2 * i) / 32;
-              const dist = 100 + Math.random() * 120;
-              return (
-                <motion.div
-                  key={i}
-                  className="absolute rounded-full"
-                  style={{
-                    width: 2 + Math.random() * 3,
-                    height: 2 + Math.random() * 3,
-                    background: 'hsl(var(--gold))',
-                    boxShadow: '0 0 8px hsl(var(--gold)), 0 0 16px hsla(var(--gold) / 0.5)',
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                  animate={{
-                    x: Math.cos(angle) * dist,
-                    y: Math.sin(angle) * dist,
-                    opacity: 0,
-                    scale: 0.1,
-                  }}
-                  transition={{ duration: 0.7, ease: 'easeOut' }}
-                />
-              );
-            })}
-            {/* Central flash */}
-            <motion.div
-              className="w-32 h-32 rounded-full"
-              style={{ background: 'radial-gradient(circle, hsla(var(--gold) / 0.5), transparent)' }}
-              initial={{ scale: 0.5, opacity: 1 }}
-              animate={{ scale: 4, opacity: 0 }}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </ul>
+      </section>
 
       {/* Modal */}
-      <BirthInputModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleBirthSubmit} />
+      <BirthInputModal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setForArchive(null); }}
+        onSubmit={handleBirthSubmit}
+        defaultName={forArchive?.name ?? (location.state as { forArchiveName?: string } | null)?.forArchiveName}
+        defaultGroup={forArchive?.group ?? (location.state as { forArchiveGroup?: string } | null)?.forArchiveGroup}
+      />
     </div>
   );
 };

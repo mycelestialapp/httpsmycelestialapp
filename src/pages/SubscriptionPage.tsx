@@ -25,7 +25,7 @@ const PLANS = [
     icon: Crown,
     priceId: 'price_1T4DfmJl2234Nccs1mViRM1U',
     mode: 'subscription' as const,
-    features: ['unlimitedMatching', 'premiumAltarLamps', 'priorityReading', 'noAds'],
+    features: ['unlimitedMatching', 'premiumAltarLamps', 'priorityReading', 'numerologyFull', 'noAds'],
     popular: true,
   },
   {
@@ -97,6 +97,13 @@ const SubscriptionPage = () => {
 
   return (
     <div className="max-w-md mx-auto space-y-6 pt-2 page-transition">
+      {/* Value prop */}
+      <div className="rounded-xl border border-border/60 bg-card/40 px-4 py-3 text-center">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          解鎖完整人生劇本、不限人數的關係說明書、未來多年節奏視野與成就系統。一次訂閱，整張藍圖常駐。
+        </p>
+      </div>
+
       {/* Header */}
       <div className="text-center space-y-2">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}

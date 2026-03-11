@@ -14,7 +14,7 @@ import th from './locales/th.json';
 import de from './locales/de.json';
 import ru from './locales/ru.json';
 
-const supportedLngs = ['en', 'fr', 'zh-Hant', 'es', 'pt', 'ja', 'ko', 'ar', 'hi', 'th', 'de', 'ru'];
+const supportedLngs = ['en', 'fr', 'zh-Hant', 'zh-CN', 'zh', 'es', 'pt', 'ja', 'ko', 'ar', 'hi', 'th', 'de', 'ru'];
 
 /**
  * Map any detected browser language code to our supported language codes.
@@ -36,6 +36,12 @@ function resolveLanguage(detected: string): string {
   return 'en';
 }
 
+// 中文統一用繁體：若偵測到 zh-CN / zh，啟動後改為 zh-Hant，避免介面出現簡體
+function normalizeChineseLng(lng: string): string {
+  if (lng === 'zh-CN' || lng === 'zh' || lng?.startsWith('zh-')) return 'zh-Hant';
+  return lng;
+}
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -44,6 +50,8 @@ i18n
       en: { translation: en },
       fr: { translation: fr },
       'zh-Hant': { translation: zhHant },
+      'zh-CN': { translation: zhHant },
+      zh: { translation: zhHant },
       es: { translation: es },
       pt: { translation: pt },
       ja: { translation: ja },
@@ -63,8 +71,16 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
-      convertDetectedLanguage: resolveLanguage,
+      convertDetectedLanguage: (lng: string) => normalizeChineseLng(resolveLanguage(lng)),
     },
   });
+
+// 啟動後若當前是 zh-CN / zh，強制改為 zh-Hant，確保介面一律顯示繁體
+i18n.on('initialized', () => {
+  const current = i18n.language || '';
+  if (current === 'zh-CN' || current === 'zh' || (current.startsWith('zh') && current !== 'zh-Hant')) {
+    i18n.changeLanguage('zh-Hant');
+  }
+});
 
 export default i18n;

@@ -50,7 +50,13 @@ const OraclePage = () => {
     }
   }, []);
 
-  const handleBirthSubmit = async (year: number, month: number, day: number) => {
+  const handleBirthSubmit = async (
+    year: number,
+    month: number,
+    day: number,
+    _city?: { name: string; nameZh?: string; country: string; lat: number; lng: number } | null,
+    _useSolarTime?: boolean
+  ) => {
     const profile: CelestialProfile = calculateElementEnergy(year, month, day);
     setEnergy(profile.energy);
     setInsight(generateInsight(profile, i18n.language, t));

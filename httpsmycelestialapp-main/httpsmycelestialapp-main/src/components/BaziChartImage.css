@@ -4,34 +4,21 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* 五行干支发光脉冲 */
+/* 五行干支发光脉冲 1500ms（配置 pulse_duration） */
 .bazi-chart-export .ganzhi-symbol {
-  animation: bazi-pulse 2s ease-in-out infinite;
+  animation: bazi-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes bazi-pulse {
-  0% {
-    text-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
-  }
-  50% {
-    text-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
-  }
-  100% {
-    text-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
-  }
+  0% { text-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+  50% { text-shadow: 0 0 12px currentColor, 0 0 24px currentColor; }
+  100% { text-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
 }
 
-/* 吸粉文案手写体（需配合 Google Fonts Great Vibes） */
+/* 二维码旁文案：思源黑体 Medium，配置见 baziChartConfig */
 .bazi-qr-caption {
-  font-family: 'Great Vibes', 'Dancing Script', cursive;
-  font-size: 18px;
-  font-weight: 400;
-  background: linear-gradient(90deg, #ffd700, #e6c200);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
-  filter: drop-shadow(0 0 4px #000);
+  font-family: "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  font-weight: 500;
 }
 
 /* 二维码金框 */

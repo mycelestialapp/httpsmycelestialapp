@@ -67,7 +67,7 @@ export async function fetchBaziResult(info: DivinationInfo): Promise<BaziApiResu
   });
 
   if (error) {
-    throw new Error(error.message || '八字服务暂时不可用，请稍后再试');
+    throw new Error(error.message || '八字解读服务准备中，敬请期待');
   }
 
   if (data?.error) {

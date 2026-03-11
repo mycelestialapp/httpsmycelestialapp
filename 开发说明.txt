@@ -1,0 +1,7 @@
+本地看网页前必做一步：
+  在项目目录打开终端，执行：  npm run dev
+  等出现 "ready" 后，在浏览器打开：  http://localhost:8080
+
+若提示 "Port 8080 is in use"：
+  说明已有另一个 npm run dev 在跑，请关掉那个终端窗口，或在本机任务管理器中结束 node 进程，再重新执行 npm run dev。
+  始终用同一个地址：  http://localhost:8080

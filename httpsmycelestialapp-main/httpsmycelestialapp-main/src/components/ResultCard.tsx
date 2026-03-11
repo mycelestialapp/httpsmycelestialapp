@@ -27,15 +27,43 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
 
   const scale = typeof window !== 'undefined' ? (window.devicePixelRatio || 3) : 3;
 
-  const doExport = (): Promise<string | undefined> => {
-    if (!exportRef.current || !baziResult) return Promise.resolve(undefined);
+  const doExport = async (): Promise<string | undefined> => {
+    if (!exportRef.current || !baziResult) return undefined;
     const el = exportRef.current;
+    const chart = el.querySelector('#bazi-chart') as HTMLElement | null;
+    const interactiveList = chart?.querySelectorAll('.interactive') ?? [];
+    interactiveList.forEach((node) => ((node as HTMLElement).style.display = 'none'));
+
     const w = (el.offsetWidth || 375) * scale;
     const h = (el.scrollHeight || el.offsetHeight || 800) * scale;
-    return domtoimage.toPng(el, {
+    const dataUrl = await domtoimage.toPng(el, {
       width: w,
       height: h,
-      bgcolor: '#1a0b2e',
+      bgcolor: '#0d0618',
+    });
+
+    interactiveList.forEach((node) => ((node as HTMLElement).style.display = ''));
+    return dataUrl;
+  };
+
+  const drawWatermarkOnCanvas = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.width;
+        c.height = img.height;
+        const ctx = c.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas 2d')); return; }
+        ctx.drawImage(img, 0, 0);
+        ctx.font = '10px "Noto Serif SC", serif';
+        ctx.fillStyle = 'rgba(224,224,224,0.15)';
+        ctx.fillText('Celestial Insights · 版权所有', c.width - 100, c.height - 20);
+        resolve(c.toDataURL('image/png', 1.0));
+      };
+      img.onerror = () => reject(new Error('Image load'));
+      img.src = dataUrl;
     });
   };
 
@@ -45,9 +73,10 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
     try {
       const dataUrl = await doExport();
       if (!dataUrl) return;
+      const withWatermark = await drawWatermarkOnCanvas(dataUrl);
       const link = document.createElement('a');
-      link.download = `天机命盘_${new Date().toISOString().slice(0, 10)}.png`;
-      link.href = dataUrl;
+      link.download = `Celestial_Insights_八字命盘_${Date.now()}.png`;
+      link.href = withWatermark;
       link.click();
     } catch {
       // fallback: could toast
@@ -62,9 +91,10 @@ const ResultCard = ({ info, baziResult, baziError, onReset }: ResultCardProps) =
     try {
       const dataUrl = await doExport();
       if (!dataUrl) return;
+      const withWatermark = await drawWatermarkOnCanvas(dataUrl);
       const link = document.createElement('a');
-      link.download = `天机命盘_${info.name || '命盘'}.png`;
-      link.href = dataUrl;
+      link.download = `Celestial_Insights_八字命盘_${info.name || '命盘'}.png`;
+      link.href = withWatermark;
       link.click();
     } finally {
       setExporting(false);

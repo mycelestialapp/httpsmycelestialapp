@@ -1,4 +1,6 @@
 // Global city database with lat/lng for True Solar Time calculation
+import { CHINA_DISTRICTS } from './chinaDistricts';
+
 export interface CityEntry {
   name: string; // Display name (English)
   nameZh?: string; // Chinese name
@@ -143,15 +145,17 @@ export const GLOBAL_CITIES: CityEntry[] = [
   { name: "Casablanca", nameZh: "卡萨布兰卡", country: "MA", lat: 33.5731, lng: -7.5898 },
 ];
 
-/** Search cities by name (English, Chinese, or pinyin-like input) */
-export function searchCities(query: string, limit = 10): CityEntry[] {
+/** 全球城市 + 中国省市区（到县区）合并列表，供搜索 */
+export const ALL_LOCATIONS: CityEntry[] = [...GLOBAL_CITIES, ...CHINA_DISTRICTS];
+
+/** Search cities and districts by name (English, Chinese, or pinyin-like) */
+export function searchCities(query: string, limit = 12): CityEntry[] {
   if (!query || query.length < 1) return [];
   const q = query.toLowerCase().trim();
-  return GLOBAL_CITIES
-    .filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      (c.nameZh && c.nameZh.includes(q)) ||
-      c.country.toLowerCase().includes(q)
-    )
+  const byZh = (c: CityEntry) => c.nameZh && c.nameZh.includes(q);
+  const byEn = (c: CityEntry) => c.name.toLowerCase().includes(q);
+  const byCountry = (c: CityEntry) => c.country.toLowerCase().includes(q);
+  return ALL_LOCATIONS
+    .filter(c => byZh(c) || byEn(c) || byCountry(c))
     .slice(0, limit);
 }

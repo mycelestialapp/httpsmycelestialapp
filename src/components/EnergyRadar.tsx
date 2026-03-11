@@ -14,9 +14,11 @@ interface EnergyRadarProps {
   energy?: ElementEnergy | null;
   insight?: string;
   onRequestReading?: () => void;
+  /** 为 true 时不显示天機解語区块（如侧边栏紧凑布局） */
+  hideInsight?: boolean;
 }
 
-const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) => {
+const EnergyRadar = ({ energy, insight, onRequestReading, hideInsight }: EnergyRadarProps) => {
   const { t } = useTranslation();
   const [animatedEnergy, setAnimatedEnergy] = useState<ElementEnergy | null>(null);
   const [glowing, setGlowing] = useState(false);
@@ -78,26 +80,23 @@ const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) =>
     <div
       className={`glass-card-highlight transition-all duration-700 ${glowing ? 'radar-glow-active' : ''}`}
     >
-      <h3
-        className="text-center text-sm font-semibold tracking-widest uppercase mb-1"
-        style={{ color: 'hsla(var(--gold) / 0.7)', fontFamily: 'var(--font-sans)' }}
-      >
+      <h3 className="text-center text-sm font-semibold tracking-widest uppercase mb-1 text-heading" style={{ fontFamily: 'var(--font-sans)' }}>
         {t('oracle.energyRadar')}
       </h3>
 
       {!energy && (
-        <p className="text-center text-xs text-muted-foreground mb-2">
+        <p className="text-center text-xs text-subtitle mb-2">
           {t('oracle.radarHint')}
         </p>
       )}
 
-      <div className="w-full" style={{ height: 260 }}>
+      <div className="w-full" style={{ height: 320 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={data} cx="50%" cy="50%" outerRadius="72%">
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="78%">
             <PolarGrid stroke="hsla(43, 72%, 52%, 0.1)" />
             <PolarAngleAxis
               dataKey="element"
-              tick={{ fill: 'hsla(43, 72%, 52%, 0.7)', fontSize: 12, fontFamily: 'var(--font-serif)' }}
+              tick={{ fill: 'hsla(43, 72%, 52%, 0.7)', fontSize: 14, fontFamily: 'var(--font-serif)' }}
             />
             <PolarRadiusAxis
               angle={90}
@@ -118,39 +117,39 @@ const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) =>
 
       {/* Five-Element Balance Analysis */}
       {energy && (
-        <div className="mt-3 px-2 animate-fade-in">
+        <div className="mt-4 px-2 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span style={{ color: 'hsl(var(--gold))' }}>☯</span>
-            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
+            <span className="text-xs font-semibold tracking-widest uppercase text-heading" style={{ fontFamily: 'var(--font-sans)' }}>
               {t('oracle.balanceTitle', { defaultValue: 'Balance Analysis' })}
             </span>
             <span className="flex-1 h-px" style={{ background: 'linear-gradient(to right, hsla(var(--gold) / 0.3), transparent)' }} />
           </div>
-          <div className="space-y-1.5 mb-3">
+          <div className="space-y-2.5 mb-2">
             {(['wood', 'fire', 'earth', 'metal', 'water'] as const).map((el) => (
               <div key={el} className="flex items-center gap-2">
-                <span className="text-[10px] w-8 text-muted-foreground uppercase">{t(`oracle.${el}`)}</span>
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
+                <span className="text-xs w-9 text-subtitle uppercase">{t(`oracle.${el}`)}</span>
+                <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'hsla(var(--muted) / 0.3)' }}>
                   <div className="h-full rounded-full transition-all duration-700" style={{ width: `${energy[el]}%`, background: 'linear-gradient(90deg, hsl(var(--gold)), hsla(var(--gold) / 0.5))' }} />
                 </div>
-                <span className="text-[10px] w-8 text-right font-mono text-muted-foreground">{energy[el]}%</span>
+                <span className="text-xs w-10 text-right font-mono text-subtitle">{energy[el]}%</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Celestial Insight */}
-      {insight && (
+      {/* Celestial Insight（hideInsight 时在能量区不显示） */}
+      {insight && !hideInsight && (
         <div className="mt-1 px-2 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span style={{ color: 'hsl(var(--gold))' }}>✦</span>
-            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'hsla(var(--gold) / 0.6)', fontFamily: 'var(--font-sans)' }}>
+            <span className="text-xs font-semibold tracking-widest uppercase text-heading" style={{ fontFamily: 'var(--font-sans)' }}>
               {t('oracle.insightTitle')}
             </span>
             <span className="flex-1 h-px" style={{ background: 'linear-gradient(to right, hsla(var(--gold) / 0.3), transparent)' }} />
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed italic">
+          <p className="text-sm text-body leading-relaxed italic">
             "{insight}"
           </p>
         </div>
@@ -160,11 +159,10 @@ const EnergyRadar = ({ energy, insight, onRequestReading }: EnergyRadarProps) =>
       {!energy && onRequestReading && (
         <button
           onClick={onRequestReading}
-          className="mt-4 w-full py-3 rounded-xl text-sm font-semibold tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="mt-4 w-full py-3 rounded-xl text-sm font-semibold tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] text-accent"
           style={{
             background: 'linear-gradient(135deg, hsla(var(--gold) / 0.15), hsla(var(--accent) / 0.1))',
             border: '1px solid hsla(var(--gold) / 0.25)',
-            color: 'hsl(var(--gold))',
             fontFamily: 'var(--font-serif)',
           }}
         >

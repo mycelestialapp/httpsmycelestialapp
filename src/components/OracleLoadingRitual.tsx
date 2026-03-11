@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 interface OracleLoadingRitualProps {
@@ -13,30 +13,37 @@ const loadingSteps: Record<string, string[]> = {
   qimen: ['构建奇门遁甲九宫...', '排列三奇六仪...', '读取时空能量矩阵...'],
   liuren: ['启动大六壬神课...', '推算天地人三传...', '解析贵神吉凶...'],
   xiaoliuren: ['起卦小六壬...', '推演大安留连...', '断定吉凶方位...'],
+  liuyao: ['起卦六爻...', '排卦世应...', '解析爻象吉凶...'],
   xuankong: ['构建玄空飞星盘...', '排列九宫飞星...', '解析山向能量...'],
   tarot: ['Shuffling the Major Arcana...', 'Drawing the Celtic Cross...', 'Reading archetypal energies...'],
+  oracle: ['Opening the oracle deck...', 'Aligning with your question...', 'Drawing soul guidance...'],
+  lenormand: ['Laying the Lenormand tableau...', 'Connecting symbols to your path...', 'Reading the story...'],
   astrology: ['Mapping natal chart positions...', 'Calculating planetary transits...', 'Reading stellar alignments...'],
   meihua: ['起卦梅花易数...', '推算体用关系...', '解析卦象吉凶...'],
 };
 
+
 const OracleLoadingRitual = ({ toolKey, onComplete }: OracleLoadingRitualProps) => {
   const { t } = useTranslation();
   const [stepIndex, setStepIndex] = useState(0);
-  const steps = loadingSteps[toolKey] || loadingSteps.bazi;
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  // 神谕卡/塔罗/雷诺曼等西方占卜用西方步骤；未知 key 用中性步骤，不落回八字避免东方术数与西方体系冲突
+  const steps = loadingSteps[toolKey] || loadingSteps.tarot;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStepIndex(prev => {
         if (prev >= steps.length - 1) {
           clearInterval(interval);
-          setTimeout(onComplete, 600);
+          setTimeout(() => onCompleteRef.current(), 600);
           return prev;
         }
         return prev + 1;
       });
     }, 900);
     return () => clearInterval(interval);
-  }, [steps.length, onComplete]);
+  }, [steps.length]);
 
   return (
     <motion.div
@@ -128,20 +135,15 @@ const OracleLoadingRitual = ({ toolKey, onComplete }: OracleLoadingRitualProps) 
         })}
       </div>
 
-      {/* Loading steps text */}
+      {/* Loading steps text（不用 AnimatePresence 避免 insertBefore） */}
       <div className="text-center space-y-3">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={stepIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="text-sm"
-            style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)', textShadow: '0 0 12px hsla(var(--gold) / 0.4)' }}
-          >
-            {steps[stepIndex]}
-          </motion.p>
-        </AnimatePresence>
+        <p
+          key={stepIndex}
+          className="text-sm"
+          style={{ color: 'hsl(var(--gold))', fontFamily: 'var(--font-serif)', textShadow: '0 0 12px hsla(var(--gold) / 0.4)' }}
+        >
+          {steps[stepIndex]}
+        </p>
 
         {/* Progress dots */}
         <div className="flex justify-center gap-2">

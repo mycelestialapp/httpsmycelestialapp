@@ -35,6 +35,43 @@ RULES:
 - Use elegant formatting with ✦ and ── decorators
 - End with a personalized "Soul Frequency Mantra" (灵魂频率咒语)`;
 
+// 占卜类统一：与 rune-reading / lenormand-master 共用同一套 Key，优先 DeepSeek
+async function callUnifiedAI(system: string, user: string): Promise<{ content: string } | null> {
+  const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+  const ZHIPU_API_KEY = Deno.env.get("ZHIPU_API_KEY");
+  const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+  const messages = [
+    { role: "system" as const, content: system },
+    { role: "user" as const, content: user },
+  ];
+  let res: Response;
+  if (DEEPSEEK_API_KEY) {
+    res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${DEEPSEEK_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "deepseek-chat", messages, max_tokens: 2000 }),
+    });
+  } else if (ZHIPU_API_KEY) {
+    res = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${ZHIPU_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "glm-4", messages, max_tokens: 2000, temperature: 0.8 }),
+    });
+  } else if (OPENAI_API_KEY) {
+    res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-4o-mini", messages, max_tokens: 2000 }),
+    });
+  } else {
+    return null;
+  }
+  if (!res.ok) return null;
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+  return content ? { content } : null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -42,9 +79,6 @@ serve(async (req) => {
 
   try {
     const { birthYear, birthMonth, birthDay, energy, dominantElement, weakestElement, balance, tool, language } = await req.json();
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const lang = language === 'zh-Hant' ? '繁體中文' : language === 'zh' ? '简体中文' : language === 'ja' ? '日本語' : language === 'ko' ? '한국어' : 'English';
 
@@ -65,6 +99,24 @@ Balance Score: ${balance}/100
 Requested Divination Focus: ${tool || 'Comprehensive (all 9 systems)'}
 
 Please write the entire reading in ${lang}. Make it deeply insightful and mystical.`;
+
+    // 统一占卜 AI：优先 DeepSeek / 智谱 / OpenAI，配一次 Key 全部工具生效
+    const unified = await callUnifiedAI(SYSTEM_PROMPT, userPrompt);
+    if (unified) {
+      return new Response(JSON.stringify(unified), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 兼容旧版：仅当未配置统一 Key 时使用 Lovable 流式
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "请在 Supabase Secrets 中配置 DEEPSEEK_API_KEY（推荐）或 ZHIPU_API_KEY / OPENAI_API_KEY；或配置 LOVABLE_API_KEY。" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

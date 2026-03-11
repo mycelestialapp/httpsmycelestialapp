@@ -1,0 +1,21 @@
+/* 命盘长图：玄黑鎏金 + 干支脉冲 */
+.bazi-chart-export {
+  -webkit-overflow-scrolling: touch;
+}
+
+.bazi-chart-export .ganzhi-symbol {
+  animation: bazi-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bazi-pulse {
+  0% { text-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+  50% { text-shadow: 0 0 12px currentColor, 0 0 24px currentColor; }
+  100% { text-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+}
+
+.bazi-qr-wrap {
+  border: 2px solid #e6c200;
+  border-radius: 8px;
+  padding: 6px;
+  display: inline-block;
+}

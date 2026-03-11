@@ -44,6 +44,7 @@ export type Database = {
       profiles: {
         Row: {
           bio: string | null
+          birth_chart_name: string | null
           birthday: string | null
           created_at: string
           display_name: string | null
@@ -53,6 +54,7 @@ export type Database = {
           id: string
           mbti: string | null
           metal: number
+          oracle_subscriber: boolean
           ref_code: string | null
           soul_id: string
           star_dust: number
@@ -62,6 +64,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          birth_chart_name?: string | null
           birthday?: string | null
           created_at?: string
           display_name?: string | null
@@ -71,6 +74,7 @@ export type Database = {
           id: string
           mbti?: string | null
           metal?: number
+          oracle_subscriber?: boolean
           ref_code?: string | null
           soul_id?: string
           star_dust?: number
@@ -80,6 +84,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          birth_chart_name?: string | null
           birthday?: string | null
           created_at?: string
           display_name?: string | null
@@ -89,6 +94,7 @@ export type Database = {
           id?: string
           mbti?: string | null
           metal?: number
+          oracle_subscriber?: boolean
           ref_code?: string | null
           soul_id?: string
           star_dust?: number

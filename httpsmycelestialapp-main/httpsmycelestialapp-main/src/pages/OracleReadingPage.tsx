@@ -75,7 +75,13 @@ const OracleReadingPage = () => {
     }
   }, [sliderYear, birthData]);
 
-  const handleBirthSubmit = async (year: number, month: number, day: number) => {
+  const handleBirthSubmit = async (
+    year: number,
+    month: number,
+    day: number,
+    _city?: { name: string; nameZh?: string; country: string; lat: number; lng: number } | null,
+    _useSolarTime?: boolean
+  ) => {
     const p = calculateElementEnergy(year, month, day);
     setEnergy(p.energy);
     setProfile(p);
@@ -117,8 +123,7 @@ const OracleReadingPage = () => {
       });
 
       if (!resp.ok || !resp.body) {
-        const err = await resp.json().catch(() => ({ error: 'Failed' }));
-        setReading(`⚠ ${err.error || 'AI service error'}`);
+        setReading(t('oracle.readingComingSoon', { defaultValue: '解读服务准备中，敬请期待。' }));
         setIsStreaming(false);
         return;
       }
@@ -149,7 +154,7 @@ const OracleReadingPage = () => {
       markAwakened(toolKey);
     } catch (e) {
       console.error('Stream error:', e);
-      setReading('⚠ Connection error. Please try again.');
+      setReading(t('oracle.readingComingSoon', { defaultValue: '解读服务准备中，敬请期待。' }));
     }
     setIsStreaming(false);
   }, [toolKey, i18n.language]);

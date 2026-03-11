@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>符文仪式 - 极光大师版</title>
+  <style>
+    html { background: #0a0d1f; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0a0d1f;
+      color: #e8d9a6;
+      font-family: Georgia, serif;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 2rem;
+    }
+
+    canvas#bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    h1 {
+      margin: 30px 0 10px;
+      font-size: 3em;
+      color: #d4af37;
+      text-shadow: 0 0 25px #d4af37;
+      z-index: 10;
+    }
+
+    .topic-label {
+      margin: 20px 0 8px;
+      font-size: 0.9em;
+      color: rgba(232,217,166,0.9);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+
+    #topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 0 20px 20px;
+      z-index: 10;
+    }
+
+    #topics button {
+      padding: 10px 18px;
+      font-size: 1em;
+      border-radius: 999px;
+    }
+
+    #topics button.active {
+      background: rgba(212,175,55,0.25);
+      box-shadow: 0 0 20px rgba(212,175,55,0.4);
+    }
+
+    #styles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 0 20px 16px; z-index: 10; }
+    #styles button { padding: 8px 16px; font-size: 0.9em; border-radius: 999px; background: rgba(40,20,80,0.7); border: 2px solid #d4af37; color: #d4af37; cursor: pointer; transition: all 0.3s; }
+    #styles button.active { background: rgba(212,175,55,0.25); box-shadow: 0 0 16px rgba(212,175,55,0.4); }
+    #styles button:hover { transform: scale(1.05); }
+
+    #controls {
+      display: flex;
+      gap: 20px;
+      margin: 20px;
+      z-index: 10;
+    }
+
+    button {
+      padding: 14px 30px;
+      background: rgba(40, 20, 80, 0.7);
+      border: 2px solid #d4af37;
+      color: #d4af37;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.2em;
+      transition: all 0.4s;
+      box-shadow: 0 0 15px rgba(212,175,55,0.3);
+    }
+
+    button:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px #d4af37;
+      background: rgba(60, 30, 100, 0.9);
+    }
+
+    #runes {
+      display: flex;
+      gap: 40px;
+      margin: 50px 20px;
+      perspective: 1400px;
+      z-index: 10;
+    }
+
+    .rune-card {
+      width: 180px;
+      height: 260px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      cursor: pointer;
+    }
+
+    .rune-card.flipped { transform: rotateY(180deg) scale(1.05); }
+
+    .face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 6em;
+      color: #ffd700;
+      background: linear-gradient(rgba(10,8,30,0.75), rgba(40,20,80,0.75));
+      box-shadow: 0 0 40px rgba(212,175,55,0.5), inset 0 0 30px rgba(212,175,55,0.3);
+      transition: box-shadow 0.6s;
+    }
+
+    .rune-card:hover .face { box-shadow: 0 0 60px #ffd700, inset 0 0 40px #ffd700; }
+
+    .back {
+      transform: rotateY(180deg);
+      background: rgba(10,8,30,0.9);
+      font-size: 1.1em;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #reading {
+      max-width: 1000px;
+      margin: 40px 20px;
+      padding: 0 0 30px;
+      z-index: 10;
+    }
+
+    #reading .master-head {
+      text-align: center;
+      margin-bottom: 28px;
+      padding: 24px 20px 20px;
+      background: linear-gradient(180deg, rgba(212,175,55,0.12) 0%, rgba(10,8,30,0.85) 100%);
+      border-radius: 18px 18px 0 0;
+      border: 1px solid rgba(212,175,55,0.5);
+      border-bottom: none;
+      box-shadow: 0 0 40px rgba(212,175,55,0.15);
+    }
+
+    #reading .master-head h2 {
+      margin: 0 0 6px;
+      font-size: 1.5em;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.4);
+      letter-spacing: 0.2em;
+    }
+
+    #reading .master-head p {
+      margin: 0;
+      font-size: 0.85em;
+      color: rgba(232,217,166,0.8);
+      letter-spacing: 0.12em;
+    }
+
+    #reading .master-body {
+      padding: 28px 30px 30px;
+      background: rgba(10,8,30,0.9);
+      border-radius: 0 0 18px 18px;
+      border: 1px solid #d4af37;
+      border-top: 1px solid rgba(212,175,55,0.4);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,0,0.06);
+    }
+
+    .section h2 {
+      color: #ffd700;
+      margin-bottom: 12px;
+      font-size: 1.35em;
+      border-bottom: 1px solid rgba(255,215,0,0.35);
+      padding-bottom: 8px;
+      letter-spacing: 0.08em;
+    }
+
+    .section p, .section ul { margin: 0 0 1em; line-height: 1.65; }
+    .section:last-child p:last-child, .section:last-child ul:last-child { margin-bottom: 0; }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <h1>符文仪式 · 极光降临</h1>
+  <p class="page-subtitle" style="margin:-6px 0 16px;font-size:0.85em;color:rgba(232,217,166,0.85);letter-spacing:0.15em;">传统稳准 · 灵性更懂你 · 双脑神谕 v5</p>
+
+  <div id="daily-rune" style="max-width:420px;margin:0 auto 24px;padding:20px 22px;border-radius:14px;border:1px solid rgba(212,175,55,0.45);background:rgba(20,15,45,0.85);text-align:center;">
+    <p style="margin:0 0 10px;font-size:0.8em;letter-spacing:0.2em;color:rgba(232,217,166,0.9);">今日符文</p>
+    <p id="daily-rune-sym" style="font-size:3.2em;margin:0 0 6px;color:#ffd700;"></p>
+    <p id="daily-rune-name" style="margin:0 0 8px;font-size:1.15em;color:#e8d9a6;font-weight:600;"></p>
+    <p id="daily-rune-meaning" style="margin:0 0 12px;font-size:1em;color:rgba(232,217,166,0.92);line-height:1.5;"></p>
+    <p id="daily-rune-desc" style="margin:0;font-size:0.95em;color:rgba(232,217,166,0.82);line-height:1.65;text-align:left;"></p>
+  </div>
+
+  <p class="topic-label">想算哪方面？</p>
+  <div id="topics">
+    <button type="button" data-topic="love">爱情</button>
+    <button type="button" data-topic="wealth">财运</button>
+    <button type="button" data-topic="career">事业</button>
+    <button type="button" data-topic="health">健康</button>
+    <button type="button" data-topic="general" class="active">综合</button>
+  </div>
+
+  <p class="topic-label">你的问题（选填，将用于灵性解读）</p>
+  <input type="text" id="questionInput" placeholder="例如：我想了解这段感情的发展…" maxlength="200" style="width:90%;max-width:400px;padding:10px 14px;margin:0 20px 12px;border-radius:10px;border:1px solid rgba(212,175,55,0.5);background:rgba(10,8,30,0.9);color:#e8d9a6;font-size:0.95em;" />
+
+  <div id="controls">
+    <button onclick="drawRunes(1)">单符指引</button>
+    <button onclick="drawRunes(3)">三符命运</button>
+    <button onclick="drawRunes(5)">五符十字</button>
+    <button onclick="drawRunes(7)">七符世界</button>
+  </div>
+
+  <p class="topic-label">解读风格（灵性解读时生效）</p>
+  <div id="styles">
+    <button type="button" data-style="traditional">传统</button>
+    <button type="button" data-style="balanced" class="active">平衡</button>
+    <button type="button" data-style="spiritual">灵性</button>
+  </div>
+
+  <p class="topic-label" style="margin-top:8px;">
+    <a href="javascript:void(0)" id="open-rune-dict" style="color:rgba(212,175,55,0.95);text-decoration:none;font-size:1.15em;font-weight:500;">符文词典 · 24 符释义</a>
+  </p>
+
+  <div id="rune-capture-wrap">
+    <div id="runes"></div>
+    <div id="reading"></div>
+  </div>
+  <div id="v5-actions" style="margin:20px;text-align:center;display:none;flex-wrap:wrap;justify-content:center;gap:10px;">
+    <button type="button" id="btnV5">获取灵性解读</button>
+    <button type="button" id="btnSaveImg">保存为图片</button>
+    <button type="button" id="btnSaveHistory">保存到解读记录</button>
+    <button type="button" id="btnCopyReading">复制解读</button>
+    <button type="button" id="btnDrawAgain">再抽一次</button>
+  </div>
+
+  <p class="disclaimer" style="margin:32px 20px 24px;font-size:0.75em;color:rgba(232,217,166,0.55);text-align:center;line-height:1.5;">仅供娱乐与自我觉察，不替代专业建议。请理性看待，你的选择始终自由。</p>
+
+  <div id="rune-dict-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.85);overflow-y:auto;padding:20px;box-sizing:border-box;">
+    <div style="max-width:640px;margin:0 auto;background:rgba(15,12,35,0.98);border:1px solid rgba(212,175,55,0.5);border-radius:16px;padding:28px;">
+      <h2 style="margin:0 0 8px;color:#d4af37;text-align:center;font-size:1.5em;">符文词典</h2>
+      <p style="font-size:0.95em;color:rgba(232,217,166,0.85);text-align:center;margin-bottom:24px;">古弗萨克 24 符 · 正逆位释义与意象解读</p>
+      <div id="rune-dict-list"></div>
+      <button type="button" id="close-rune-dict" style="display:block;margin:24px auto 0;padding:12px 28px;border:1px solid #d4af37;color:#d4af37;background:transparent;border-radius:8px;cursor:pointer;font-size:1em;">关闭</button>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    let selectedTopic = 'general';
+    var isPremium = (new URLSearchParams(window.location.search).get('premium') === '1');
+    var userToken = null;
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'setRuneToken') userToken = e.data.token || null;
+      if (e.data && e.data.type === 'runeBackToMain') resetToMainView();
+    });
+
+    document.getElementById('topics').addEventListener('click', function(e) {
+      var btn = e.target.closest('button[data-topic]');
+      if (!btn) return;
+      document.querySelectorAll('#topics button').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedTopic = btn.getAttribute('data-topic');
+    });
+
+    let selectedStyle = 'balanced';
+    document.getElementById('styles').addEventListener('click', function(e) {
+      var btn = e.target.closest('button[data-style]');
+      if (!btn) return;
+      document.querySelectorAll('#styles button').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedStyle = btn.getAttribute('data-style');
+    });
+
+    function getApiBase() {
+      var params = new URLSearchParams(window.location.search);
+      return (params.get('api') || '').replace(/\/$/, '');
+    }
+
+    function getRuneApiKey() {
+      return new URLSearchParams(window.location.search).get('key') || '';
+    }
+
+    function getDefaultQuestion() {
+      var map = { love: '我想了解感情与关系方面的指引', wealth: '我想了解财运与资源方面的指引', career: '我想了解事业与方向方面的指引', health: '我想了解健康与身心方面的指引', general: '我想了解当下的整体指引' };
+      return map[selectedTopic] || map.general;
+    }
+
+    // 前端一级缓存：相同问题 + 相同抽牌 + 相同风格 → 7 天内直接读本地，不请求接口
+    var CACHE_PREFIX = 'rune_v5_';
+    var CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 天
+
+    function simpleHash(s) {
+      var h = 0;
+      for (var i = 0; i < s.length; i++) {
+        var c = s.charCodeAt(i);
+        h = ((h << 5) - h) + c;
+        h = h & h;
+      }
+      return (h >>> 0).toString(36);
+    }
+
+    function readingCacheKey(question, theme, spreadType, style, drawnRunes) {
+      return CACHE_PREFIX + simpleHash(JSON.stringify({
+        q: question,
+        t: theme,
+        s: spreadType,
+        st: style,
+        d: drawnRunes
+      }));
+    }
+
+    function getCachedReading(key) {
+      try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return null;
+        var obj = JSON.parse(raw);
+        if (!obj || !obj.ts || (Date.now() - obj.ts) > CACHE_TTL_MS) return null;
+        return obj;
+      } catch (e) { return null; }
+    }
+
+    function setCachedReading(key, overallAdvice, ethicalNote, masterSections) {
+      try {
+        var obj = { ts: Date.now(), overall_advice: overallAdvice || '', ethical_note: ethicalNote || '' };
+        if (masterSections) obj.master_sections = masterSections;
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch (e) { /* quota or disabled */ }
+    }
+
+    function buildMasterBodyFromSections(sections, topicLabel) {
+      var esc = function(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+      return '<div class="master-head"><h2>大师解读 · ' + (topicLabel || '综合') + '</h2><p>北欧符文 · 极光镜像 · AI 四层解读</p></div><div class="master-body"><div class="section"><h2>【全景镜像】</h2><p>' + esc(sections.mirror) + '</p></div><div class="section"><h2>【阴影瓶颈】</h2><p>' + esc(sections.shadow) + '</p></div><div class="section"><h2>【动力链条】</h2><p>' + esc(sections.chain) + '</p></div><div class="section"><h2>【转化锚点】</h2><p>' + esc(sections.anchor) + '</p></div></div>';
+    }
+
+    function renderV5Section(data, fromCache) {
+      var readingEl = document.getElementById('reading');
+      var existing = readingEl.innerHTML;
+      var cacheHint = fromCache ? '<p style="font-size:0.8em;color:rgba(232,217,166,0.6);margin-top:8px;">已使用本地缓存，相同问题与抽牌 7 天内不重复请求</p>' : '';
+      var v5Section = '<div class="section" style="margin-bottom:1.5em;"><h2>【灵性解读】</h2><p style="white-space:pre-wrap;">' + (data.overall_advice || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' + (data.ethical_note ? '<p class="ethical">' + data.ethical_note + '</p>' : '') + cacheHint + '</div>';
+      if (existing.indexOf('【灵性解读】') !== -1) existing = existing.replace(/<div class="section"[^>]*>[\s\S]*?【灵性解读】[\s\S]*?<\/div>\s*/i, '');
+      if (data.master_sections && data.master_sections.mirror) {
+        readingEl.innerHTML = v5Section + buildMasterBodyFromSections(data.master_sections, getTopicLabel());
+      } else {
+        readingEl.innerHTML = v5Section + existing;
+      }
+      readingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.getElementById('btnV5').addEventListener('click', async function() {
+      if (!isPremium) {
+        var origin = (window.top && window.top.location && window.top.location.origin) ? window.top.location.origin : window.location.origin;
+        window.top.location.href = origin + '/subscribe';
+        return;
+      }
+      var question = (document.getElementById('questionInput').value || '').trim() || getDefaultQuestion();
+      if (question.length < 3) { question = getDefaultQuestion(); }
+      var spreadType = SPREAD_MAP[lastDrawCount] || 'three_norns';
+      var body = {
+        question: question,
+        theme: selectedTopic,
+        spread_type: spreadType,
+        style: selectedStyle,
+        drawn_runes: lastDrawnRunes
+      };
+
+      var cacheKey = readingCacheKey(question, selectedTopic, spreadType, selectedStyle, lastDrawnRunes);
+      var cached = getCachedReading(cacheKey);
+      if (cached) {
+        renderV5Section(cached, true);
+        return;
+      }
+      var topicLabel = getTopicLabel();
+
+      var apiBase = getApiBase();
+      var apiKey = getRuneApiKey();
+      var url = apiKey ? apiBase : (apiBase ? apiBase + '/api/v5/reading' : '/api/v5/reading');
+      var headers = { 'Content-Type': 'application/json' };
+      var authToken = (isPremium && userToken) ? userToken : apiKey;
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+      this.disabled = true;
+      this.textContent = '解读中…';
+      try {
+        var res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        var text = await res.text();
+        if (!text || !text.trim()) {
+          throw new Error('接口返回为空，请确认后端已启动（uvicorn main:app --port 8000），且地址正确。当前请求：' + url);
+        }
+        var data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('接口返回格式异常，请确认请求的是符文 API 而非其他服务。当前：' + url);
+        }
+        if (!res.ok) {
+          if (res.status === 402) {
+            window.top.location.href = (window.top && window.top.location && window.top.location.origin ? window.top.location.origin : window.location.origin) + '/subscribe';
+            return;
+          }
+          throw new Error(data.detail || data.message || res.status + ' ' + res.statusText);
+        }
+        setCachedReading(cacheKey, data.overall_advice, data.ethical_note, data.master_sections);
+        renderV5Section(data, false);
+      } catch (err) {
+        alert('灵性解读暂时不可用：' + (err.message || '请确认已从应用内打开并配置 API 地址（?api=...）'));
+      }
+      this.disabled = false;
+      this.textContent = '获取灵性解读';
+    });
+
+    function getTopicLabel() {
+      var map = { love: '爱情', wealth: '财运', career: '事业', health: '健康', general: '综合' };
+      return map[selectedTopic] || '综合';
+    }
+
+    function getTopicReading() {
+      var theme = getTopicLabel();
+      if (selectedTopic === 'love') {
+        return {
+          mirror: '在感情与关系方面，北欧诸神在极光中注视你。',
+          shadow: '情感上易有执念或沟通不畅，需留意是否过于依赖或回避亲密。',
+          chain: '先理顺自身情绪与边界，关系中的流动才会自然发生。',
+          anchor: '心理：感受内心真正渴望的是陪伴、确认还是自由。行动：用一件小事表达关心，或给自己一段独处时间。掌控：设定情感边界，不无限迁就也不封闭心门。'
+        };
+      }
+      if (selectedTopic === 'wealth') {
+        return {
+          mirror: '在金钱与资源方面，北欧诸神在极光中注视你。',
+          shadow: '易有过度保守或冲动消费的倾向，需留意资源分配与机会把握。',
+          chain: '稳定积累与适度冒险需平衡，方能迎来财脉流动。',
+          anchor: '心理：厘清「足够」与「贪婪」的界限。行动：检视一笔固定储蓄或一项可变现技能。掌控：设定消费与投资上限，让能量用在真正滋养的方向。'
+        };
+      }
+      if (selectedTopic === 'career') {
+        return {
+          mirror: '在事业与方向方面，北欧诸神在极光中注视你。',
+          shadow: '易有拖延或过于迎合他人期待，需找回自己的节奏与主张。',
+          chain: '从小步行动到可见成果，再吸引更多机会，形成正向循环。',
+          anchor: '心理：区分「该做的」与「真正想做的」。行动：完成一件拖延已久的小事，或更新简历/作品集。掌控：设定工作与休息边界，避免燃烧殆尽。'
+        };
+      }
+      if (selectedTopic === 'health') {
+        return {
+          mirror: '在健康与身心方面，北欧诸神在极光中注视你。',
+          shadow: '易忽视身体信号或情绪积压，需留意睡眠、饮食与情绪出口。',
+          chain: '身与心相连，先恢复作息与流动，整体状态才会回升。',
+          anchor: '心理：倾听身体哪处紧绷或疲惫。行动：增加一次散步、早睡一晚或喝足水。掌控：把休息纳入日程，而非等撑不住再停。'
+        };
+      }
+      return null;
+    }
+
+    // 古弗薩克 24 符（與後端 id 0..23 一致）+ 詞典詳解
+    const RUNE_DESC = [
+      '与丰饶之神弗雷相连，象征流动的财富与生命力。正位时鼓励你接纳丰盛、分享资源；逆位提醒勿被占有欲支配。',
+      '野牛之力，土元素。代表原始活力、健康与坚韧。正位宜行动与恢复；逆位留意过劳或意外，需休养。',
+      '雷神之锤，火与混沌之力。正位可突破障碍、化险为夷；逆位小心外在冲突或内心焦躁，宜守不宜攻。',
+      '奥丁与智慧、口才相关。正位得启示、沟通顺遂；逆位慎防误导、言多必失，宜多听少说。',
+      '旅程与宇宙秩序。正位宜出行、抉择、顺势而为；逆位易拖延或迷失方向，需先厘清目标再动。',
+      '火炬与启蒙。正位热情、灵感、真相显现；逆位热情消退或真相被掩，需重新点燃内在之光。',
+      '礼物与平衡，无逆位。象征平等交换、伙伴与收获，提醒施与受的平衡。',
+      '喜悦与和谐。正位祝福、团圆、心满意足；逆位冲突、失落或失衡，需找回内在平静。',
+      '冰雹，自然之力，无逆位。象征考验、延迟与纪律，提醒在风暴中保持秩序与耐心。',
+      '需求与内在之火。正位认清渴望、化困境为动力；逆位宜放下执念、解脱欲念。',
+      '冰，静止与专注。正位宜等待、沉淀、蓄力；逆位易僵化或阻塞，需破冰行动。',
+      '收获与因果，无逆位。一年之期，种瓜得瓜，提醒耐心等待周期完成。',
+      '世界之树，依赖与根基。正位有靠山、防御稳固；逆位根基动摇，宜先稳固再进。',
+      '奥秘与命运之轮。正位直觉、隐藏的礼物；逆位表浅或秘密暴露，宜谨慎。',
+      '保护与神圣界限。正位得庇护、界限清晰；逆位暴露或边界失守，需重新设界。',
+      '太阳与胜利。正位光明、成功、活力；逆位暂处阴霾，相信光明会回归。',
+      '正义与勇气，战神提尔。正位公正、决断、为信念而战；逆位不公或怯懦，需找回原则。',
+      '桦树，成长与孕育。正位新生、滋养、孕育；逆位停滞或空洞，需先疗愈再生长。',
+      '马，伙伴与共行。正位信任、默契、一起前进；逆位背叛或孤立，宜审视关系。',
+      '自我与人性。正位自我认同、心智清明；逆位自我怀疑或过度依赖他人，需回归中心。',
+      '水与潜意识。正位直觉、流动、情感与梦；逆位阻塞或过于理性，宜放空感受。',
+      '种子与完成，无逆位。象征丰饶、内在潜能与完成，提醒静待种子发芽。',
+      '黎明与突破。正位觉醒、转折、新开始；逆位尚未觉醒或停滞，需一点勇气迈步。',
+      '祖产与精神家园。正位传承、归属、根深叶茂；逆位与家族或归属有关议题，宜厘清边界。'
+    ];
+    const runes = [
+      { id: 0, sym: 'ᚠ', name: '费胡', upright: '财富涌入、丰盛起点', rev: '资源流失、贪婪警示' },
+      { id: 1, sym: 'ᚢ', name: '乌鲁兹', upright: '原始力量、身体恢复', rev: '精力枯竭、意外受伤' },
+      { id: 2, sym: 'ᚦ', name: '苏里斯兹', upright: '防护屏障、突破荆棘', rev: '外部威胁、内在冲突' },
+      { id: 3, sym: 'ᚨ', name: '安苏兹', upright: '神圣启示、清晰沟通', rev: '误导信息、言语失误' },
+      { id: 4, sym: 'ᚱ', name: '拉多', upright: '旅程、移动、抉择', rev: '停滞、拖延、方向迷失' },
+      { id: 5, sym: 'ᚲ', name: '肯纳兹', upright: '光明、启蒙、热情', rev: '幻灭、隐瞒、热情消退' },
+      { id: 6, sym: 'ᚷ', name: '吉博', upright: '馈赠、伙伴、收获', rev: '失去、孤独、付出无回' },
+      { id: 7, sym: 'ᚹ', name: '温究', upright: '喜悦、和谐、祝福', rev: '冲突、悲伤、失衡' },
+      { id: 8, sym: 'ᚺ', name: '哈格拉兹', upright: '考验、延迟、纪律', rev: '解脱、冲动、无视规则' },
+      { id: 9, sym: 'ᚾ', name: '尼德', upright: '需求、渴望、困境', rev: '释放、解脱、欲念放下' },
+      { id: 10, sym: 'ᛁ', name: '伊萨', upright: '静止、等待、专注', rev: '僵化、阻碍、需破冰' },
+      { id: 11, sym: 'ᛃ', name: '杰拉', upright: '收获、周期、转折', rev: '损失、徒劳、时机未到' },
+      { id: 12, sym: 'ᛇ', name: '伊瓦兹', upright: '依赖、防御、根基', rev: '脆弱、动摇、根基不稳' },
+      { id: 13, sym: 'ᛈ', name: '佩索', upright: '奥秘、直觉、隐藏', rev: '表浅、盲目、秘密暴露' },
+      { id: 14, sym: 'ᛉ', name: '阿尔吉兹', upright: '保护、庇护、界限', rev: '暴露、脆弱、边界失守' },
+      { id: 15, sym: 'ᛋ', name: '索维洛', upright: '太阳、胜利、光明', rev: '阴霾、挫败、光明暂隐' },
+      { id: 16, sym: 'ᛏ', name: '提瓦兹', upright: '正义、指引、勇气', rev: '不公、失衡、怯懦' },
+      { id: 17, sym: 'ᛒ', name: '伯卡诺', upright: '成长、新生、孕育', rev: '停滞、空洞、孕育失败' },
+      { id: 18, sym: 'ᛖ', name: '埃瓦兹', upright: '伙伴、信任、共行', rev: '背叛、孤立、信任破裂' },
+      { id: 19, sym: 'ᛗ', name: '曼纳兹', upright: '自我、心智、身份', rev: '自我怀疑、依赖他人' },
+      { id: 20, sym: 'ᛚ', name: '拉格斯', upright: '水、流动、直觉', rev: '阻塞、理性过强、流动受阻' },
+      { id: 21, sym: 'ᛜ', name: '英格瓦兹', upright: '丰饶、完成、种子', rev: '未完成、空虚、种子未发' },
+      { id: 22, sym: 'ᛞ', name: '达格斯', upright: '黎明、突破、觉醒', rev: '盲目、停滞、未觉醒' },
+      { id: 23, sym: 'ᛟ', name: '奥萨拉', upright: '祖产繁荣、精神家园', rev: '遗产贫穷、家族奴役' }
+    ];
+
+    const POSITIONS = {
+      1: ['当下'],
+      3: ['乌尔德之井', '薇儿丹蒂之织', '诗蔻蒂之剪'],
+      5: ['中心', '上方', '下方', '左方', '右方'],
+      7: ['阿斯加德', '华纳海姆', '亚尔夫海姆', '中庭', '约顿海姆', '海姆冥界', '尼福尔海姆']
+    };
+    const SPREAD_MAP = { 1: 'single', 3: 'three_norns', 5: 'five_cross', 7: 'seven_worlds' };
+    let lastDrawnRunes = [];
+    let lastDrawCount = 1;
+
+    var POSITION_HINTS = {
+      1: ['当下这一刻的焦点与指引。'],
+      3: ['代表过去与根源，与乌尔德之井相连的因果。', '代表当下之织，你正在编织的抉择与行动。', '代表未来之剪，能量自然走向与可能收获。'],
+      5: ['中心主题与核心议题。', '上方的压力或来自外界的期待。', '下方的根基与潜意识。', '左方代表过去或已放下的。', '右方代表未来或即将面对的。'],
+      7: ['神界：灵感与更高指引。', '华纳神族：丰饶与交换。', '光精灵界：智慧与美。', '人间：当下处境。', '巨人界：挑战与力量。', '冥界：转化与放手。', '冰雾界：混沌与新生。']
+    };
+
+    function buildFreeRuneExplanation() {
+      if (!lastDrawnRunes.length) return '抽符后显示免费版讲解。';
+      var positions = POSITIONS[lastDrawCount] || POSITIONS[1];
+      var hints = (POSITION_HINTS[lastDrawCount] || POSITION_HINTS[1]) || [];
+      var lines = [];
+      for (var i = 0; i < lastDrawnRunes.length; i++) {
+        var d = lastDrawnRunes[i];
+        var r = runes.find(function(x) { return x.id === d.rune_id; });
+        var pos = positions[i] || ('位置' + (i + 1));
+        var hint = hints[i] || '';
+        if (r) {
+          var meaning = d.reversed ? r.rev : r.upright;
+          lines.push((i + 1) + '.\u3000' + pos + ' — ' + r.name + '（' + (d.reversed ? '逆位：' : '正位：') + meaning + '）');
+          if (hint) lines.push('   ' + hint);
+        }
+      }
+      lines.push('');
+      lines.push('订阅后解锁云端 AI 灵性解读（全景镜像 / 阴影瓶颈 / 动力链条 / 转化锚点）。');
+      return lines.join('\n');
+    }
+
+    function showFreeReading() {
+      var reading = document.getElementById('reading');
+      var text = buildFreeRuneExplanation();
+      reading.innerHTML = '<div class="master-head"><h2>免费版讲解</h2><p>北欧符文 · 基础牌义</p></div><div class="master-body"><div class="section"><p style="white-space:pre-wrap;line-height:1.7;color:rgba(232,217,166,0.95);">' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p></div></div>';
+      reading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var btn = document.getElementById('btnV5');
+      if (btn) { btn.textContent = '订阅解锁 AI 解读'; }
+      try { window.parent.postMessage({ type: 'runeReadingShown' }, '*'); } catch (e) {}
+    }
+
+    function randomRune() {
+      const r = runes[Math.floor(Math.random() * runes.length)];
+      return { ...r, reversed: Math.random() < 0.35 };
+    }
+
+    function seededByDate(seedStr) {
+      var h = 0;
+      for (var i = 0; i < seedStr.length; i++) h = ((h << 5) - h) + seedStr.charCodeAt(i) | 0;
+      return Math.abs(h);
+    }
+
+    function initDailyRune() {
+      var today = new Date();
+      var dateStr = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+      var seed = seededByDate(dateStr);
+      var idx = seed % runes.length;
+      var r = runes[idx];
+      var rev = (seed >> 8) % 100 < 35 && r.rev;
+      var symEl = document.getElementById('daily-rune-sym');
+      var nameEl = document.getElementById('daily-rune-name');
+      var meaningEl = document.getElementById('daily-rune-meaning');
+      var descEl = document.getElementById('daily-rune-desc');
+      if (symEl) symEl.textContent = r.sym;
+      if (nameEl) nameEl.textContent = r.name + (rev ? '（逆位）' : '');
+      if (meaningEl) meaningEl.textContent = rev ? r.rev : r.upright;
+      if (descEl && typeof RUNE_DESC !== 'undefined' && RUNE_DESC[idx]) descEl.textContent = RUNE_DESC[idx];
+    }
+
+    function drawRunes(count) {
+      const area = document.getElementById('runes');
+      area.innerHTML = '';
+      const positions = POSITIONS[count] || POSITIONS[1];
+      lastDrawnRunes = [];
+      lastDrawCount = count;
+      for (let i = 0; i < count; i++) {
+        const rune = randomRune();
+        lastDrawnRunes.push({ rune_id: rune.id, reversed: rune.reversed, position: positions[i] || null });
+        const card = document.createElement('div');
+        card.className = 'rune-card';
+        card.innerHTML = `
+          <div class="face front">${rune.sym}</div>
+          <div class="face back">
+            <h3>${rune.name}</h3>
+            <p>${rune.reversed ? '逆位：' + rune.rev : '正位：' + rune.upright}</p>
+          </div>
+        `;
+        setTimeout(() => {
+          card.classList.add('flipped');
+          playChime();
+        }, 600 + i * 500);
+        area.appendChild(card);
+      }
+      document.getElementById('v5-actions').style.display = 'flex';
+      var btn = document.getElementById('btnV5');
+      if (btn) { btn.textContent = isPremium ? '获取灵性解读' : '订阅解锁 AI 解读'; }
+      setTimeout(function() { if (isPremium) showMasterReading(); else showFreeReading(); }, count * 600);
+      auroraFlow();
+    }
+
+    function showMasterReading() {
+      const reading = document.getElementById('reading');
+      const themes = Array.from(document.querySelectorAll('.rune-card .back h3')).map(h => h.textContent).join(' → ');
+      const topicLabel = getTopicLabel();
+      const custom = getTopicReading();
+      var mirrorP, shadowP, chainP, anchorHtml;
+      if (custom) {
+        mirrorP = custom.mirror + ' 本次符文脉络：<strong>' + themes + '</strong> —— 稳定守护与内在流动的交织。';
+        shadowP = custom.shadow;
+        chainP = custom.chain;
+        var anchorParts = custom.anchor.replace(/\s*[。]\s*/g, '。').split('。').filter(Boolean);
+        anchorHtml = '<ul><li>' + anchorParts.join('</li><li>') + '</li></ul>';
+      } else {
+        mirrorP = '北欧诸神在极光中注视你，能量如流动的星河。本次符文脉络：<strong>' + themes + '</strong> —— 稳定守护与内在流动的交织，土元素强势，水之灵动稍弱。';
+        shadowP = '土旺压制水，易生情绪滞重、决策僵化，或生活缺乏变通。小心肾/膀胱/情感阻塞的隐忧。';
+        chainP = '土生金，金生水——需主动唤醒水元素，方能化解土之固执，迎来流动新生。';
+        anchorHtml = '<ul><li>心理：闭眼倾听体内哪处“干渴”或“堵塞”，那是水元素的呼唤。</li><li>行动：今晚泡一杯温水，默念“流动与滋养”，或听雨声/海浪10分钟。</li><li>掌控：握住属于你的镰刀——设定“不再无限等待”的边界，让能量自由流动。</li></ul>';
+      }
+      reading.innerHTML = `
+        <div class="master-head">
+          <h2>大师解读 · ${topicLabel}</h2>
+          <p>北欧符文 · 极光镜像 · 四层解读</p>
+        </div>
+        <div class="master-body">
+          <div class="section">
+            <h2>【全景镜像】</h2>
+            <p>${mirrorP}</p>
+          </div>
+          <div class="section">
+            <h2>【阴影瓶颈】</h2>
+            <p>${shadowP}</p>
+          </div>
+          <div class="section">
+            <h2>【动力链条】</h2>
+            <p>${chainP}</p>
+          </div>
+          <div class="section">
+            <h2>【转化锚点】</h2>
+            ${anchorHtml}
+          </div>
+        </div>
+      `;
+      reading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      playAmbient();
+      try { window.parent.postMessage({ type: 'runeReadingShown' }, '*'); } catch (e) {}
+    }
+
+    function resetToMainView() {
+      var runesEl = document.getElementById('runes');
+      var readingEl = document.getElementById('reading');
+      var v5Actions = document.getElementById('v5-actions');
+      if (runesEl) runesEl.innerHTML = '';
+      if (readingEl) readingEl.innerHTML = '';
+      if (v5Actions) v5Actions.style.display = 'none';
+      try { window.parent.postMessage({ type: 'runeReadingHidden' }, '*'); } catch (e) {}
+    }
+
+    function playChime() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      osc.frequency.value = 520;
+      osc.frequency.setValueAtTime(780, audioCtx.currentTime + 0.08);
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    }
+
+    function playAmbient() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = 220;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.2);
+    }
+
+    function auroraFlow() {
+      const canvas = document.getElementById('bg');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+
+      let time = 0;
+      function animate() {
+        ctx.fillStyle = 'rgba(10,13,31,0.08)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        time += 0.005;
+        for (let i = 0; i < 8; i++) {
+          const hue = 180 + Math.sin(time + i) * 60;
+          const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+          gradient.addColorStop(0, `hsla(${hue}, 80%, 50%, 0.1)`);
+          gradient.addColorStop(0.5, `hsla(${hue + 30}, 90%, 60%, 0.25)`);
+          gradient.addColorStop(1, `hsla(${hue}, 80%, 50%, 0.1)`);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, canvas.height * 0.2 + Math.sin(time + i*2) * 100, canvas.width, 300);
+        }
+
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    window.onresize = () => {
+      const canvas = document.getElementById('bg');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    auroraFlow();
+    initDailyRune();
+
+    (function() {
+      var dictModal = document.getElementById('rune-dict-modal');
+      var dictList = document.getElementById('rune-dict-list');
+      if (dictList) {
+        runes.forEach(function(r, i) {
+          var desc = (RUNE_DESC && RUNE_DESC[i]) ? RUNE_DESC[i] : '';
+          var div = document.createElement('div');
+          div.style.cssText = 'margin-bottom:20px;padding:16px;border-radius:12px;border:1px solid rgba(212,175,55,0.35);background:rgba(10,8,30,0.7);';
+          div.innerHTML = '<div style="margin-bottom:10px;"><span style="font-size:2em;color:#ffd700;">' + r.sym + '</span> <strong style="color:#e8d9a6;margin-left:10px;font-size:1.15em;">' + r.name + '</strong></div>' +
+            '<p style="margin:0 0 6px;font-size:1em;color:rgba(232,217,166,0.95);"><b>正位</b>：' + r.upright + '</p>' +
+            '<p style="margin:0 0 8px;font-size:1em;color:rgba(232,217,166,0.85);"><b>逆位</b>：' + r.rev + '</p>' +
+            (desc ? '<p style="margin:0;font-size:0.98em;line-height:1.6;color:rgba(232,217,166,0.88);">' + desc + '</p>' : '');
+          dictList.appendChild(div);
+        });
+      }
+      document.getElementById('open-rune-dict').onclick = function() { dictModal.style.display = 'block'; };
+      document.getElementById('close-rune-dict').onclick = function() { dictModal.style.display = 'none'; };
+      dictModal.onclick = function(e) { if (e.target === dictModal) dictModal.style.display = 'none'; };
+
+      document.getElementById('btnSaveImg').onclick = function() {
+        if (typeof html2canvas === 'undefined') { alert('请稍后重试'); return; }
+        var wrap = document.getElementById('rune-capture-wrap');
+        if (!wrap) return;
+        this.disabled = true;
+        this.textContent = '生成中…';
+        html2canvas(wrap, { useCORS: true, scale: 2, backgroundColor: '#0a0d1f' }).then(function(canvas) {
+          var link = document.createElement('a');
+          link.download = '符文解读-' + (new Date().toISOString().slice(0,10)) + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }).catch(function() { alert('生成图片失败'); }).finally(function() {
+          var btn = document.getElementById('btnSaveImg');
+          if (btn) { btn.disabled = false; btn.textContent = '保存为图片'; }
+        });
+      };
+
+      document.getElementById('btnSaveHistory').onclick = function() {
+        if (!lastDrawnRunes.length) { alert('请先完成抽符'); return; }
+        var positions = POSITIONS[lastDrawCount] || POSITIONS[1];
+        var spreadType = SPREAD_MAP[lastDrawCount] || 'three_norns';
+        var spreadLabel = lastDrawCount === 1 ? '单符' : lastDrawCount === 3 ? '三符' : lastDrawCount === 5 ? '五符' : lastDrawCount === 7 ? '七符' : '符文';
+        var runeList = lastDrawnRunes.map(function(d, i) {
+          var r = runes.find(function(x) { return x.id === d.rune_id; });
+          return { rune_id: d.rune_id, name: r ? r.name : '', reversed: !!d.reversed, position: d.position || positions[i] };
+        });
+        var readingEl = document.getElementById('reading');
+        var summaryText = readingEl ? (readingEl.innerText || '').slice(0, 500) : '';
+        var question = (document.getElementById('questionInput') && document.getElementById('questionInput').value) || '';
+        window.parent.postMessage({
+          type: 'saveRuneReading',
+          payload: {
+            question: question.trim() || null,
+            spreadType: spreadType,
+            spreadLabel: spreadLabel,
+            runes: runeList,
+            interpretationSummary: summaryText
+          }
+        }, '*');
+        this.textContent = '已保存';
+        var t = this;
+        setTimeout(function() { t.textContent = '保存到解读记录'; }, 2000);
+      };
+
+      document.getElementById('btnCopyReading').onclick = function() {
+        var readingEl = document.getElementById('reading');
+        var text = readingEl ? (readingEl.innerText || '').trim() : '';
+        if (!text) { alert('暂无解读内容'); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function() {
+            this.textContent = '已复制';
+            var btn = this;
+            setTimeout(function() { btn.textContent = '复制解读'; }, 2000);
+          }.bind(this)).catch(function() { alert('复制失败'); });
+        } else {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            this.textContent = '已复制';
+            var btn = this;
+            setTimeout(function() { btn.textContent = '复制解读'; }, 2000);
+          } catch (e) { alert('复制失败'); }
+        }
+      };
+
+      document.getElementById('btnDrawAgain').onclick = function() { resetToMainView(); };
+    })();
+  </script>
+</body>
+</html>

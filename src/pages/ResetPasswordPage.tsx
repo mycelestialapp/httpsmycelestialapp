@@ -42,7 +42,23 @@ const ResetPasswordPage = () => {
     if (password.length < 6) { setError(t('auth.passwordTooShort')); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) { setError(error.message); } else { setSuccess(true); setTimeout(() => navigate('/'), 2000); }
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess(true);
+      // 与主流一致：重置成功后更新本地已保存账号的密码，下次切换账号可快速登录
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          const ACCOUNTS_KEY = 'celestial_saved_accounts';
+          const raw = localStorage.getItem(ACCOUNTS_KEY) || '[]';
+          const accounts: Array<{ email: string; displayName?: string; lastLogin?: number; password?: string }> = JSON.parse(raw);
+          const updated = accounts.map((a) => a.email === user.email ? { ...a, password } : a);
+          localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(updated));
+        }
+      } catch (_) {}
+      setTimeout(() => navigate('/auth'), 2000);
+    }
     setLoading(false);
   };
 

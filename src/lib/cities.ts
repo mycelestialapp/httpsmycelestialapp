@@ -1,4 +1,6 @@
 // Global city database with lat/lng for True Solar Time calculation
+import { CHINA_DISTRICTS } from './chinaDistricts';
+
 export interface CityEntry {
   name: string; // Display name (English)
   nameZh?: string; // Chinese name
@@ -6,6 +8,40 @@ export interface CityEntry {
   lat: number;
   lng: number;
 }
+
+// 常见国家的中文名（用于按“美国”“英国”等搜索）
+const COUNTRY_ZH: Record<string, string> = {
+  CN: '中国',
+  HK: '香港',
+  MO: '澳门',
+  TW: '台湾',
+  US: '美国',
+  CA: '加拿大',
+  MX: '墨西哥',
+  GB: '英国',
+  FR: '法国',
+  DE: '德国',
+  IT: '意大利',
+  ES: '西班牙',
+  RU: '俄罗斯',
+  JP: '日本',
+  KR: '韩国',
+  VN: '越南',
+  TH: '泰国',
+  SG: '新加坡',
+  MY: '马来西亚',
+  ID: '印尼',
+  PH: '菲律宾',
+  IN: '印度',
+  AE: '阿联酋',
+  SA: '沙特',
+  TR: '土耳其',
+  BR: '巴西',
+  AR: '阿根廷',
+  CL: '智利',
+  AU: '澳大利亚',
+  NZ: '新西兰',
+};
 
 export const GLOBAL_CITIES: CityEntry[] = [
   // China
@@ -143,15 +179,22 @@ export const GLOBAL_CITIES: CityEntry[] = [
   { name: "Casablanca", nameZh: "卡萨布兰卡", country: "MA", lat: 33.5731, lng: -7.5898 },
 ];
 
-/** Search cities by name (English, Chinese, or pinyin-like input) */
-export function searchCities(query: string, limit = 10): CityEntry[] {
+/** 全球城市 + 中国省市区（到县区）合并列表 */
+export const ALL_LOCATIONS: CityEntry[] = [...GLOBAL_CITIES, ...CHINA_DISTRICTS];
+
+/** Search cities and districts by name (English, Chinese) */
+export function searchCities(query: string, limit = 12): CityEntry[] {
   if (!query || query.length < 1) return [];
   const q = query.toLowerCase().trim();
-  return GLOBAL_CITIES
-    .filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      (c.nameZh && c.nameZh.includes(q)) ||
-      c.country.toLowerCase().includes(q)
-    )
+  return ALL_LOCATIONS
+    .filter((c) => {
+      const countryZh = COUNTRY_ZH[c.country] || '';
+      return (
+        c.name.toLowerCase().includes(q) || // 英文城市名
+        (c.nameZh && c.nameZh.includes(query)) || // 中文城市名
+        c.country.toLowerCase().includes(q) || // 国家代码（US / CN 等）
+        (!!countryZh && countryZh.includes(query)) // 国家中文名（美国 / 日本 等）
+      );
+    })
     .slice(0, limit);
 }

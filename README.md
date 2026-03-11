@@ -1,73 +1,30 @@
-# Welcome to your Lovable project
+# Celestial Insights
 
-## Project info
+## 查看网站
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+1. **先启动**（在终端执行一次）  
+   ```bash
+   npm run dev
+   ```
 
-## How can I edit this code?
+2. **再打开网址**（任选一种）  
+   - 在终端再执行：`npm run open-app` → 会自动用浏览器打开  
+   - 或手动在浏览器地址栏输入：**http://localhost:8080**  
+   （若 8080 被占用，看终端里提示的端口，如 8081）
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 如何关掉截图里的内容、只留网页？
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+在 Cursor 里可以这样操作：
 
-Changes made via Lovable will be committed automatically to this repo.
+| 想关掉的内容 | 操作 |
+|-------------|------|
+| **README 等文件** | 点对应标签页上的 **×** 关闭，或按 `Ctrl+W` 关当前标签 |
+| **终端窗口** | 按 **Ctrl+`**（反引号）隐藏/显示终端；或点终端右上角 **×** 关掉 |
+| **侧边栏** | 按 **Ctrl+B** 隐藏/显示左侧文件树 |
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+关掉后，要**看我们做好的网站**：  
+保持 `npm run dev` 在运行，在**系统自带的浏览器**（Chrome / Edge 等）里打开：  
+**http://localhost:8080**  
+或在本项目目录再开一个终端，执行：`npm run open-app`，会自动打开该网址。
